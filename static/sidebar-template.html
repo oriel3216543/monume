@@ -1,0 +1,25 @@
+<!-- Include this in all pages that need the sidebar -->
+<div class="sidebar-container"></div>
+
+<!-- Common CSS for the main content to work with the sidebar -->
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        background-color: #ff9562;
+    }
+    
+    .main-content {
+        margin-left: 200px; /* Match the sidebar width exactly */
+        width: calc(100% - 200px);
+        transition: margin-left 0.3s;
+    }
+    
+    @media (max-width: 768px) {
+        .main-content {
+            margin-left: 0;
+            width: 100%;
+        }
+    }
+</style>

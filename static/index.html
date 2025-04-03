@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonuMe Tracker - Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* Fullscreen video container */
+        .animation-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;    /* Reduced from 100% */
+            height: 80%;   /* Reduced from 100% */
+            z-index: 1000;
+            background-color: transparent; /* Remove background color */
+            overflow: hidden;
+            border-radius: 20px;  /* Added rounded corners */
+        }
+
+        /* Adjusted video size */
+        .intro-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            object-fit: contain;  /* Changed from cover to contain */
+            background: transparent; /* Ensure transparent background */
+        }
+
+        /* Adjusted background */
+        body {
+            background-color: #ff9562;
+        }
+
+        /* Login container adjustments */
+        .login-container {
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 350px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .top-header h1 {
+            color: black; /* Change title color to black */
+        }
+        .sidebar h2, .sidebar ul li a {
+            color: black; /* Change sidebar category text to black */
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Intro Video -->
+    <div class="animation-container">
+        <video autoplay muted playsinline class="intro-video" onerror="showLogin()">
+            <source src="/static/media/intro.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Login Box -->
+    <div class="login-container">
+        <h2>Welcome to MonuMe Tracker</h2>
+
+        <div class="login-box">
+            <input type="text" id="username" placeholder="Username" class="input-field">
+            <input type="password" id="password" placeholder="Password" class="input-field">
+            <button class="login-btn" onclick="login()">Login</button>
+            <p id="login-error" class="error"></p>
+        </div>
+    </div>
+
+    <header class="top-header">
+        <h1>MonuMe <span class="vertical-line">|</span> Performance</h1> <!-- Change "Demo Tracker" to "Performance" -->
+    </header>
+
+    <div class="sidebar">
+        <h2>Categories</h2>
+        <ul>
+            <li><a href="dashboard.html#management">Management</a></li>
+            <li><a href="analytics.html">Analytics</a></li>
+            <li><a href="tracking.html">Tracking</a></li>
+            <li><a href="#" onclick="openOpalAccess()">Opal Access</a></li>
+        </ul>
+    </div>
+
+    <script>
+        // Show login container after video ends
+        document.querySelector('.intro-video').addEventListener('ended', () => {
+            const loginContainer = document.querySelector('.login-container');
+            const animationContainer = document.querySelector('.animation-container');
+            
+            loginContainer.style.display = 'block';
+            setTimeout(() => {
+                loginContainer.style.opacity = '1';
+                animationContainer.style.opacity = '0';
+                setTimeout(() => {
+                    animationContainer.style.display = 'none';
+                }, 500);
+            }, 100);
+        });
+
+        // Show login if video fails to load
+        function showLogin() {
+            const loginContainer = document.querySelector('.login-container');
+            const animationContainer = document.querySelector('.animation-container');
+            
+            loginContainer.style.display = 'block';
+            loginContainer.style.opacity = '1';
+            animationContainer.style.display = 'none';
+        }
+
+        function openOpalAccess() {
+            const iframe = document.createElement('iframe');
+            iframe.src = "https://3di-opal.vercel.app/";
+            iframe.style.position = "fixed";
+            iframe.style.top = "0";
+            iframe.style.left = "0";
+            iframe.style.width = "100%";
+            iframe.style.height = "100%";
+            iframe.style.border = "none";
+            iframe.style.zIndex = "1000";
+
+            document.body.innerHTML = '';
+            document.body.appendChild(iframe);
+        }
+    </script>
+    <script src="/static/script.js"></script>
+    <script src="/static/notification_system.js"></script>
+</body>
+</html>

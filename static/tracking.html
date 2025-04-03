@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonuMe Tracker - Performance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --main-color: #ff9562;
+            --gradient-start: #ff7f42;
+            --gradient-end: #ff9562;
+            --sidebar-bg: rgba(15, 23, 42, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #f8f9fa;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
+        }
+
+        body {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"><rect fill="%23ff9562" width="2000" height="1500"/><defs><radialGradient id="a" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="%23ffffff"/><stop offset="1" stop-color="%23ff9562"/></radialGradient><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="750" x2="1550" y2="750"><stop offset="0" stop-color="%23ffcab1"/><stop offset="1" stop-color="%23ff9562"/></linearGradient></defs><path fill="url(%23a)" d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z"/><path d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z" fill="url(%23b)"/></svg>') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar styles with glassmorphism */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: var(--transition);
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-brand img {
+            width: 35px;
+            height: 35px;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        }
+
+        .sidebar-header h2 {
+            color: var(--main-color);
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
+            margin-top: 30px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-menu li a i {
+            min-width: 24px;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .sidebar-menu li a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.8;
+            z-index: -1;
+            transition: width 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .sidebar-menu li:hover a::before,
+        .sidebar-menu li.active a::before {
+            width: 100%;
+        }
+
+        .sidebar-menu li:hover a,
+        .sidebar-menu li.active a {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 40px;
+            transition: var(--transition);
+        }
+
+        /* Responsive sidebar styles */
+        @media screen and (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                overflow: hidden;
+            }
+            
+            .sidebar-header h2,
+            .sidebar-menu li a span {
+                display: none;
+            }
+            
+            .sidebar-menu li a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                padding: 30px 20px;
+            }
+        }
+
+        /* כפתור הוספת תחנה מעוצב ככפתור צף בצד ימין */
+        .add-tracking-station-btn {
+            position: fixed;
+            bottom: 30px; 
+            right: 30px; 
+            background: white;
+            color: var(--main-color);
+            padding: 15px;
+            font-size: 24px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-weight: bold;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .add-tracking-station-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+            background: var(--main-color);
+            color: white;
+        }
+
+        /* Welcome container with glassmorphism */
+        .welcome-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-bottom: 40px;
+            color: white;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 127, 66, 0.7), rgba(255, 149, 98, 0.7));
+            z-index: -1;
+        }
+
+        .welcome-container h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .welcome-container p {
+            opacity: 0.9;
+            font-size: 18px;
+            max-width: 600px;
+        }
+
+        /* קונטיינר התחנות מעוצב בסטייל מודרני */
+        .tracking-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* עיצוב מודרני ועתידני לכל תחנה */
+        .tracking-station {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tracking-station::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            transition: width 0.3s ease;
+        }
+
+        .tracking-station:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            background: var(--card-hover-bg);
+        }
+
+        .tracking-station:hover::before {
+            width: 7px;
+        }
+
+        .tracking-station label {
+            font-size: 14px;
+            margin: 5px 0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .counter-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .tracking-station button {
+            background: rgba(255, 149, 98, 0.2);
+            color: var(--main-color);
+            border: none;
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .tracking-station button.save-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+            width: 60%;
+        }
+
+        .tracking-station button.remove-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #666;
+            padding: 10px 15px;
+            width: 35%;
+        }
+
+        .tracking-station button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 149, 98, 0.3);
+        }
+
+        .tracking-station button.remove-btn:hover {
+            background: rgba(255, 50, 50, 0.2);
+            color: #ff3333;
+        }
+
+        .tracking-station input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+            padding: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tracking-station input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+        }
+
+        .station-footer {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Improved Final Data Modal Styles */
+        .final-data-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .final-data-modal .modal-content {
+            background-color: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            width: 400px;
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .final-data-modal h3 {
+            margin-bottom: 25px;
+            color: var(--main-color);
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .final-data-modal .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+            position: relative;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .final-data-modal label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .final-data-modal .currency-symbol {
+            position: absolute;
+            left: 25px;
+            top: 50px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .final-data-modal input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .final-data-modal input#final-net-sales {
+            padding-left: 25px;
+        }
+
+        .final-data-modal input[type="number"]:focus {
+            outline: none;
+            border-color: #ff9562;
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+        }
+
+        .final-data-modal .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .final-data-modal button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .final-data-modal .confirm-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+
+        .final-data-modal .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 108, 63, 0.3);
+        }
+
+        .final-data-modal .cancel-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            flex-grow: 0.5;
+        }
+
+        .final-data-modal .cancel-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Updated styles for the sales rep dropdown */
+        .tracking-station .user-dropdown {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .tracking-station .user-dropdown:focus {
+            outline: none;
+            border-color: #ff9562;
+            box-shadow: 0 0 0 2px rgba(255, 149, 98, 0.2);
+        }
+
+        .tracking-station .sales-rep-container {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .tracking-station .sales-rep-label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .question-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .question-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .question-row button {
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+
+        .question-row label {
+            flex-grow: 1;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .question-row input {
+            width: 60px;
+            text-align: center;
+        }
+
+        /* Style for the confirmation modal */
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .confirmation-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            animation: modalAppear 0.3s forwards;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes modalAppear {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .confirmation-content h3 {
+            color: var(--main-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .confirmation-content p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            white-space: pre-wrap;
+            color: var(--text-primary);
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .confirm-button, .cancel-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .confirm-button {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .confirm-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 124, 66, 0.3);
+        }
+
+        .cancel-button {
+            background-color: #f0f0f0;
+            color: #555;
+        }
+
+        .cancel-button:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Particle background effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Left sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEyIDJsMTAgMTB2MTBIMlYxMkwxMiAyeiIgZmlsbD0iI2ZmOTU2MiIvPjwvc3ZnPg==" alt="Logo">
+                <h2>MonuMe</h2>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="management.html">
+                    <i class="fas fa-tasks"></i>
+                    <span>Management</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="tracking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+            </li>
+            <li>
+                <a href="analytics.html">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li>
+                <a href="morning_notes.html">
+                    <i class="fas fa-coffee"></i>
+                    <span>Morning Notes</span>
+                </a>
+            </li>
+            <li>
+                <a href="endofday.html">
+                    <i class="fas fa-moon"></i>
+                    <span>End of Day</span>
+                </a>
+            </li>
+            <!-- Removed users and emails links -->
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="welcome-container">
+            <h1>Performance Tracking</h1>
+            <p>Track and manage sales performance data for your team</p>
+        </div>
+        
+        <div id="tracking-stations" class="tracking-container"></div>
+    </div>
+
+    <!-- Adjusted "+" button to match dashboard style -->
+    <button class="add-tracking-station-btn" onclick="addTrackingStation()">+</button>
+
+    <!-- Final Data Modal with improved design -->
+    <div id="final-data-modal" class="final-data-modal">
+        <div class="modal-content">
+            <h3>Additional Performance Information</h3>
+            
+            <div class="input-group">
+                <label for="final-net-sales">Net sales</label>
+                <span class="currency-symbol">$</span>
+                <input type="number" min="0" id="final-net-sales" value="0" step="0.01">
+            </div>
+            
+            <div class="input-group">
+                <label for="final-hours-worked">Hours worked</label>
+                <input type="number" min="0" id="final-hours-worked" value="0" step="0.25">
+            </div>
+            
+            <div class="button-container">
+                <button class="cancel-btn" onclick="cancelFinalData()">Cancel</button>
+                <button class="confirm-btn" onclick="confirmFinalData()">Save & Finish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add the confirmation modal after the final data modal -->
+    <div id="user-confirmation-modal" class="confirmation-modal">
+        <div class="confirmation-content">
+            <h3>Shift Confirmation</h3>
+            <p id="confirmation-message"></p>
+            <div class="confirmation-buttons">
+                <button class="cancel-button" onclick="cancelUserSelection()">No, I Need to Complete</button>
+                <button class="confirm-button" onclick="confirmUserSelection()">Yes, I'm Ready</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/script.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            loadTrackingStations();
+            debugSavedData();
+            createParticles();
+            
+            // Initialize the usersall database
+            if (typeof initializeUserDatabase === 'function') {
+                initializeUserDatabase();
+            } else {
+                console.warn("User database initialization function not found");
+            }
+        });
+        
+        let currentSaveButton = null;
+        let stationData = null;
+        let currentUserDropdown = null;
+        let previousUserValue = null;
+
+        async function addTrackingStation() {
+            const container = document.getElementById("tracking-stations");
+            const station = document.createElement("div");
+            station.classList.add("tracking-station");
+            station.innerHTML = `
+                <div class="station-content">
+                    <div class="sales-rep-container">
+                        <label class="sales-rep-label">Sales Rep</label>
+                        <select class="user-dropdown">
+                            <option value="">Select Sales Rep</option>
+                        </select>
+                    </div>
+                    <div class="question-container">
+                        <div class="question-row">
+                            <button onclick="changeValue(this, 1)">+</button>
+                            <button onclick="changeValue(this, -1)">-</button>
+                            <label>Opal demos</label>
+                            <input type="number" min="0" value="0" class="data-input" data-input="opal_demos">
+                        </div>
+                        <div class="question-row">
+                            <button onclick="changeValue(this, 1)">+</button>
+                            <button onclick="changeValue(this, -1)">-</button>
+                            <label>Opal sales</label>
+                            <input type="number" min="0" value="0" class="data-input" data-input="opal_sales">
+                        </div>
+                        <div class="question-row">
+                            <button onclick="changeValue(this, 1)">+</button>
+                            <button onclick="changeValue(this, -1)">-</button>
+                            <label>Scan demos</label>
+                            <input type="number" min="0" value="0" class="data-input" data-input="scan_demos">
+                        </div>
+                        <div class="question-row">
+                            <button onclick="changeValue(this, 1)">+</button>
+                            <button onclick="changeValue(this, -1)">-</button>
+                            <label>Scan sold</label>
+                            <input type="number" min="0" value="0" class="data-input" data-input="scan_sold">
+                        </div>
+                    </div>
+                </div>
+                <div class="station-footer">
+                    <button class="save-btn" onclick="showFinalDataModal(this)">Save & Finish</button>
+                    <button class="remove-btn" onclick="removeStation(this)">Remove</button>
+                </div>
+            `;
+            container.prepend(station);
+            await loadUserDropdown(station.querySelector(".user-dropdown"));
+            saveTrackingStations();
+
+            const userDropdown = station.querySelector(".user-dropdown");
+            userDropdown.addEventListener("change", function() {
+                if (this.value) {
+                    currentUserDropdown = this;
+                    previousUserValue = "";
+                    showUserConfirmation(this.options[this.selectedIndex].text);
+                }
+            });
+        }
+
+        function removeStation(button) {
+            button.closest(".tracking-station").remove();
+            saveTrackingStations();
+        }
+
+        function changeValue(button, amount) {
+            const input = button.closest('.question-row').querySelector('input');
+            let value = parseInt(input.value) + amount;
+            if (value < 0) value = 0;
+            input.value = value;
+            saveTrackingStations();
+        }
+
+        async function loadUserDropdown(dropdown) {
+            const response = await fetch("/get_users");
+            const data = await response.json();
+            data.users.forEach(user => {
+                const option = document.createElement("option");
+                option.value = user.id;
+                option.textContent = user.username;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function showFinalDataModal(button) {
+            const station = button.closest(".tracking-station");
+            const userDropdown = station.querySelector(".user-dropdown");
+            const userId = userDropdown.value;
+
+            if (!userId) {
+                alert("Please select a Sales Rep first!");
+                return;
+            }
+
+            currentSaveButton = button;
+            stationData = {
+                user_id: parseInt(userId),
+                opal_demos: parseInt(station.querySelector("input[data-input='opal_demos']").value) || 0,
+                opal_sales: parseInt(station.querySelector("input[data-input='opal_sales']").value) || 0,
+                scan_demos: parseInt(station.querySelector("input[data-input='scan_demos']").value) || 0,
+                scan_sold: parseInt(station.querySelector("input[data-input='scan_sold']").value) || 0
+            };
+
+            document.getElementById("final-data-modal").style.display = "flex";
+            document.getElementById("final-net-sales").value = "0";
+            document.getElementById("final-hours-worked").value = "0";
+            document.getElementById("final-net-sales").focus();
+        }
+
+        function cancelFinalData() {
+            document.getElementById("final-data-modal").style.display = "none";
+            currentSaveButton = null;
+            stationData = null;
+        }
+
+        async function confirmFinalData() {
+            if (!currentSaveButton || !stationData) {
+                alert("An error occurred. Please try again.");
+                return;
+            }
+
+            // Get the form values and ensure they are numbers
+            const netSales = parseFloat(document.getElementById("final-net-sales").value) || 0;
+            const hoursWorked = parseFloat(document.getElementById("final-hours-worked").value) || 0;
+            
+            // Add to station data
+            stationData.net_sales = netSales;
+            stationData.hours_worked = hoursWorked;
+            stationData.date = new Date().toISOString().split('T')[0];
+
+            console.log("Saving finalized data:", stationData);
+
+            try {
+                // Get username
+                let userName = "Unknown User";
+                const station = currentSaveButton.closest(".tracking-station");
+                const userDropdown = station.querySelector(".user-dropdown");
+                if (userDropdown && userDropdown.selectedIndex >= 0) {
+                    userName = userDropdown.options[userDropdown.selectedIndex].textContent;
+                }
+                
+                // Create a proper format performance entry
+                const performanceEntry = {
+                    userId: stationData.user_id.toString(),
+                    username: userName, // Save the actual username
+                    date: stationData.date,
+                    timestamp: new Date().toISOString(),
+                    opalDemos: parseInt(stationData.opal_demos) || 0,
+                    opalSales: parseInt(stationData.opal_sales) || 0,
+                    scanDemos: parseInt(stationData.scan_demos) || 0,
+                    scanSold: parseInt(stationData.scan_sold) || 0,
+                    netSales: netSales,
+                    hoursWorked: hoursWorked
+                };
+                
+                // Save directly to performance database
+                let performanceData = [];
+                try {
+                    const existingData = localStorage.getItem("Performancestorge");
+                    if (existingData) {
+                        performanceData = JSON.parse(existingData);
+                    }
+                } catch (error) {
+                    console.error("Error loading performance storage:", error);
+                    performanceData = [];
+                }
+                
+                console.log("Adding final data entry:", performanceEntry);
+                performanceData.push(performanceEntry);
+                
+                // Save performance data
+                localStorage.setItem("Performancestorge", JSON.stringify(performanceData));
+                localStorage.setItem("performensdate", JSON.stringify(performanceData));
+                
+                // Now make the API call
+                const response = await fetch("/save_tracking_data", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({...stationData, username: userName})
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    // Success message and cleanup
+                    alert("Data saved successfully!");
+                    removeStation(currentSaveButton);
+                    document.getElementById("final-data-modal").style.display = "none";
+                    currentSaveButton = null;
+                    stationData = null;
+                    
+                    // Debug the saved data
+                    debugSavedData();
+                } else {
+                    throw new Error(result.error || "Failed to save data");
+                }
+            } catch (error) {
+                console.error("Error saving data:", error);
+                alert("Error saving data: " + error.message);
+            }
+        }
+
+        function saveTrackingStations() {
+            const stations = [];
+            document.querySelectorAll(".tracking-station").forEach(station => {
+                const userDropdown = station.querySelector(".user-dropdown");
+                const userId = userDropdown ? userDropdown.value : "";
+                const username = userDropdown && userDropdown.selectedIndex >= 0 ? 
+                              userDropdown.options[userDropdown.selectedIndex].textContent : "";
+                const opalDemos = parseInt(station.querySelector("input[data-input='opal_demos']").value) || 0;
+                const opalSales = parseInt(station.querySelector("input[data-input='opal_sales']").value) || 0;
+                const scanDemos = parseInt(station.querySelector("input[data-input='scan_demos']").value) || 0;
+                const scanSold = parseInt(station.querySelector("input[data-input='scan_sold']").value) || 0;
+
+                const today = new Date().toISOString().split('T')[0];
+
+                stations.push({
+                    userId,
+                    username,
+                    date: today,
+                    opalDemos,
+                    opalSales,
+                    scanDemos,
+                    scanSold
+                });
+            });
+
+            // Deduplicate entries by creating a unique key for each station
+            const uniqueStations = [];
+            const seenKeys = new Set();
+            stations.forEach(station => {
+                const key = `${station.userId}-${station.date}-${station.opalDemos}-${station.opalSales}-${station.scanDemos}-${station.scanSold}`;
+                if (!seenKeys.has(key)) {
+                    seenKeys.add(key);
+                    uniqueStations.push(station);
+                }
+            });
+
+            localStorage.setItem("trackingStations", JSON.stringify(uniqueStations));
+            saveToPerformanceDatabase(uniqueStations);
+        }
+
+        function saveToPerformanceDatabase(stations) {
+            // Load existing performance data or initialize a new array
+            let performanceData = [];
+            try {
+                const newStorageData = localStorage.getItem("Performancestorge");
+                if (newStorageData) {
+                    performanceData = JSON.parse(newStorageData);
+                    console.log("Loaded data from Performancestorge:", performanceData.length, "entries");
+                } else {
+                    const existingData = localStorage.getItem("performensdate");
+                    if (existingData) {
+                        performanceData = JSON.parse(existingData);
+                        console.log("Migrating data from old database to Performancestorge");
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading existing performance data:", error);
+                performanceData = [];
+            }
+            
+            // Add new entries with proper data formatting
+            const timestamp = new Date().toISOString();
+            const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+            
+            stations.forEach(station => {
+                if (station.userId) {
+                    // Get username from dropdown
+                    let username = "";
+                    const dropdowns = document.querySelectorAll(".user-dropdown");
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        const dropdown = dropdowns[i];
+                        if (dropdown.value === station.userId) {
+                            username = dropdown.options[dropdown.selectedIndex].textContent;
+                            break;
+                        }
+                    }
+                    
+                    // Create a properly formatted entry with numeric values to prevent "0,0,0,0" display issues
+                    const newEntry = {
+                        userId: station.userId,
+                        username: username || "Unknown User",
+                        date: today, // Always use today's date for new entries
+                        timestamp: timestamp,
+                        opalDemos: parseInt(station.opalDemos) || 0,
+                        opalSales: parseInt(station.opalSales) || 0,
+                        scanDemos: parseInt(station.scanDemos) || 0,
+                        scanSold: parseInt(station.scanSold) || 0
+                    };
+                    
+                    // Only add if there's actual data (at least one value is non-zero)
+                    if (newEntry.opalDemos > 0 || newEntry.opalSales > 0 || newEntry.scanDemos > 0 || newEntry.scanSold > 0) {
+                        performanceData.push(newEntry);
+                        console.log("Added new entry with data:", newEntry);
+                    }
+                }
+            });
+            
+            // Deduplicate entries by userId and date, keeping the entry with the highest values
+            const uniqueEntries = {};
+            performanceData.forEach(entry => {
+                const key = `${entry.userId}-${entry.date}`;
+                if (!uniqueEntries[key] || 
+                    entry.opalDemos + entry.opalSales + entry.scanDemos + entry.scanSold > 
+                    uniqueEntries[key].opalDemos + uniqueEntries[key].opalSales + uniqueEntries[key].scanDemos + uniqueEntries[key].scanSold) {
+                    uniqueEntries[key] = entry;
+                }
+            });
+            
+            // Convert back to array
+            const deduplicatedData = Object.values(uniqueEntries);
+            
+            // Save to both storage locations for compatibility
+            localStorage.setItem("Performancestorge", JSON.stringify(deduplicatedData));
+            localStorage.setItem("performensdate", JSON.stringify(deduplicatedData));
+            console.log("Saved to Performancestorge database:", deduplicatedData.length, "entries");
+            
+            // For debugging
+            debugSavedData();
+        }
+
+        function loadTrackingStations() {
+            const stations = JSON.parse(localStorage.getItem("trackingStations")) || [];
+            const container = document.getElementById("tracking-stations");
+            container.innerHTML = ""; // Clear existing stations to avoid duplication
+
+            stations.forEach(stationData => {
+                const station = document.createElement("div");
+                station.classList.add("tracking-station");
+                station.innerHTML = `
+                    <div class="station-content">
+                        <div class="sales-rep-container">
+                            <label class="sales-rep-label">Sales Rep</label>
+                            <select class="user-dropdown">
+                                <option value="">Select Sales Rep</option>
+                            </select>
+                        </div>
+                        <div class="question-container">
+                            <div class="question-row">
+                                <button onclick="changeValue(this, 1)">+</button>
+                                <button onclick="changeValue(this, -1)">-</button>
+                                <label>Opal demos</label>
+                                <input type="number" min="0" value="${stationData.opalDemos}" class="data-input" data-input="opal_demos">
+                            </div>
+                            <div class="question-row">
+                                <button onclick="changeValue(this, 1)">+</button>
+                                <button onclick="changeValue(this, -1)">-</button>
+                                <label>Opal sales</label>
+                                <input type="number" min="0" value="${stationData.opalSales}" class="data-input" data-input="opal_sales">
+                            </div>
+                            <div class="question-row">
+                                <button onclick="changeValue(this, 1)">+</button>
+                                <button onclick="changeValue(this, -1)">-</button>
+                                <label>Scan demos</label>
+                                <input type="number" min="0" value="${stationData.scanDemos}" class="data-input" data-input="scan_demos">
+                            </div>
+                            <div class="question-row">
+                                <button onclick="changeValue(this, 1)">+</button>
+                                <button onclick="changeValue(this, -1)">-</button>
+                                <label>Scan sold</label>
+                                <input type="number" min="0" value="${stationData.scanSold}" class="data-input" data-input="scan_sold">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="station-footer">
+                        <button class="save-btn" onclick="showFinalDataModal(this)">Save & Finish</button>
+                        <button class="remove-btn" onclick="removeStation(this)">Remove</button>
+                    </div>
+                `;
+                container.prepend(station);
+                loadUserDropdown(station.querySelector(".user-dropdown")).then(() => {
+                    station.querySelector(".user-dropdown").value = stationData.userId;
+                });
+
+                const userDropdown = station.querySelector(".user-dropdown");
+                userDropdown.addEventListener("change", function() {
+                    if (this.value && this.value !== stationData.userId) {
+                        currentUserDropdown = this;
+                        previousUserValue = stationData.userId;
+                        showUserConfirmation(this.options[this.selectedIndex].text);
+                    }
+                });
+            });
+        }
+
+        function showUserConfirmation(username) {
+            // If username is empty, use a default
+            if (!username || username.trim() === '') {
+                username = "Sales Rep";
+            }
+            
+            const confirmationMessage = document.getElementById("confirmation-message");
+            confirmationMessage.textContent = `Hello ${username}, Good Luck Today! 😊
+
+Did you finish all Morning/Midday/Closing Procedures and test the camera?
+
+If Yes, your shift will start. If No, please complete the procedures before starting.`;
+            document.getElementById("user-confirmation-modal").style.display = "flex";
+        }
+
+        function confirmUserSelection() {
+            document.getElementById("user-confirmation-modal").style.display = "none";
+            saveTrackingStations();
+        }
+
+        function cancelUserSelection() {
+            if (currentUserDropdown) {
+                currentUserDropdown.value = previousUserValue || "";
+            }
+            document.getElementById("user-confirmation-modal").style.display = "none";
+        }
+
+        // Add this to debug the data getting stored
+        function debugSavedData() {
+            console.log("==== TRACKING DEBUG ====");
+            ["trackingStations", "performensdate", "Performancestorge", "usersall"].forEach(key => {
+                try {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        try {
+                            const parsed = JSON.parse(data);
+                            console.log(`${key}: Has data (${parsed.length} entries)`);
+                            if (parsed.length > 0) {
+                                console.log("Sample entry:", parsed[0]);
+                            }
+                        } catch (e) {
+                            console.log(`${key}: Has data but failed to parse`);
+                        }
+                    } else {
+                        console.log(`${key}: Empty`);
+                    }
+                } catch (e) {
+                    console.error(`Error accessing ${key}:`, e);
+                }
+            });
+            console.log("==== END DEBUG ====");
+        }
+
+        // Initialize data storage
+        function initializeStorageIfNeeded() {
+            ["trackingStations", "performensdate", "Performancestorge", "usersall"].forEach(key => {
+                if (!localStorage.getItem(key)) {
+                    localStorage.setItem(key, JSON.stringify([]));
+                    console.log(`Initialized empty array for ${key}`);
+                }
+            });
+        }
+
+        // Create floating particle effect
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const numberOfParticles = 25;
+            
+            for (let i = 0; i < numberOfParticles; i++) {
+                createParticle();
+            }
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                particle.style.opacity = Math.random() * 0.6 + 0.1;
+                
+                const duration = Math.random() * 15 + 15;
+                particle.style.animationDuration = `${duration}s`;
+                
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                particlesContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                    createParticle();
+                }, duration * 1000);
+            }
+        }
+
+        // Update document.ready to initialize storage first
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("Document ready, initializing application");
+            initializeStorageIfNeeded();
+            loadTrackingStations();
+            debugSavedData();
+            createParticles();
+        });
+    </script>
+    <script src="/static/notification_system.js"></script>
+</body>
+</html>

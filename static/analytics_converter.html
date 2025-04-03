@@ -1,0 +1,67 @@
+<!-- Include this file in your analytics pages to convert user IDs to usernames -->
+<script>
+// Check if notification_system.js is loaded
+if (typeof getUsernameById !== 'function') {
+    console.warn("Loading notification_system.js for user database access");
+    
+    // Create script tag to load notification_system.js
+    const notificationScript = document.createElement('script');
+    notificationScript.src = '/static/notification_system.js';
+    document.head.appendChild(notificationScript);
+    
+    // Wait for it to load
+    notificationScript.onload = function() {
+        console.log("User database functions loaded");
+        loadConverters();
+    };
+} else {
+    loadConverters();
+}
+
+function loadConverters() {
+    // Load both converter scripts
+    const scripts = [
+        '/static/analytics_helpers.js',
+        '/static/user_converter.js'
+    ];
+    
+    scripts.forEach(src => {
+        const script = document.createElement('script');
+        script.src = src;
+        document.head.appendChild(script);
+    });
+}
+
+// Check if usersall database exists and has data
+document.addEventListener('DOMContentLoaded', function() {
+    const usersData = localStorage.getItem("usersall");
+    if (!usersData || JSON.parse(usersData).length === 0) {
+        console.warn("User database is empty, initializing...");
+        if (typeof initializeUserDatabase === 'function') {
+            initializeUserDatabase();
+        }
+    }
+    
+    // Convert user IDs after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        if (typeof convertAllUserIdDisplays === 'function') {
+            convertAllUserIdDisplays();
+        }
+        
+        // Also set up direct variable replacement for dynamic templates
+        // This lets you use {{username(userId)}} in HTML templates
+        window.username = getUsernameById;
+    }, 300);
+});
+
+// Add a global helper to use in templates for displaying usernames
+window.displayUsername = function(userId) {
+    return typeof getUsernameById === 'function' ? getUsernameById(userId) : userId;
+};
+
+// Add a global helper that can be used to bind data with usernames
+window.bindWithUsernames = function(data) {
+    return typeof addUsernameProperties === 'function' ? 
+        addUsernameProperties(data) : data;
+};
+</script>

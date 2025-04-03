@@ -1,0 +1,269 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2 style="color: black;">Categories</h2>
+    </div>
+    <div class="sidebar-dropdown">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="dashboard.html" class="category-header" style="color: black;" id="dashboard-link">Dashboard</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="management.html" class="category-header" style="color: black;" id="management-link">Management</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="tracking.html" class="category-header" style="color: black;" id="tracking-link">Performance</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="analytics.html" class="category-header" style="color: black;" id="analytics-link">Analytics</a>
+            </li>
+            </li>
+            <li class="sidebar-item">
+                <a href="morning_notes.html" class="category-header" style="color: black;" id="morning-notes-link">Morning Notes</a>
+            </li>
+            <li class="sidebar-item">
+            <a href="endofday.html" class="category-header" style="color: black;" id="endofday-link">End of Day</a>
+        </li>
+    </div>
+</div>
+
+<style>
+    .sidebar {
+        width: 200px;
+        background-color: #ff9562;
+        padding: 20px;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow: hidden;
+        border-right: none;
+        z-index: 10;
+    }
+    
+    /* Always show the Categories header */
+    .sidebar-header {
+        cursor: default;
+        position: relative;
+        z-index: 2;
+        background-color: transparent;
+        padding-bottom: 10px;
+    }
+    
+    .sidebar-header h2 {
+        margin: 0;
+        padding: 10px 0;
+        font-weight: bold;
+        /* Ensure it's always visible and doesn't transform */
+    }
+    
+    /* Prevent transforming Categories on hover */
+    .sidebar:hover .sidebar-header h2 {
+        transform: none;
+    }
+    
+    /* Dropdown for items below Categories */
+    .sidebar-dropdown {
+        /* Remove max-height: 0 to keep visible */
+        overflow: hidden;
+        /* Menu items initially visible */
+    }
+    
+    .sidebar-menu {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        /* Remove transform and opacity to keep visible */
+    }
+    
+    .sidebar-item {
+        margin-bottom: 10px;
+        position: relative;
+    }
+    
+    .category-header {
+        display: block;
+        padding: 10px 15px;
+        text-decoration: none;
+        font-weight: bold;
+        border-radius: 5px;
+    }
+    
+    .sidebar-item.active > .category-header {
+        background-color: rgba(0, 0, 0, 0.1);
+        font-weight: bold;
+    }
+    
+    /* Hover effect for menu items */
+    .category-header:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const analyticsLink = document.getElementById('analytics-link');
+        
+        if (analyticsLink) {
+            analyticsLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                // When clicking on the Analytics link, show verification
+                // Use a direct approach instead of relying on showAnalyticsVerification
+                displayAnalyticsVerification();
+            });
+        }
+
+        // Make sure Morning Notes link works properly
+        const morningNotesLink = document.getElementById('morning-notes-link');
+        if (morningNotesLink) {
+            morningNotesLink.addEventListener('click', function(e) {
+                // Direct navigation to morning_notes.html
+                window.location.href = 'morning_notes.html';
+            });
+        }
+        
+        // Make sure End of Day link works properly
+        const endOfDayLink = document.getElementById('endofday-link');
+        if (endOfDayLink) {
+            endOfDayLink.addEventListener('click', function() {
+                window.location.href = 'endofday.html';
+            });
+        }
+        
+        // Highlight the current page in the sidebar
+        const currentPage = window.location.pathname.split('/').pop();
+        const menuItems = document.querySelectorAll('.sidebar-item');
+        
+        menuItems.forEach(item => {
+            const link = item.querySelector('a');
+            if (link && link.getAttribute('href') === currentPage) {
+                item.classList.add('active');
+            }
+        });
+    });
+
+    // New function to directly handle the verification
+    function displayAnalyticsVerification() {
+        // Create and show the verification modal
+        const modalHTML = `
+            <div id="analytics-verification-modal" style="
+                display: flex;
+                position: fixed;
+                z-index: 1001;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                justify-content: center;
+                align-items: center;">
+                <div style="
+                    background-color: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+                    width: 350px;
+                    text-align: center;">
+                    <h3 style="margin-top: 0; color: #ff9562;">Analytics Login</h3>
+                    <p>Please enter your credentials to access Analytics</p>
+                    <input type="text" id="verification-username" placeholder="Username" style="
+                        width: calc(100% - 20px);
+                        padding: 10px;
+                        margin: 10px 0;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;">
+                    <input type="password" id="verification-password" placeholder="Password" style="
+                        width: calc(100% - 20px);
+                        padding: 10px;
+                        margin: 10px 0;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;">
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        margin-top: 20px;">
+                        <button onclick="cancelAnalyticsVerification()" style="
+                            padding: 10px 20px;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            background-color: #f0f0f0;
+                            color: #333;">Cancel</button>
+                        <button onclick="submitAnalyticsVerification()" style="
+                            padding: 10px 20px;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            background-color: #ff9562;
+                            color: white;">Login</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to body
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer.firstChild);
+        
+        // Focus on username input
+        document.getElementById('verification-username').focus();
+
+        // Add event listener for Enter key in password field
+        document.getElementById('verification-password').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                submitAnalyticsVerification();
+            }
+        });
+    }
+    
+    function cancelAnalyticsVerification() {
+        const modal = document.getElementById('analytics-verification-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+    
+    function submitAnalyticsVerification() {
+        const username = document.getElementById('verification-username').value;
+        const password = document.getElementById('verification-password').value;
+        
+        // Basic validation
+        if (!username || !password) {
+            alert('Please enter both username and password.');
+            return;
+        }
+        
+        // Set localStorage items
+        localStorage.setItem('username', username);
+        
+        // Determine role based on credentials (this is a simple implementation)
+        let role, location;
+        if (username === 'admin' && password === 'admin') {
+            role = 'admin';
+            location = 'all';
+        } else if (username === 'manager' && password === 'manager') {
+            role = 'manager';
+            location = 'Location1';
+        } else if (username === 'employee' && password === 'employee') {
+            role = 'employee';
+            location = 'Location1';
+        } else {
+            alert('Invalid username or password.');
+            return;
+        }
+        
+        // Store role and location
+        localStorage.setItem('role', role);
+        localStorage.setItem('location', location);
+        
+        // Remove the modal
+        const modal = document.getElementById('analytics-verification-modal');
+        if (modal) {
+            modal.remove();
+        }
+        
+        // Redirect to analytics page
+        window.location.href = 'analytics.html';
+    }
+</script>

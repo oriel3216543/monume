@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Management - MonuMe Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin-left: 250px;
+            min-height: 100vh;
+            background-color: #ff9562;
+        }
+        
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: #ff9562;
+            color: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        
+        .top-header h1 {
+            font-size: 36px;
+            margin: 0;
+        }
+        
+        .vertical-line {
+            margin: 0 10px;
+        }
+        
+        .email-settings-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 100px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-header {
+            color: #ff9562;
+            font-size: 24px;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff9562;
+        }
+        
+        .settings-group {
+            margin-bottom: 30px;
+        }
+        
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .settings-label {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            flex: 1;
+        }
+        
+        .settings-description {
+            color: #666;
+            font-size: 14px;
+            flex: 2;
+            padding: 0 20px;
+        }
+        
+        .settings-control {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        
+        /* Toggle switch styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #ff9562;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #ff9562;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Email template preview */
+        .email-template-preview {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            background: #f9f9f9;
+        }
+        
+        .template-header {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .template-body {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .template-variables {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .variable-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .variable-list li {
+            margin-bottom: 5px;
+            font-family: monospace;
+        }
+        
+        /* Email testing section */
+        .email-test-section {
+            margin-top: 40px;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        .test-email-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .test-email-button {
+            background: #ff9562;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .test-email-button:hover {
+            background: #ff7f42;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Email log section */
+        .email-log-section {
+            margin-top: 40px;
+        }
+        
+        .email-log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .email-log-table th, .email-log-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .email-log-table th {
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .log-status-success {
+            color: #4caf50;
+            font-weight: 600;
+        }
+        
+        .log-status-failed {
+            color: #f44336;
+            font-weight: 600;
+        }
+        
+        /* PDF Template Preview */
+        .pdf-template-preview {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .pdf-preview-header {
+            background: #f0f0f0;
+            padding: 15px;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .pdf-preview-image {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            transition: max-height 0.3s ease;
+            cursor: zoom-in;
+        }
+        
+        .pdf-preview-image.zoomed {
+            max-height: 80vh;
+            cursor: zoom-out;
+        }
+        
+        .pdf-preview-info {
+            padding: 10px;
+            font-size: 12px;
+            color: #777;
+            background: #f9f9f9;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Text-based preview fallback */
+        .pdf-text-preview {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #f9f9f9;
+        }
+        
+        /* Add status indicator for email test */
+        .email-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .email-status.success {
+            background-color: #e6f7e6;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .email-status.error {
+            background-color: #fdecea;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .email-status.pending {
+            background-color: #fff9e6;
+            color: #f57c00;
+            border: 1px solid #ffe0b2;
+        }
+        
+        /* Back button */
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            color: #ff9562;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-arrow:hover {
+            background: #ff9562;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* Notification toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+        
+        .toast.success {
+            background: #4caf50;
+        }
+        
+        .toast.error {
+            background: #f44336;
+        }
+        
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 10px;
+            }
+            
+            .email-settings-container {
+                width: 95%;
+            }
+            
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .settings-description {
+                padding: 10px 0;
+            }
+            
+            .settings-control {
+                justify-content: flex-start;
+                margin-top: 10px;
+            }
+        }
+    </style>
+    <script src="/static/js/preview_generator.js" defer></script>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-container"></div>
+    
+    <!-- Back Button -->
+    <button class="back-arrow" onclick="window.location.href='management.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="top-header">
+            <h1>MonuMe <span class="vertical-line">|</span> Email Management</h1>
+        </header>
+        
+        <div class="email-settings-container">
+            <h2 class="section-header">Automated Email Settings</h2>
+            
+            <!-- Email Triggers Section -->
+            <div class="settings-group">
+                <div class="settings-row">
+                    <div class="settings-label">Performance Summary Emails</div>
+                    <div class="settings-description">
+                        Send automatic performance summary emails with PDF attachments when users submit tracking data.
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="autoEmailEnabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-row">
+                    <div class="settings-label">Daily Performance Reports</div>
+                    <div class="settings-description">
+                        Send daily summary reports to all users at the end of the day.
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="dailyEmailEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-row">
+                    <div class="settings-label">Weekly Performance Digest</div>
+                    <div class="settings-description">
+                        Send weekly performance summary emails every Sunday night.
+                    </div>
+                    <div class="settings-control">
+                        <label class="switch">
+                            <input type="checkbox" id="weeklyEmailEnabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Template Preview -->
+            <h3 class="section-header">Email Template Preview</h3>
+            <div class="email-template-preview">
+                <div class="template-header">Performance Summary from MonuMe Tracker</div>
+                <div class="template-body">
+                    <p>Hello {{user_name}},</p>
+                    <p>Thank you for submitting your tracking data on {{date}}. Here's a summary of your performance:</p>
+                    <ul>
+                        <li><strong>Opal Demos:</strong> {{opal_demos}}</li>
+                        <li><strong>Opal Sales:</strong> {{opal_sales}}</li>
+                        <li><strong>Scan Demos:</strong> {{scan_demos}}</li>
+                        <li><strong>Scan Sold:</strong> {{scan_sold}}</li>
+                        <li><strong>Net Sales:</strong> ${{net_sales}}</li>
+                        <li><strong>Hours Worked:</strong> {{hours_worked}}</li>
+                        <li><strong>Success Rate:</strong> {{success_rate}}%</li>
+                        <li><strong>Sales per Hour:</strong> ${{sales_per_hour}}</li>
+                    </ul>
+                    <p>A detailed PDF report is attached to this email.</p>
+                    <p>Best regards,<br>MonuMe Tracker Team</p>
+                </div>
+                <div class="template-variables">
+                    <p><strong>Available Variables:</strong></p>
+                    <ul class="variable-list">
+                        <li>{{user_name}} - User's full name</li>
+                        <li>{{date}} - Date of submission</li>
+                        <li>{{opal_demos}} - Number of Opal demos</li>
+                        <li>{{opal_sales}} - Number of Opal sales</li>
+                        <li>{{scan_demos}} - Number of Scan demos</li>
+                        <li>{{scan_sold}} - Number of Scans sold</li>
+                        <li>{{net_sales}} - Total net sales</li>
+                        <li>{{hours_worked}} - Hours worked</li>
+                        <li>{{success_rate}} - Success rate percentage</li>
+                        <li>{{sales_per_hour}} - Sales per hour</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- PDF Template Preview -->
+            <h3 class="section-header">PDF Report Template</h3>
+            <div class="pdf-template-preview">
+                <div class="pdf-preview-header">Performance Summary PDF Preview</div>
+                <img src="/static/images/pdf_template_preview.png" 
+                     alt="PDF Template Preview" 
+                     class="pdf-preview-image" 
+                     data-fallback="/static/images/pdf_placeholder.png"
+                     title="Click to zoom">
+                <div class="pdf-preview-info">Click on the image to zoom in/out</div>
+            </div>
+            
+            <!-- Test Email Section -->
+            <div class="email-test-section">
+                <h3 class="section-header">Send Test Email</h3>
+                <p>Send a test email to verify your email configuration is working correctly.</p>
+                <input type="email" class="test-email-input" id="test-email" placeholder="Enter email address to test">
+                <button class="test-email-button" onclick="sendTestEmail()">
+                    <i class="fas fa-envelope"></i> Send Test Email
+                </button>
+                <div id="email-status" class="email-status"></div>
+            </div>
+            
+            <!-- Email Logs Section -->
+            <div class="email-log-section">
+                <h3 class="section-header">Recent Email Logs</h3>
+                <table class="email-log-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Recipient</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="email-logs">
+                        <tr>
+                            <td>Loading logs...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Check admin access rights
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get user role from local storage
+            const role = localStorage.getItem('role');
+            
+            // Only admins or managers can access this page
+            if (role !== 'admin' && role !== 'manager') {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            // Load email settings and logs
+            loadEmailSettings();
+            loadEmailLogs();
+            
+            // Set up event listeners for settings changes
+            setupEventListeners();
+        });
+        
+        // Load email settings from the server
+        async function loadEmailSettings() {
+            try {
+                const response = await fetch('/get_email_settings');
+                const settings = await response.json();
+                
+                // Update toggle switches
+                document.getElementById('autoEmailEnabled').checked = settings.auto_email_enabled;
+                document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled;
+                document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled;
+                
+            } catch (error) {
+                console.error('Error loading email settings:', error);
+                showToast('Failed to load email settings', 'error');
+            }
+        }
+        
+        // Load email logs from the server
+        async function loadEmailLogs() {
+            const logsContainer = document.getElementById('email-logs');
+        
+            if (!logsContainer) return;
+            
+            try {
+                // Show loading state
+                logsContainer.innerHTML = '<tr><td colspan="4">Loading email logs...</td></tr>';
+                
+                const response = await fetch('/get_email_logs');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.logs && data.logs.length > 0) {
+                    // Format and display logs
+                    const logsHTML = data.logs.map(log => `
+                        <tr>
+                            <td>${formatDateTime(log.timestamp)}</td>
+                            <td>${log.recipient}</td>
+                            <td>${log.type}</td>
+                            <td class="log-status-${log.status === 'success' ? 'success' : 'failed'}">
+                                ${log.status}
+                                ${log.error_message ? 
+                                    `<span class="error-details" title="${log.error_message}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </span>` : ''}
+                            </td>
+                        </tr>
+                    `).join('');
+                    
+                    logsContainer.innerHTML = logsHTML;
+                } else {
+                    logsContainer.innerHTML = '<tr><td colspan="4">No email logs found</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading email logs:', error);
+                logsContainer.innerHTML = `<tr><td colspan="4">Failed to load email logs: ${error.message}</td></tr>`;
+            }
+        }
+        
+        // Set up event listeners for settings changes
+        function setupEventListeners() {
+            // Auto email toggle
+            document.getElementById('autoEmailEnabled').addEventListener('change', async function() {
+                await updateSetting('auto_email_enabled', this.checked);
+            });
+            
+            // Daily email toggle
+            document.getElementById('dailyEmailEnabled').addEventListener('change', async function() {
+                await updateSetting('daily_email_enabled', this.checked);
+            });
+            
+            // Weekly email toggle
+            document.getElementById('weeklyEmailEnabled').addEventListener('change', async function() {
+                await updateSetting('weekly_email_enabled', this.checked);
+            });
+        }
+        
+        // Update email setting on the server
+        async function updateSetting(setting, value) {
+            try {
+                const response = await fetch('/update_email_setting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        setting: setting,
+                        value: value
+                    })
+                });
+                
+                if (response.ok) {
+                    showToast('Settings updated successfully', 'success');
+                } else {
+                    throw new Error('Failed to update setting');
+                }
+            } catch (error) {
+                console.error('Error updating setting:', error);
+                showToast('Failed to update setting', 'error');
+                
+                // Revert the UI toggle if the server update failed
+                document.getElementById(setting.replace(/_/g, '')).checked = !value;
+            }
+        }
+        
+        // Enhanced sendTestEmail function with better feedback
+        async function sendTestEmail() {
+            const emailField = document.getElementById('test-email');
+            const emailAddress = emailField.value.trim();
+            const statusEl = document.getElementById('email-status');
+            
+            // Validate email
+            if (!emailAddress) {
+                statusEl.textContent = "Please enter a valid email address";
+                statusEl.className = "email-status error";
+                statusEl.style.display = "block";
+                return;
+            }
+            
+            // Simple email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailAddress)) {
+                statusEl.textContent = "Please enter a valid email address format";
+                statusEl.className = "email-status error";
+                statusEl.style.display = "block";
+                return;
+            }
+            
+            // Show pending status
+            statusEl.textContent = "Sending test email... Please wait.";
+            statusEl.className = "email-status pending";
+            statusEl.style.display = "block";
+            
+            // Disable button while sending
+            const button = document.querySelector('.test-email-button');
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            try {
+                const response = await fetch('/send_test_email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: emailAddress })
+                });
+                
+                const result = await response.json();
+                
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-envelope"></i> Send Test Email';
+                
+                if (response.ok) {
+                    statusEl.textContent = "Test email sent successfully! Please check your inbox.";
+                    statusEl.className = "email-status success";
+                    
+                    // Refresh email logs after a short delay
+                    setTimeout(() => {
+                        loadEmailLogs();
+                    }, 1000);
+                } else {
+                    statusEl.textContent = `Error: ${result.error || 'Failed to send test email'}`;
+                    statusEl.className = "email-status error";
+                    
+                    // Show more detailed error information
+                    console.error('Email sending error:', result.error);
+                }
+            } catch (error) {
+                console.error('Error sending test email:', error);
+                
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-envelope"></i> Send Test Email';
+                
+                statusEl.textContent = `Error: ${error.message || 'Network error while sending email'}`;
+                statusEl.className = "email-status error";
+            }
+        }
+        
+        // Format date and time
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} visible`;
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

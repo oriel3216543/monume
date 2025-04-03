@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locations - MonuMe Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js" defer></script>
+    <style>
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align items to the left */
+            padding: 20px;
+            margin-left: 200px; /* Adjust for sidebar */
+        }
+        .location-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto; /* Centered horizontally */
+            justify-content: center;
+        }
+        .location-card {
+            background: white;
+            padding: 50px; /* Keep the current size */
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+        }
+        .location-card:hover {
+            transform: scale(1.05);
+        }
+        .location-card h3 {
+            margin: 0;
+            font-size: 24px;
+            color: #ff9562;
+        }
+        .location-card button {
+            background: #ff9562;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+            margin: 5px;
+        }
+        .location-card button:hover {
+            background: #ff6c3f;
+        }
+        .add-location-btn {
+            position: fixed;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            background: white;
+            color: #ff9562;
+            padding: 15px;
+            font-size: 24px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgb(0, 0, 0);
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .add-location-btn:hover {
+            background-color: #ff9562;
+            color: white;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+            position: relative;
+        }
+        .modal-content input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .modal-content button {
+            background: #ff9562;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+        .modal-content button:hover {
+            background: #ff6c3f;
+        }
+        .close-btn {
+            background: #ff9562;
+            color: white;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-btn:hover {
+            background: #ff6c3f;
+        }
+        .close-btn::before {
+            content: '×';
+            font-size: 16px;
+        }
+        .back-arrow {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #ff9562;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+        .back-arrow:hover {
+            background: #ff6c3f;
+        }
+        .back-arrow::before {
+            content: '←';
+            font-size: 16px;
+        }
+        .edit-location-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .edit-location-modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+            position: relative;
+        }
+        .edit-location-modal-content input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .edit-location-modal-content button {
+            background: #ff9562;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+        .edit-location-modal-content button:hover {
+            background: #ff6c3f;
+        }
+        .edit-close-btn {
+            background: #ff9562;
+            color: white;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-close-btn:hover {
+            background: #ff6c3f;
+        }
+        .edit-close-btn::before {
+            content: '×';
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-container"></div>
+
+    <!-- Back Arrow -->
+    <button class="back-arrow" onclick="window.location.href='management.html'"></button>
+
+    <!-- Main Content for Locations -->
+    <div class="main-content">
+        <header class="top-header">
+            <h1>MonuMe <span class="vertical-line">|</span> Locations</h1>
+        </header>
+        <button class="add-location-btn" onclick="openAddLocationModal()">+</button>
+        <div class="location-container" id="location-container">
+            <!-- Locations will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <!-- Add Location Modal -->
+    <div id="add-location-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeAddLocationModal()"></button>
+            <h3>Add Location</h3>
+            <input type="text" id="location-name" placeholder="Location Name">
+            <input type="text" id="mall-name" placeholder="Mall Name">
+            <button onclick="addLocation()">Add</button>
+        </div>
+    </div>
+
+    <!-- Edit Location Modal -->
+    <div id="edit-location-modal" class="edit-location-modal">
+        <div class="edit-location-modal-content">
+            <button class="edit-close-btn" onclick="closeEditLocationModal()"></button>
+            <h3>Edit Location</h3>
+            <input type="text" id="edit-location-name" placeholder="Location Name">
+            <input type="text" id="edit-mall-name" placeholder="Mall Name">
+            <input type="hidden" id="edit-location-id">
+            <button onclick="updateLocation()">Update</button>
+        </div>
+    </div>
+
+    <!-- LOC Users Modal -->
+    <div id="loc-users-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeLocUsersModal()"></button>
+            <h3>Location Users</h3>
+            <div id="loc-users-container">
+                <!-- Users for the location will be dynamically loaded here -->
+            </div>
+            <button onclick="addUserToLocation()">Add User</button>
+        </div>
+    </div>
+
+</body>
+<script>
+    // Enhanced loadLocations function with better error handling and animations
+    async function loadLocations() {
+        try {
+            console.log("Loading locations...");
+            document.body.style.cursor = 'wait';
+            
+            // Show loading state on container
+            const container = document.getElementById("location-container");
+            if (container) {
+                container.classList.add('loading');
+            }
+            
+            // Fetch locations data
+            const response = await fetch("/get_locations");
+            
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`Loaded ${data.locations ? data.locations.length : 0} locations`);
+            
+            // Update the UI with the new data
+            if (container) {
+                // Save scroll position
+                const scrollPosition = window.scrollY;
+                
+                // Clear the container with a fade-out effect
+                container.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Update container content
+                    container.innerHTML = "";
+                    
+                    if (data.locations && data.locations.length > 0) {
+                        data.locations.forEach((location, index) => {
+                            const card = createLocationCard(location);
+                            
+                            // Add a small delay between adding cards for a staggered animation
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            container.appendChild(card);
+                            
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, index * 60); // Staggered animation
+                        });
+                    } else {
+                        // Show empty state
+                        const emptyState = document.createElement('div');
+                        emptyState.className = 'empty-state';
+                        emptyState.innerHTML = `
+                            <h3>No Locations Found</h3>
+                            <p>Add your first location to get started</p>
+                        `;
+                        container.appendChild(emptyState);
+                    }
+                    
+                    // Restore container opacity
+                    container.style.opacity = '1';
+                    container.classList.remove('loading');
+                    
+                    // Restore scroll position
+                    window.scrollTo({
+                        top: scrollPosition,
+                        behavior: "auto"
+                    });
+                }, 200);
+            }
+        } catch (error) {
+            console.error("Error loading locations:", error);
+            showNotification("Failed to load locations: " + error.message, "error");
+            
+            // Show error state in the container
+            const container = document.getElementById("location-container");
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <h3>Error Loading Locations</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadLocations()">Try Again</button>
+                    </div>
+                `;
+                container.classList.remove('loading');
+            }
+        } finally {
+            document.body.style.cursor = 'default';
+        }
+    }
+    
+    // Function to create location card with consistent styling
+    function createLocationCard(location) {
+        const card = document.createElement("div");
+        card.className = "location-card";
+        card.innerHTML = `
+            <h3>${location.location_name}</h3>
+            <p>${location.mall}</p>
+            <div class="location-actions">
+                <button class="edit-btn" onclick="openEditLocationModal(${location.id}, '${location.location_name}', '${location.mall}')">Edit</button>
+                <button class="remove-btn" onclick="removeLocation(${location.id})">Remove</button>
+            </div>
+        `;
+        return card;
+    }
+    
+    // Add CSS for loading and error states
+    const additionalStyles = document.createElement('style');
+    additionalStyles.textContent = `
+        .location-container.loading {
+            position: relative;
+            min-height: 200px;
+        }
+        
+        .location-container.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 149, 98, 0.3);
+            border-radius: 50%;
+            border-top-color: #ff9562;
+            animation: spin 1s infinite linear;
+        }
+        
+        .error-state, .empty-state {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-state h3, .empty-state h3 {
+            color: #ff5252;
+            margin-top: 0;
+        }
+        
+        .empty-state h3 {
+            color: #777;
+        }
+        
+        .error-state button {
+            background: #ff9562;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        
+        .error-state button:hover {
+            background: #ff7f42;
+        }
+        
+        /* Improved location card styles */
+        .location-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .edit-btn, .remove-btn {
+            flex: 1;
+        }
+        
+        .remove-btn {
+            background-color: #ffebee;
+            color: #ff5252;
+        }
+        
+        .remove-btn:hover {
+            background-color: #ff5252;
+        }
+    `;
+    document.head.appendChild(additionalStyles);
+    
+    // Make sure to initialize locations when the page loads
+    document.addEventListener("DOMContentLoaded", () => {
+        loadLocations();
+    });
+</script>
+
+<script>
+    async function loadUsersForLocation(locationId) {
+        const response = await fetch(`/get_users_for_location?location_id=${locationId}`);
+        const data = await response.json();
+        const container = document.getElementById("loc-users-container");
+        container.innerHTML = "";
+        data.users.forEach(user => {
+            const userDiv = document.createElement("div");
+            userDiv.classList.add("user-item");
+            userDiv.innerHTML = `
+                <span>${user.username}</span>
+                <button onclick="removeUserFromLocation(${user.id}, ${locationId})">Remove</button>
+            `;
+            container.appendChild(userDiv);
+        });
+    }
+
+    function openLocUsersModal(locationId) {
+        document.getElementById('loc-users-modal').style.display = 'flex';
+        loadUsersForLocation(locationId);
+    }
+
+    function closeLocUsersModal() {
+        document.getElementById('loc-users-modal').style.display = 'none';
+    }
+
+    async function addUserToLocation() {
+        const locationId = document.getElementById('edit-location-id').value;
+        const username = prompt("Enter username to add:");
+        if (username) {
+            const response = await fetch("/add_user_to_location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, location_id: locationId })
+            });
+            if (response.ok) {
+                loadUsersForLocation(locationId);
+            } else {
+                alert("Failed to add user to location.");
+            }
+        }
+    }
+
+    async function removeUserFromLocation(userId, locationId) {
+        const response = await fetch("/remove_user_from_location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId, location_id: locationId })
+        });
+        if (response.ok) {
+            loadUsersForLocation(locationId);
+        } else {
+            alert("Failed to remove user from location.");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadLocations);
+</script>
+
+<script>
+    // Improved removeLocation function with better error handling and UI feedback
+    async function removeLocation(locationId) {
+        // Show confirmation dialog first
+        if (!confirm("Are you sure you want to remove this location? This action cannot be undone.")) {
+            return;
+        }
+        
+        try {
+            // Show loading state
+            document.body.style.cursor = 'wait';
+            const locationCards = document.querySelectorAll('.location-card');
+            const targetCard = Array.from(locationCards).find(card => {
+                return card.querySelector(`button[onclick*="${locationId}"]`);
+            });
+            
+            if (targetCard) {
+                // Add visual feedback
+                targetCard.style.opacity = '0.5';
+                targetCard.style.transform = 'scale(0.95)';
+                targetCard.style.boxShadow = 'none';
+            }
+            
+            // Show loading indicator
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'loading-indicator';
+            loadingIndicator.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 255, 255, 0.9);
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.2);
+                z-index: 1000;
+                text-align: center;
+            `;
+            loadingIndicator.innerHTML = `
+                <div style="color: #ff9562; font-size: 20px; margin-bottom: 10px;">
+                    <span style="display: inline-block; animation: spin 1s infinite linear;">⟳</span>
+                </div>
+                <div>Removing location...</div>
+            `;
+            document.body.appendChild(loadingIndicator);
+            
+            // Make the request
+            const response = await fetch("/remove_location", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ location_id: locationId })
+            });
+            
+            // Process the response
+            if (response.ok) {
+                const result = await response.json();
+                console.log("Location removed successfully:", result);
+                
+                // Show success message
+                showNotification("Location removed successfully", "success");
+                
+                // Remove the card with animation
+                if (targetCard) {
+                    targetCard.style.height = '0';
+                    targetCard.style.margin = '0';
+                    targetCard.style.padding = '0';
+                    targetCard.style.overflow = 'hidden';
+                    
+                    // After animation completes, reload the locations
+                    setTimeout(() => {
+                        loadLocations();
+                    }, 300);
+                } else {
+                    loadLocations();
+                }
+            } else {
+                const errorResult = await response.json();
+                throw new Error(errorResult.error || "Failed to remove location");
+            }
+        } catch (error) {
+            console.error("Error removing location:", error);
+            showNotification("Error: " + error.message, "error");
+        } finally {
+            // Reset cursor and remove loading indicator
+            document.body.style.cursor = 'default';
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+        }
+    }
+    
+    // Add a notification function for better user feedback
+    function showNotification(message, type) {
+        // Remove any existing notification
+        const existingNotification = document.querySelector('.notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type || 'info'}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        if (type === 'success') {
+            notification.style.background = '#4caf50';
+        } else if (type === 'error') {
+            notification.style.background = '#f44336';
+        } else {
+            notification.style.background = '#2196f3';
+        }
+        
+        notification.textContent = message;
+        
+        // Add close button
+        const closeBtn = document.createElement('span');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.cssText = `
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        `;
+        closeBtn.addEventListener('click', () => notification.remove());
+        notification.appendChild(closeBtn);
+        
+        // Add to DOM
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // Add necessary animation keyframes to the document
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .location-card {
+            transition: all 0.3s ease-out;
+        }
+    `;
+    document.head.appendChild(styleElement);
+</script>
+
+<script>
+    function openAddLocationModal() {
+        document.getElementById("add-location-modal").style.display = "flex";
+    }
+
+    function closeAddLocationModal() {
+        document.getElementById("add-location-modal").style.display = "none";
+    }
+
+    async function addLocation() {
+        const locationName = document.getElementById("location-name").value;
+        const mall = document.getElementById("mall-name").value;
+        if (locationName && mall) {
+            const response = await fetch("/add_location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ location_name: locationName, mall: mall })
+            });
+            if (response.ok) {
+                closeAddLocationModal();
+                loadLocations();
+            } else {
+                alert("Failed to add location.");
+            }
+        }
+    }
+
+    function openEditLocationModal(locationId) {
+        fetch(`/get_location/${locationId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                document.getElementById('edit-location-id').value = data.id;
+                document.getElementById('edit-location-name').value = data.location_name;
+                document.getElementById('edit-mall-name').value = data.mall;
+                document.getElementById('edit-location-modal').style.display = 'flex';
+            })
+            .catch(error => console.error("Error fetching location:", error));
+    }
+
+    function closeEditLocationModal() {
+        document.getElementById('edit-location-modal').style.display = 'none';
+    }
+
+    async function updateLocation() {
+        const locationId = document.getElementById('edit-location-id').value;
+        const locationName = document.getElementById('edit-location-name').value;
+        const mall = document.getElementById('edit-mall-name').value;
+
+        if (locationName && mall) {
+            const response = await fetch("/update_location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ location_id: locationId, location_name: locationName, mall: mall })
+            });
+            if (response.ok) {
+                closeEditLocationModal();
+                loadLocations();
+            } else {
+                alert("Failed to update location.");
+            }
+        }
+    }
+</script>
+</html>
