@@ -30,12 +30,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("MonuMeServer")
 
-# Get the current working directory
+# Get the current working directory and base URL path
 root_dir = os.path.dirname(os.path.abspath(__file__))
+BASE_PATH = os.environ.get('BASE_PATH', '')  # For GitHub Pages or subdirectory deployment
 
 # Configure Flask app with proper error handling and static file serving
 app = Flask(__name__, 
-    static_url_path='/static',
+    static_url_path=os.path.join(BASE_PATH, 'static'),
     static_folder='static',
     template_folder='static'
 )
@@ -67,6 +68,8 @@ app.config['SESSION_COOKIE_SECURE'] = PRODUCTION  # Only send cookies over HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to cookies
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Restrict cross-site cookie usage
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # Session timeout
+if BASE_PATH:
+    app.config['APPLICATION_ROOT'] = BASE_PATH
 
 # Production security headers
 @app.after_request
@@ -100,6 +103,12 @@ def get_db_connection():
     except sqlite3.Error as e:
         logger.error(f"Database connection error: {e}")
         raise
+
+# Creates a full URL path including the BASE_PATH if defined
+def full_path(path):
+    if BASE_PATH and not path.startswith(BASE_PATH):
+        return os.path.join(BASE_PATH, path.lstrip('/'))
+    return path
 
 # Modified static file serving to also serve files from the root directory
 @app.route('/<path:filename>')

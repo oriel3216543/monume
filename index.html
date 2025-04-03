@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MonuMe Tracker - Login</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <meta name="description" content="Track MonuMe demos, sales, and performance metrics">
     <style>
         /* Fullscreen video container */
         .animation-container {
@@ -65,7 +67,7 @@
     <!-- Animated Intro Video -->
     <div class="animation-container">
         <video autoplay muted playsinline class="intro-video" onerror="showLogin()">
-            <source src="/static/media/intro.mp4" type="video/mp4">
+            <source src="./intro.mp4" type="video/mp4">
         </video>
     </div>
 
@@ -88,9 +90,9 @@
     <div class="sidebar">
         <h2>Categories</h2>
         <ul>
-            <li><a href="dashboard.html#management">Management</a></li>
-            <li><a href="analytics.html">Analytics</a></li>
-            <li><a href="tracking.html">Tracking</a></li>
+            <li><a href="./static/dashboard.html">Management</a></li>
+            <li><a href="./static/analytics.html">Analytics</a></li>
+            <li><a href="./static/tracking.html">Tracking</a></li>
             <li><a href="#" onclick="openOpalAccess()">Opal Access</a></li>
         </ul>
     </div>
@@ -136,7 +138,7 @@
             document.body.appendChild(iframe);
         }
     </script>
-    <script src="/static/script.js"></script>
-    <script src="/static/notification_system.js"></script>
+    <script src="./script.js"></script>
+    <script src="./static/notification_system.js"></script>
 </body>
 </html>

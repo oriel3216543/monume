@@ -1,3 +1,9 @@
+// Function to determine the base URL for API calls
+function getBaseUrl() {
+    // This function helps with path resolution regardless of deployment environment
+    return window.location.origin;
+}
+
 // Show login box if the video fails
 function showLogin() {
     const loginEl = document.getElementById("loginDiv");
@@ -29,7 +35,7 @@ function checkManagementAccess() {
     const role = localStorage.getItem('role');
     if (role !== 'admin' && role !== 'manager') {
         alert('Access denied. Only admins and managers can access this page.');
-        window.location.href = 'dashboard.html';
+        window.location.href = './static/dashboard.html';
         return false;
     }
     return true;
@@ -182,7 +188,8 @@ async function submitPasswordVerification() {
     }
     
     try {
-        const response = await fetch("/verify_password", {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/verify_password`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
@@ -227,7 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to load the sidebar
 function loadSidebar() {
-    fetch('/static/sidebar.html')
+    const baseUrl = getBaseUrl();
+    fetch(`${baseUrl}/static/sidebar.html`)
         .then(response => response.text())
         .then(data => {
             document.querySelector('.sidebar-container').innerHTML = data;
@@ -250,7 +258,7 @@ function applyRoleBasedSidebarAccess() {
         managementLink.href = "javascript:void(0)";
         managementLink.onclick = async function() {
             if (await verifyPasswordForManagement()) {
-                window.location.href = "management.html";
+                window.location.href = "./static/management.html";
             }
         };
         
@@ -275,7 +283,8 @@ async function login() {
     }
 
     try {
-        const response = await fetch("/login", {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
@@ -293,7 +302,7 @@ async function login() {
             localStorage.setItem("user_id", data.user_id);
             
             console.log(`User role stored: ${data.role}`);
-            window.location.href = "dashboard.html"; // Redirect to dashboard
+            window.location.href = "./static/dashboard.html"; // Redirect to dashboard
         } else {
             console.error("Login failed:", data.error);
             document.getElementById("login-error").innerText = data.error;
@@ -318,7 +327,8 @@ async function saveUser() {
     }
 
     try {
-        const response = await fetch("/create_user", {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/create_user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, email, passcode, role, location }),
@@ -353,7 +363,8 @@ async function editUser(userId) {
     }
 
     try {
-        const response = await fetch("/update_user", {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/update_user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user_id: userId, username, email, passcode, name, role, location }),
@@ -379,7 +390,8 @@ let pageSize = 10;
 // Fetch and display history
 async function loadHistory() {
     try {
-        const response = await fetch("/get_history");
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/get_history`);
         const data = await response.json();
         displayByUser(data.history);
         displayByQuestion(data.history);
@@ -487,7 +499,8 @@ async function loadLocations() {
         }
         
         // Fetch the locations data
-        const response = await fetch("/get_locations");
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/get_locations`);
         const data = await response.json();
         
         // Update dropdown if it exists
@@ -533,7 +546,8 @@ async function addLocation() {
     const locationName = document.getElementById("location-name").value;
     const mall = document.getElementById("mall-name").value;
     if (locationName && mall) {
-        const response = await fetch("/add_location", {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/add_location`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ location_name: locationName, mall: mall })
@@ -548,7 +562,8 @@ async function addLocation() {
 }
 
 async function removeLocation(locationId) {
-    const response = await fetch("/remove_location", {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/remove_location`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ location_id: locationId })
@@ -564,7 +579,8 @@ async function editLocation(locationId) {
     const locationName = prompt("Enter new location name:");
     const mall = prompt("Enter new mall name:");
     if (locationName && mall) {
-        const response = await fetch("/update_location", {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/update_location`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ location_id: locationId, location_name: locationName, mall: mall })
@@ -620,7 +636,8 @@ async function saveTrackingDataWithEmail(data) {
     try {
         showLoadingIndicator();
         
-        const response = await fetch('/save_tracking_with_email', {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/save_tracking_with_email`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
