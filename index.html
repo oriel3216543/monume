@@ -55,11 +55,44 @@
             transition: opacity 0.5s ease-in-out;
         }
 
+        /* Dropdown styles */
+        .login-box select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .login-box select:focus {
+            outline: none;
+            border-color: #ff9562;
+            box-shadow: 0 0 5px rgba(255, 149, 98, 0.5);
+        }
+
+        /* Loading indicator for username dropdown */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,149,98,0.3);
+            border-radius: 50%;
+            border-top-color: #ff9562;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .top-header h1 {
             color: black; /* Change title color to black */
-        }
-        .sidebar h2, .sidebar ul li a {
-            color: black; /* Change sidebar category text to black */
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
@@ -76,7 +109,14 @@
         <h2>Welcome to MonuMe Tracker</h2>
 
         <div class="login-box">
-            <input type="text" id="username" placeholder="Username" class="input-field">
+            <!-- Replace input with select dropdown -->
+            <div class="select-container">
+                <select id="username" class="input-field">
+                    <option value="" disabled selected>Select your username</option>
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+                <span id="username-loading" class="loading" style="display: none;"></span>
+            </div>
             <input type="password" id="password" placeholder="Password" class="input-field">
             <button class="login-btn" onclick="login()">Login</button>
             <p id="login-error" class="error"></p>
@@ -84,18 +124,8 @@
     </div>
 
     <header class="top-header">
-        <h1>MonuMe <span class="vertical-line">|</span> Performance</h1> <!-- Change "Demo Tracker" to "Performance" -->
+        <h1>MonuMe <span class="vertical-line">|</span> Performance</h1>
     </header>
-
-    <div class="sidebar">
-        <h2>Categories</h2>
-        <ul>
-            <li><a href="./static/dashboard.html">Management</a></li>
-            <li><a href="./static/analytics.html">Analytics</a></li>
-            <li><a href="./static/tracking.html">Tracking</a></li>
-            <li><a href="#" onclick="openOpalAccess()">Opal Access</a></li>
-        </ul>
-    </div>
 
     <script>
         // Show login container after video ends
@@ -111,6 +141,9 @@
                     animationContainer.style.display = 'none';
                 }, 500);
             }, 100);
+            
+            // Load username dropdown when login box is displayed
+            loadUsernames();
         });
 
         // Show login if video fails to load
@@ -121,24 +154,96 @@
             loginContainer.style.display = 'block';
             loginContainer.style.opacity = '1';
             animationContainer.style.display = 'none';
+            
+            // Load username dropdown
+            loadUsernames();
         }
 
-        function openOpalAccess() {
-            const iframe = document.createElement('iframe');
-            iframe.src = "https://3di-opal.vercel.app/";
-            iframe.style.position = "fixed";
-            iframe.style.top = "0";
-            iframe.style.left = "0";
-            iframe.style.width = "100%";
-            iframe.style.height = "100%";
-            iframe.style.border = "none";
-            iframe.style.zIndex = "1000";
-
-            document.body.innerHTML = '';
-            document.body.appendChild(iframe);
+        // Function to load usernames from the server
+        function loadUsernames() {
+            const usernameSelect = document.getElementById('username');
+            const loadingIndicator = document.getElementById('username-loading');
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'inline-block';
+            
+            // In a real environment, fetch from server
+            // For demo purposes, we'll simulate with mock data or use the server if available
+            if (typeof STATIC_CONFIG !== 'undefined' && STATIC_CONFIG.demoMode) {
+                // In demo mode, use mock data
+                setTimeout(() => {
+                    const mockUsers = ['admin', 'manager1', 'employee1', 'employee2'];
+                    populateUserDropdown(mockUsers);
+                    loadingIndicator.style.display = 'none';
+                }, 1000);
+            } else {
+                // Try to fetch from actual server
+                fetch(getBaseUrl() + '/get_usernames')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        populateUserDropdown(data.usernames);
+                        loadingIndicator.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error loading usernames:', error);
+                        // Fallback to demo data if fetch fails
+                        const fallbackUsers = ['admin', 'manager1', 'employee1', 'employee2'];
+                        populateUserDropdown(fallbackUsers);
+                        loadingIndicator.style.display = 'none';
+                    });
+            }
         }
+        
+        // Function to populate the username dropdown
+        function populateUserDropdown(usernames) {
+            const usernameSelect = document.getElementById('username');
+            
+            // Clear existing options (except the first placeholder)
+            while (usernameSelect.options.length > 1) {
+                usernameSelect.remove(1);
+            }
+            
+            // Add usernames to dropdown
+            usernames.forEach(username => {
+                const option = document.createElement('option');
+                option.value = username;
+                option.textContent = username;
+                usernameSelect.appendChild(option);
+            });
+        }
+
+        // Set default username if provided
+        function setDefaultUsername() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const defaultUsername = urlParams.get('username') || 'admin';
+            
+            const usernameSelect = document.getElementById('username');
+            if (usernameSelect) {
+                // Check if the option exists first
+                for (let i = 0; i < usernameSelect.options.length; i++) {
+                    if (usernameSelect.options[i].value === defaultUsername) {
+                        usernameSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Add event listener to set default username after loading usernames
+        document.addEventListener('DOMContentLoaded', function() {
+            // If the login container is already visible
+            if (document.querySelector('.login-container').style.display === 'block') {
+                loadUsernames();
+            }
+        });
     </script>
     <script src="./script.js"></script>
     <script src="./static/notification_system.js"></script>
+    <script src="./static_config.js"></script>
 </body>
 </html>

@@ -927,6 +927,25 @@ def generate_preview():
         logger.error(f"Error generating preview: {e}")
         return jsonify({"error": str(e)}), 500
 
+# Add new endpoint to get usernames without revealing sensitive information
+@app.route("/get_usernames", methods=["GET"])
+def get_usernames():
+    try:
+        conn = get_db_connection()
+        usernames = conn.execute("SELECT username FROM users").fetchall()
+        conn.close()
+        
+        # Extract usernames from row objects
+        username_list = [user['username'] for user in usernames]
+        
+        return jsonify({"usernames": username_list}), 200
+    except sqlite3.Error as db_error:
+        logger.error(f"Database error when fetching usernames: {db_error}")
+        return jsonify({"error": "Database error", "usernames": []}), 500
+    except Exception as e:
+        logger.error(f"Error fetching usernames: {e}")
+        return jsonify({"error": "Server error", "usernames": []}), 500
+
 # Initialize database tables on startup
 def init_db():
     """Initialize database tables with better error handling."""
@@ -992,15 +1011,14 @@ def init_db():
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_email_logs_timestamp ON email_logs(timestamp)')
         
         # Add default admin user if none exists
-        admin_exists = cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'").fetchone()[0]
+        admin_exists = cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'").fetchone()[0]
         if admin_exists == 0:
-            # Create a default admin user with a secure password
-            default_admin_password = os.environ.get('DEFAULT_ADMIN_PASSWORD', 'admin123')
+            # Create a default admin user with the requested password
             cursor.execute("""
                 INSERT INTO users (username, password, email, name, role, location)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, ('admin', default_admin_password, 'admin@monume.com', 'Admin User', 'admin', 'HQ'))
-            logger.info("Created default admin user")
+            """, ('admin', 'ori3', 'admin@monume.com', 'Admin User', 'admin', 'HQ'))
+            logger.info("Created default admin user with username 'admin'")
             
         conn.commit()
         conn.close()
