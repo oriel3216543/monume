@@ -242,6 +242,7 @@ function loadSidebar() {
             
             // After loading sidebar, apply role-based access controls
             applyRoleBasedSidebarAccess();
+            highlightActiveSidebarItem();
         })
         .catch(error => console.error('Error loading sidebar:', error));
 }
@@ -517,20 +518,49 @@ async function loadLocations() {
         // Update container if it exists
         if (container) {
             container.innerHTML = "";
-            data.locations.forEach(location => {
-                const card = document.createElement("div");
-                card.classList.add("location-card");
-                card.innerHTML = `
-                    <h3>${location.location_name}</h3>
-                    <p>${location.mall}</p>
-                    <button onclick="editLocation(${location.id})">Edit</button>
-                    <button onclick="removeLocation(${location.id})">Remove</button>
+            if (data.locations && data.locations.length > 0) {
+                data.locations.forEach(location => {
+                    const card = document.createElement("div");
+                    card.classList.add("location-card");
+                    card.innerHTML = `
+                        <h3>${location.location_name}</h3>
+                        <p>${location.mall}</p>
+                        <div class="location-actions">
+                            <button class="btn btn-edit" onclick="openEditLocationModal(${location.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-delete" onclick="removeLocation(${location.id})">
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state__icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 class="empty-state__title">No Locations Yet</h3>
+                        <p class="empty-state__text">Click the + button to add your first location</p>
+                    </div>
                 `;
-                container.appendChild(card);
-            });
+            }
         }
     } catch (error) {
         console.error("Error loading locations:", error);
+        if (container) {
+            container.innerHTML = `
+                <div class="error-state">
+                    <h3>Error Loading Locations</h3>
+                    <p>An error occurred while loading locations. Please try again.</p>
+                    <button class="btn btn-edit" onclick="loadLocations()">
+                        <i class="fas fa-sync"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
@@ -836,6 +866,32 @@ function highlightActiveSidebarItem(currentPage) {
     }
 }
 
+// Add after existing sidebar code
+function highlightActiveSidebarItem() {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu li a');
+    
+    sidebarLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === currentPage) {
+            link.parentElement.classList.add('active');
+        }
+    });
+}
+
+// Add theme colors to be used across the application
+const THEME = {
+    mainColor: '#ff9562',
+    gradientStart: '#ff7f42',
+    gradientEnd: '#ff9562',
+    sidebarBg: 'rgba(15, 23, 42, 0.9)',
+    cardBg: 'rgba(255, 255, 255, 0.85)',
+    cardHoverBg: 'rgba(255, 255, 255, 0.95)',
+    textPrimary: '#333',
+    textSecondary: '#666',
+    textLight: '#f8f9fa'
+};
+
 // Load sidebar when DOM content is loaded
 document.addEventListener('DOMContentLoaded', function() {
     loadSidebar();
@@ -966,4 +1022,345 @@ function submitAnalyticsVerification() {
     
     // Redirect to analytics page
     window.location.href = 'analytics.html';
+}
+
+// Morning Notes Notification System
+function checkMorningNotes() {
+    const notes = JSON.parse(localStorage.getItem('morningNotes') || '[]');
+    const today = new Date().toISOString().split('T')[0];
+    
+    const uncompletedNotes = notes.filter(note => 
+        !note.completed && 
+        note.date === today
+    );
+
+    if (uncompletedNotes.length > 0) {
+        showMorningNoteNotification(uncompletedNotes);
+    }
+}
+
+function showMorningNoteNotification(notes) {
+    // Remove any existing morning note notifications
+    const existingNotifications = document.querySelectorAll('.morning-note-notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'morning-note-notification';
+    notification.innerHTML = `
+        <div class="notification-header">
+            <i class="fas fa-coffee"></i>
+            <span>Morning Notes</span>
+            <button class="close-btn">&times;</button>
+        </div>
+        <div class="notification-content">
+            <p>You have ${notes.length} uncompleted morning note${notes.length > 1 ? 's' : ''}</p>
+            <a href="/static/morning_notes.html" class="view-btn">View Notes</a>
+        </div>
+    `;
+
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        width: 300px;
+        z-index: 9999;
+        overflow: hidden;
+        animation: slideIn 0.3s ease-out;
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .morning-note-notification .notification-header {
+            background: var(--main-color, #ff9562);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .morning-note-notification .close-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        .morning-note-notification .notification-content {
+            padding: 15px;
+        }
+        .morning-note-notification .view-btn {
+            display: inline-block;
+            background: var(--main-color, #ff9562);
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .morning-note-notification .view-btn:hover {
+            background: var(--gradient-start, #ff7f42);
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Add close button functionality
+    notification.querySelector('.close-btn').addEventListener('click', () => {
+        notification.remove();
+    });
+
+    // Add to DOM
+    document.body.appendChild(notification);
+}
+
+// Check for morning notes every minute
+setInterval(checkMorningNotes, 60000);
+
+// Also check when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    checkMorningNotes();
+});
+
+// Location management functions
+function openAddLocationModal() {
+    document.getElementById('add-location-modal').style.display = 'flex';
+    document.getElementById('location-name').focus();
+}
+
+function closeAddLocationModal() {
+    document.getElementById('add-location-modal').style.display = 'none';
+    document.getElementById('location-name').value = '';
+    document.getElementById('mall-name').value = '';
+}
+
+function openEditLocationModal(locationId) {
+    fetch(`/get_location/${locationId}`)
+        .then(response => response.json())
+        .then(location => {
+            document.getElementById('edit-location-id').value = location.id;
+            document.getElementById('edit-location-name').value = location.location_name;
+            document.getElementById('edit-mall-name').value = location.mall;
+            document.getElementById('edit-location-modal').style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error fetching location:', error);
+            showNotification('Error loading location details', 'error');
+        });
+}
+
+function closeEditLocationModal() {
+    document.getElementById('edit-location-modal').style.display = 'none';
+}
+
+// Global click handler to close modals when clicking outside
+window.onclick = function(event) {
+    const addModal = document.getElementById('add-location-modal');
+    const editModal = document.getElementById('edit-location-modal');
+    if (event.target === addModal) {
+        closeAddLocationModal();
+    } else if (event.target === editModal) {
+        closeEditLocationModal();
+    }
+}
+
+// ESC key handler to close modals
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeAddLocationModal();
+        closeEditLocationModal();
+    }
+});
+
+// Load locations from server
+async function loadLocations() {
+    try {
+        const response = await fetch('/get_locations');
+        const data = await response.json();
+        
+        const container = document.getElementById('location-container');
+        if (!container) return;
+
+        if (!data.locations || data.locations.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state__icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h2 class="empty-state__title">No Locations Yet</h2>
+                    <p class="empty-state__text">Add your first location to get started</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = data.locations.map(location => `
+            <div class="location-card">
+                <h3>${location.location_name}</h3>
+                <p>${location.mall}</p>
+                <div class="location-actions">
+                    <button class="btn btn-edit" onclick="editLocation(${location.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-delete" onclick="deleteLocation(${location.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading locations:', error);
+        showNotification('Error loading locations', 'error');
+    }
+}
+
+// Modal functions
+function openAddLocationModal() {
+    const modal = document.getElementById('add-location-modal');
+    modal.style.display = 'flex';
+}
+
+function closeAddLocationModal() {
+    const modal = document.getElementById('add-location-modal');
+    modal.style.display = 'none';
+    document.getElementById('add-location-form').reset();
+}
+
+function openEditLocationModal() {
+    const modal = document.getElementById('edit-location-modal');
+    modal.style.display = 'flex';
+}
+
+function closeEditLocationModal() {
+    const modal = document.getElementById('edit-location-modal');
+    modal.style.display = 'none';
+    document.getElementById('edit-location-form').reset();
+}
+
+// Add location
+async function addLocation() {
+    const locationName = document.getElementById('location-name').value;
+    const mall = document.getElementById('mall-name').value;
+
+    if (!locationName || !mall) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/add_location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                location_name: locationName,
+                mall: mall
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to add location');
+        }
+
+        const data = await response.json();
+        showNotification('Location added successfully', 'success');
+        closeAddLocationModal();
+        loadLocations();
+    } catch (error) {
+        console.error('Error adding location:', error);
+        showNotification('Error adding location', 'error');
+    }
+}
+
+// Edit location
+async function editLocation(locationId) {
+    try {
+        const response = await fetch(`/get_location/${locationId}`);
+        const location = await response.json();
+
+        document.getElementById('edit-location-id').value = location.id;
+        document.getElementById('edit-location-name').value = location.location_name;
+        document.getElementById('edit-mall-name').value = location.mall;
+
+        openEditLocationModal();
+    } catch (error) {
+        console.error('Error loading location details:', error);
+        showNotification('Error loading location details', 'error');
+    }
+}
+
+// Delete location
+async function deleteLocation(locationId) {
+    if (!confirm('Are you sure you want to delete this location?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/remove_location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ location_id: locationId })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete location');
+        }
+
+        showNotification('Location deleted successfully', 'success');
+        loadLocations();
+    } catch (error) {
+        console.error('Error deleting location:', error);
+        showNotification('Error deleting location', 'error');
+    }
+}
+
+// Update location
+async function updateLocation(event) {
+    event.preventDefault();
+
+    const locationId = document.getElementById('edit-location-id').value;
+    const locationName = document.getElementById('edit-location-name').value;
+    const mall = document.getElementById('edit-mall-name').value;
+
+    if (!locationName || !mall) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/update_location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                location_id: locationId,
+                location_name: locationName,
+                mall: mall
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update location');
+        }
+
+        showNotification('Location updated successfully', 'success');
+        closeEditLocationModal();
+        loadLocations();
+    } catch (error) {
+        console.error('Error updating location:', error);
+        showNotification('Error updating location', 'error');
+    }
 }

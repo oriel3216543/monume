@@ -23,3 +23,72 @@
         }
     }
 </style>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const sidebarContainer = document.querySelector('.sidebar-container');
+    if (sidebarContainer) {
+        const sidebarHtml = `
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-brand">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEyIDJsMTAgMTB2MTBIMlYxMkwxMiAyeiIgZmlsbD0iI2ZmOTU2MiIvPjwvc3ZnPg==" alt="Logo">
+                        <h2>MonuMe</h2>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="/static/dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/management.html">
+                            <i class="fas fa-tasks"></i>
+                            <span>Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/users.html">
+                            <i class="fas fa-users"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/locations.html">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Locations</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/tracking.html">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Performance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/analytics.html">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/morning_notes.html">
+                            <i class="fas fa-coffee"></i>
+                            <span>Morning Notes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/static/endofday.html">
+                            <i class="fas fa-moon"></i>
+                            <span>End of Day</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        `;
+        sidebarContainer.innerHTML = sidebarHtml;
+    }
+});
+</script>

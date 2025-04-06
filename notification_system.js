@@ -312,3 +312,76 @@ function convertUserIdsToNames(data, userIdField = 'userId', userNameField = 'us
 document.addEventListener('DOMContentLoaded', function() {
     initializeUserDatabase();
 });
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notification-container') || createNotificationContainer();
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    container.appendChild(notification);
+    
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+        
+        // Remove container if empty
+        if (container.children.length === 0) {
+            container.remove();
+        }
+    }, 3000);
+}
+
+function createNotificationContainer() {
+    const container = document.createElement('div');
+    container.id = 'notification-container';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Add CSS for notifications
+const style = document.createElement('style');
+style.textContent = `
+    #notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .notification {
+        padding: 15px 25px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .notification.success {
+        background-color: #4CAF50;
+    }
+
+    .notification.error {
+        background-color: #f44336;
+    }
+
+    .notification.info {
+        background-color: #2196F3;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+
+document.head.appendChild(style);

@@ -7,6 +7,7 @@ import sqlite3
 import json
 import traceback
 import secrets
+import mimetypes
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_from_directory, send_file, session, redirect, url_for
 # Add imports for production deployment
@@ -110,36 +111,88 @@ def full_path(path):
         return os.path.join(BASE_PATH, path.lstrip('/'))
     return path
 
-# Modified static file serving to also serve files from the root directory
+# Add proper MIME type mappings
+mimetypes.add_type('text/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
+
+# Serve static files with proper MIME types
+@app.route('/<path:path>')
+def serve_file(path):
+    if os.path.exists(path):
+        return send_from_directory('.', path, mimetype=mimetypes.guess_type(path)[0])
+    elif os.path.exists(os.path.join('static', path)):
+        return send_from_directory('static', path, mimetype=mimetypes.guess_type(path)[0])
+    return 'File not found', 404
+
+# Modified static file serving with proper MIME types
 @app.route('/<path:filename>')
 def serve_static(filename):
+    # Map file extensions to MIME types
+    mime_types = {
+        '.css': 'text/css',
+        '.js': 'text/javascript',
+        '.html': 'text/html',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.ico': 'image/x-icon'
+    }
+    
+    # Get file extension
+    ext = os.path.splitext(filename)[1].lower()
+    mime_type = mime_types.get(ext, 'application/octet-stream')
+    
     # Check if the file exists in the static folder first
     static_path = os.path.join(app.static_folder, filename)
-    if (os.path.isfile(static_path)):
-        return send_from_directory(app.static_folder, filename)
+    if os.path.isfile(static_path):
+        response = send_from_directory(app.static_folder, filename)
+        response.headers['Content-Type'] = mime_type
+        return response
     
-    # If not found in static folder, try serving from the root directory
+    # If not in static folder, try serving from the root directory
     root_path = os.path.join(root_dir, filename)
-    if (os.path.isfile(root_path)):
-        return send_file(root_path)
+    if os.path.isfile(root_path):
+        response = send_file(root_path)
+        response.headers['Content-Type'] = mime_type
+        return response
     
     # If file not found in either location, return 404
     logger.warning(f"File not found: {filename}")
     return jsonify({"error": "File not found"}), 404
 
-# Special route for files in /static/ URL path that are actually in root directory
-# This handles cases where HTML refers to /static/script.js but the file is in root
+# Special route for files in /static/ URL path that are actually in root
 @app.route('/static/<path:filename>')
 def serve_from_root_or_static(filename):
+    # Map file extensions to MIME types
+    mime_types = {
+        '.css': 'text/css',
+        '.js': 'text/javascript',
+        '.html': 'text/html',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.ico': 'image/x-icon'
+    }
+    
+    # Get file extension
+    ext = os.path.splitext(filename)[1].lower()
+    mime_type = mime_types.get(ext, 'application/octet-stream')
+    
     # First check if file exists in the static folder
     static_path = os.path.join(app.static_folder, filename)
-    if (os.path.isfile(static_path)):
-        return send_from_directory(app.static_folder, filename)
+    if os.path.isfile(static_path):
+        response = send_from_directory(app.static_folder, filename)
+        response.headers['Content-Type'] = mime_type
+        return response
     
     # If not in static folder, check if it exists in the root directory
     root_path = os.path.join(root_dir, filename)
-    if (os.path.isfile(root_path)):
-        return send_file(root_path)
+    if os.path.isfile(root_path):
+        response = send_file(root_path)
+        response.headers['Content-Type'] = mime_type
+        return response
     
     # If file not found in either location, return 404
     logger.warning(f"File not found in static or root: {filename}")
@@ -652,10 +705,12 @@ def get_locations():
         return jsonify({"error": f"Unexpected server error: {e}"}), 500
 
 @app.route("/add_location", methods=["POST"])
-@admin_required
 def add_location():
     try:
-        data = request.json
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
         location_name = data.get("location_name")
         mall = data.get("mall")
 
@@ -663,16 +718,26 @@ def add_location():
             return jsonify({"error": "Location name and mall are required"}), 400
 
         conn = get_db_connection()
-        conn.execute("INSERT INTO locations (location_name, mall) VALUES (?, ?)", (location_name, mall))
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO locations (location_name, mall) VALUES (?, ?)", 
+                      (location_name, mall))
         conn.commit()
+        
+        # Get the ID of the newly inserted location
+        location_id = cursor.lastrowid
+        
         conn.close()
-        return jsonify({"message": "Location added successfully"}), 201
-    except sqlite3.Error as db_error:
-        logger.error(f"Database error: {db_error}")
-        return jsonify({"error": f"Database error: {db_error}"}), 500
+        return jsonify({
+            "message": "Location added successfully",
+            "location": {
+                "id": location_id,
+                "location_name": location_name,
+                "mall": mall
+            }
+        }), 201
     except Exception as e:
-        logger.error(f"Unexpected server error: {e}")
-        return jsonify({"error": f"Unexpected server error: {e}"}), 500
+        print(f"Error adding location: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/remove_location", methods=["POST"])
 @admin_required

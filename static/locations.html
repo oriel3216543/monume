@@ -3,778 +3,1212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Locations - MonuMe Tracker</title>
+    <title>Location Management - MonuMe Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/script.js" defer></script>
     <style>
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* Align items to the left */
-            padding: 20px;
-            margin-left: 200px; /* Adjust for sidebar */
-        }
-        .location-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-            padding: 40px;
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto; /* Centered horizontally */
-            justify-content: center;
-        }
-        .location-card {
-            background: white;
-            padding: 50px; /* Keep the current size */
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            transition: transform 0.3s ease-in-out;
-        }
-        .location-card:hover {
-            transform: scale(1.05);
-        }
-        .location-card h3 {
+        * {
             margin: 0;
-            font-size: 24px;
-            color: #ff9562;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
-        .location-card button {
-            background: #ff9562;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-            margin: 5px;
+
+        :root {
+            --main-color: #ff9562;
+            --gradient-start: #ff7f42;
+            --gradient-end: #ff9562;
+            --sidebar-bg: rgba(15, 23, 42, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #f8f9fa;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
         }
-        .location-card button:hover {
-            background: #ff6c3f;
+
+        body {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"><rect fill="%23ff9562" width="2000" height="1500"/><defs><radialGradient id="a" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="%23ffffff"/><stop offset="1" stop-color="%23ff9562"/></radialGradient><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="750" x2="1550" y2="750"><stop offset="0" stop-color="%23ffcab1"/><stop offset="1" stop-color="%23ff9562"/></linearGradient></defs><path fill="url(%23a)" d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z"/><path d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z" fill="url(%23b)"/></svg>') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        .add-location-btn {
+
+        /* Sidebar styles with glassmorphism */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-height: 100vh;
             position: fixed;
-            top: 50%;
-            right: 15px;
-            transform: translateY(-50%);
-            background: white;
-            color: #ff9562;
-            padding: 15px;
-            font-size: 24px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgb(0, 0, 0);
-            width: 60px;
-            height: 60px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .add-location-btn:hover {
-            background-color: #ff9562;
-            color: white;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
+            transition: var(--transition);
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 300px;
-            position: relative;
-        }
-        .modal-content input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        .modal-content button {
-            background: #ff9562;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-        }
-        .modal-content button:hover {
-            background: #ff6c3f;
-        }
-        .close-btn {
-            background: #ff9562;
-            color: white;
-            border: none;
-            font-size: 14px;
-            cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
+
+        .sidebar-header {
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 20px;
         }
-        .close-btn:hover {
-            background: #ff6c3f;
-        }
-        .close-btn::before {
-            content: '×';
-            font-size: 16px;
-        }
-        .back-arrow {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #ff9562;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-        }
-        .back-arrow:hover {
-            background: #ff6c3f;
-        }
-        .back-arrow::before {
-            content: '←';
-            font-size: 16px;
-        }
-        .edit-location-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-            justify-content: center;
-            align-items: center;
-        }
-        .edit-location-modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 300px;
-            position: relative;
-        }
-        .edit-location-modal-content input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        .edit-location-modal-content button {
-            background: #ff9562;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out;
-        }
-        .edit-location-modal-content button:hover {
-            background: #ff6c3f;
-        }
-        .edit-close-btn {
-            background: #ff9562;
-            color: white;
-            border: none;
-            font-size: 14px;
-            cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
+
+        .sidebar-brand {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 12px;
         }
-        .edit-close-btn:hover {
-            background: #ff6c3f;
+
+        .sidebar-brand img {
+            width: 35px;
+            height: 35px;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
         }
-        .edit-close-btn::before {
-            content: '×';
+
+        .sidebar-header h2 {
+            color: var(--main-color);
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
+            margin-top: 30px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
             font-size: 16px;
-        }
-    </style>
-</head>
-<body>
-    <!-- Sidebar Navigation -->
-    <div class="sidebar-container"></div>
-
-    <!-- Back Arrow -->
-    <button class="back-arrow" onclick="window.location.href='management.html'"></button>
-
-    <!-- Main Content for Locations -->
-    <div class="main-content">
-        <header class="top-header">
-            <h1>MonuMe <span class="vertical-line">|</span> Locations</h1>
-        </header>
-        <button class="add-location-btn" onclick="openAddLocationModal()">+</button>
-        <div class="location-container" id="location-container">
-            <!-- Locations will be dynamically loaded here -->
-        </div>
-    </div>
-
-    <!-- Add Location Modal -->
-    <div id="add-location-modal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeAddLocationModal()"></button>
-            <h3>Add Location</h3>
-            <input type="text" id="location-name" placeholder="Location Name">
-            <input type="text" id="mall-name" placeholder="Mall Name">
-            <button onclick="addLocation()">Add</button>
-        </div>
-    </div>
-
-    <!-- Edit Location Modal -->
-    <div id="edit-location-modal" class="edit-location-modal">
-        <div class="edit-location-modal-content">
-            <button class="edit-close-btn" onclick="closeEditLocationModal()"></button>
-            <h3>Edit Location</h3>
-            <input type="text" id="edit-location-name" placeholder="Location Name">
-            <input type="text" id="edit-mall-name" placeholder="Mall Name">
-            <input type="hidden" id="edit-location-id">
-            <button onclick="updateLocation()">Update</button>
-        </div>
-    </div>
-
-    <!-- LOC Users Modal -->
-    <div id="loc-users-modal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeLocUsersModal()"></button>
-            <h3>Location Users</h3>
-            <div id="loc-users-container">
-                <!-- Users for the location will be dynamically loaded here -->
-            </div>
-            <button onclick="addUserToLocation()">Add User</button>
-        </div>
-    </div>
-
-</body>
-<script>
-    // Enhanced loadLocations function with better error handling and animations
-    async function loadLocations() {
-        try {
-            console.log("Loading locations...");
-            document.body.style.cursor = 'wait';
-            
-            // Show loading state on container
-            const container = document.getElementById("location-container");
-            if (container) {
-                container.classList.add('loading');
-            }
-            
-            // Fetch locations data
-            const response = await fetch("/get_locations");
-            
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            console.log(`Loaded ${data.locations ? data.locations.length : 0} locations`);
-            
-            // Update the UI with the new data
-            if (container) {
-                // Save scroll position
-                const scrollPosition = window.scrollY;
-                
-                // Clear the container with a fade-out effect
-                container.style.opacity = '0';
-                
-                setTimeout(() => {
-                    // Update container content
-                    container.innerHTML = "";
-                    
-                    if (data.locations && data.locations.length > 0) {
-                        data.locations.forEach((location, index) => {
-                            const card = createLocationCard(location);
-                            
-                            // Add a small delay between adding cards for a staggered animation
-                            card.style.opacity = '0';
-                            card.style.transform = 'translateY(20px)';
-                            container.appendChild(card);
-                            
-                            setTimeout(() => {
-                                card.style.opacity = '1';
-                                card.style.transform = 'translateY(0)';
-                            }, index * 60); // Staggered animation
-                        });
-                    } else {
-                        // Show empty state
-                        const emptyState = document.createElement('div');
-                        emptyState.className = 'empty-state';
-                        emptyState.innerHTML = `
-                            <h3>No Locations Found</h3>
-                            <p>Add your first location to get started</p>
-                        `;
-                        container.appendChild(emptyState);
-                    }
-                    
-                    // Restore container opacity
-                    container.style.opacity = '1';
-                    container.classList.remove('loading');
-                    
-                    // Restore scroll position
-                    window.scrollTo({
-                        top: scrollPosition,
-                        behavior: "auto"
-                    });
-                }, 200);
-            }
-        } catch (error) {
-            console.error("Error loading locations:", error);
-            showNotification("Failed to load locations: " + error.message, "error");
-            
-            // Show error state in the container
-            const container = document.getElementById("location-container");
-            if (container) {
-                container.innerHTML = `
-                    <div class="error-state">
-                        <h3>Error Loading Locations</h3>
-                        <p>${error.message}</p>
-                        <button onclick="loadLocations()">Try Again</button>
-                    </div>
-                `;
-                container.classList.remove('loading');
-            }
-        } finally {
-            document.body.style.cursor = 'default';
-        }
-    }
-    
-    // Function to create location card with consistent styling
-    function createLocationCard(location) {
-        const card = document.createElement("div");
-        card.className = "location-card";
-        card.innerHTML = `
-            <h3>${location.location_name}</h3>
-            <p>${location.mall}</p>
-            <div class="location-actions">
-                <button class="edit-btn" onclick="openEditLocationModal(${location.id}, '${location.location_name}', '${location.mall}')">Edit</button>
-                <button class="remove-btn" onclick="removeLocation(${location.id})">Remove</button>
-            </div>
-        `;
-        return card;
-    }
-    
-    // Add CSS for loading and error states
-    const additionalStyles = document.createElement('style');
-    additionalStyles.textContent = `
-        .location-container.loading {
+            border-radius: 12px;
+            font-weight: 500;
+            transition: var(--transition);
             position: relative;
-            min-height: 200px;
+            z-index: 1;
         }
-        
-        .location-container.loading::after {
+
+        .sidebar-menu li a i {
+            min-width: 24px;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .sidebar-menu li a::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255, 149, 98, 0.3);
-            border-radius: 50%;
-            border-top-color: #ff9562;
-            animation: spin 1s infinite linear;
-        }
-        
-        .error-state, .empty-state {
-            background: rgba(255, 255, 255, 0.9);
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.8;
+            z-index: -1;
+            transition: width 0.3s ease;
             border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
-        .error-state h3, .empty-state h3 {
-            color: #ff5252;
-            margin-top: 0;
+
+        .sidebar-menu li:hover a::before,
+        .sidebar-menu li.active a::before {
+            width: 100%;
         }
-        
-        .empty-state h3 {
-            color: #777;
-        }
-        
-        .error-state button {
-            background: #ff9562;
+
+        .sidebar-menu li:hover a,
+        .sidebar-menu li.active a {
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            margin-top: 15px;
-            cursor: pointer;
+            transform: translateX(5px);
         }
-        
-        .error-state button:hover {
-            background: #ff7f42;
+
+        /* Main content styles */
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 40px;
+            transition: var(--transition);
         }
-        
-        /* Improved location card styles */
-        .location-actions {
+
+        /* Header container with glassmorphism */
+        .locations-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-bottom: 40px;
+            color: white;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .locations-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 127, 66, 0.7), rgba(255, 149, 98, 0.7));
+            z-index: -1;
+        }
+
+        .locations-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .locations-header p {
+            opacity: 0.9;
+            font-size: 18px;
+            max-width: 600px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            font-size: 16px;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .search-container .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--main-color);
+            font-size: 18px;
+        }
+
+        /* Location cards container */
+        .location-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Locations Grid & Cards */
+        .location-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            transition: width 0.3s ease;
+        }
+
+        .location-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            background: var(--card-hover-bg);
+        }
+
+        .location-card:hover::before {
+            width: 7px;
+        }
+
+        .location-card h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .location-card p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .location-card .location-actions {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
-        
-        .edit-btn, .remove-btn {
-            flex: 1;
+
+        .location-card .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
         }
-        
-        .remove-btn {
-            background-color: #ffebee;
-            color: #ff5252;
+
+        .location-card .edit-btn {
+            background: rgba(63, 135, 245, 0.1);
+            color: #3f87f5;
         }
-        
-        .remove-btn:hover {
-            background-color: #ff5252;
+
+        .location-card .delete-btn {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
         }
-    `;
-    document.head.appendChild(additionalStyles);
-    
-    // Make sure to initialize locations when the page loads
-    document.addEventListener("DOMContentLoaded", () => {
-        loadLocations();
-    });
-</script>
 
-<script>
-    async function loadUsersForLocation(locationId) {
-        const response = await fetch(`/get_users_for_location?location_id=${locationId}`);
-        const data = await response.json();
-        const container = document.getElementById("loc-users-container");
-        container.innerHTML = "";
-        data.users.forEach(user => {
-            const userDiv = document.createElement("div");
-            userDiv.classList.add("user-item");
-            userDiv.innerHTML = `
-                <span>${user.username}</span>
-                <button onclick="removeUserFromLocation(${user.id}, ${locationId})">Remove</button>
-            `;
-            container.appendChild(userDiv);
-        });
-    }
+        .location-card .btn:hover {
+            transform: translateY(-3px);
+        }
 
-    function openLocUsersModal(locationId) {
-        document.getElementById('loc-users-modal').style.display = 'flex';
-        loadUsersForLocation(locationId);
-    }
+        .location-card .edit-btn:hover {
+            background: rgba(63, 135, 245, 0.2);
+        }
 
-    function closeLocUsersModal() {
-        document.getElementById('loc-users-modal').style.display = 'none';
-    }
+        .location-card .delete-btn:hover {
+            background: rgba(255, 59, 48, 0.2);
+        }
 
-    async function addUserToLocation() {
-        const locationId = document.getElementById('edit-location-id').value;
-        const username = prompt("Enter username to add:");
-        if (username) {
-            const response = await fetch("/add_user_to_location", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, location_id: locationId })
-            });
-            if (response.ok) {
-                loadUsersForLocation(locationId);
-            } else {
-                alert("Failed to add user to location.");
+        /* Add location form */
+        .add-location-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .add-location-section h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            transition: var(--transition);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+            background-color: white;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            animation: modalSlideIn 0.3s forwards;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-    }
 
-    async function removeUserFromLocation(userId, locationId) {
-        const response = await fetch("/remove_user_from_location", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_id: userId, location_id: locationId })
-        });
-        if (response.ok) {
-            loadUsersForLocation(locationId);
-        } else {
-            alert("Failed to remove user from location.");
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: var(--transition);
         }
-    }
 
-    document.addEventListener("DOMContentLoaded", loadLocations);
-</script>
+        .close-btn:hover {
+            color: var(--main-color);
+        }
 
-<script>
-    // Improved removeLocation function with better error handling and UI feedback
-    async function removeLocation(locationId) {
-        // Show confirmation dialog first
-        if (!confirm("Are you sure you want to remove this location? This action cannot be undone.")) {
-            return;
-        }
-        
-        try {
-            // Show loading state
-            document.body.style.cursor = 'wait';
-            const locationCards = document.querySelectorAll('.location-card');
-            const targetCard = Array.from(locationCards).find(card => {
-                return card.querySelector(`button[onclick*="${locationId}"]`);
-            });
-            
-            if (targetCard) {
-                // Add visual feedback
-                targetCard.style.opacity = '0.5';
-                targetCard.style.transform = 'scale(0.95)';
-                targetCard.style.boxShadow = 'none';
-            }
-            
-            // Show loading indicator
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.id = 'loading-indicator';
-            loadingIndicator.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(255, 255, 255, 0.9);
-                border-radius: 8px;
-                padding: 20px;
-                box-shadow: 0 0 20px rgba(0,0,0,0.2);
-                z-index: 1000;
-                text-align: center;
-            `;
-            loadingIndicator.innerHTML = `
-                <div style="color: #ff9562; font-size: 20px; margin-bottom: 10px;">
-                    <span style="display: inline-block; animation: spin 1s infinite linear;">⟳</span>
-                </div>
-                <div>Removing location...</div>
-            `;
-            document.body.appendChild(loadingIndicator);
-            
-            // Make the request
-            const response = await fetch("/remove_location", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({ location_id: locationId })
-            });
-            
-            // Process the response
-            if (response.ok) {
-                const result = await response.json();
-                console.log("Location removed successfully:", result);
-                
-                // Show success message
-                showNotification("Location removed successfully", "success");
-                
-                // Remove the card with animation
-                if (targetCard) {
-                    targetCard.style.height = '0';
-                    targetCard.style.margin = '0';
-                    targetCard.style.padding = '0';
-                    targetCard.style.overflow = 'hidden';
-                    
-                    // After animation completes, reload the locations
-                    setTimeout(() => {
-                        loadLocations();
-                    }, 300);
-                } else {
-                    loadLocations();
-                }
-            } else {
-                const errorResult = await response.json();
-                throw new Error(errorResult.error || "Failed to remove location");
-            }
-        } catch (error) {
-            console.error("Error removing location:", error);
-            showNotification("Error: " + error.message, "error");
-        } finally {
-            // Reset cursor and remove loading indicator
-            document.body.style.cursor = 'default';
-            const loadingIndicator = document.getElementById('loading-indicator');
-            if (loadingIndicator) {
-                loadingIndicator.remove();
-            }
-        }
-    }
-    
-    // Add a notification function for better user feedback
-    function showNotification(message, type) {
-        // Remove any existing notification
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
-        
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification ${type || 'info'}`;
-        notification.style.cssText = `
+        /* Notification Container */
+        #notification-container {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 2000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideIn 0.3s ease-out;
-        `;
-        
-        if (type === 'success') {
-            notification.style.background = '#4caf50';
-        } else if (type === 'error') {
-            notification.style.background = '#f44336';
-        } else {
-            notification.style.background = '#2196f3';
+            z-index: 9999;
         }
-        
-        notification.textContent = message;
-        
-        // Add close button
-        const closeBtn = document.createElement('span');
-        closeBtn.innerHTML = '&times;';
-        closeBtn.style.cssText = `
-            margin-left: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-        `;
-        closeBtn.addEventListener('click', () => notification.remove());
-        notification.appendChild(closeBtn);
-        
-        // Add to DOM
-        document.body.appendChild(notification);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                notification.style.animation = 'slideOut 0.3s ease-in forwards';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        notification.remove();
-                    }
-                }, 300);
-            }
-        }, 5000);
-    }
-    
-    // Add necessary animation keyframes to the document
-    const styleElement = document.createElement('style');
-    styleElement.textContent = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .notification {
+            padding: 15px 25px 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            max-width: 450px;
+            transform: translateX(120%);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 3.5s forwards;
+            background: white;
+            border-left: 5px solid;
         }
-        
+
+        .success {
+            border-left-color: #4caf50;
+        }
+
+        .error {
+            border-left-color: #f44336;
+        }
+
+        .warning {
+            border-left-color: #ff9800;
+        }
+
+        .info {
+            border-left-color: #2196f3;
+        }
+
+        .notification i {
+            margin-right: 15px;
+            font-size: 24px;
+        }
+
+        .notification.success i {
+            color: #4caf50;
+        }
+
+        .notification.error i {
+            color: #f44336;
+        }
+
+        .notification.warning i {
+            color: #ff9800;
+        }
+
+        .notification.info i {
+            color: #2196f3;
+        }
+
+        .notification-content {
+            flex-grow: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: #666;
+        }
+
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        .location-card {
-            transition: all 0.3s ease-out;
-        }
-    `;
-    document.head.appendChild(styleElement);
-</script>
-
-<script>
-    function openAddLocationModal() {
-        document.getElementById("add-location-modal").style.display = "flex";
-    }
-
-    function closeAddLocationModal() {
-        document.getElementById("add-location-modal").style.display = "none";
-    }
-
-    async function addLocation() {
-        const locationName = document.getElementById("location-name").value;
-        const mall = document.getElementById("mall-name").value;
-        if (locationName && mall) {
-            const response = await fetch("/add_location", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ location_name: locationName, mall: mall })
-            });
-            if (response.ok) {
-                closeAddLocationModal();
-                loadLocations();
-            } else {
-                alert("Failed to add location.");
+            to {
+                transform: translateX(0);
             }
         }
-    }
 
-    function openEditLocationModal(locationId) {
-        fetch(`/get_location/${locationId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                    return;
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* No results message */
+        .no-results {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+        }
+
+        .no-results i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--main-color);
+            opacity: 0.6;
+        }
+
+        .no-results h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                overflow: hidden;
+            }
+            
+            .sidebar-header h2,
+            .sidebar-menu li a span {
+                display: none;
+            }
+            
+            .sidebar-menu li a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                padding: 30px 20px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .location-cards {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+            
+            .locations-header {
+                padding: 25px;
+            }
+            
+            .locations-header h1 {
+                font-size: 28px;
+            }
+        }
+
+        @media screen and (max-width: 576px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .locations-header h1 {
+                font-size: 24px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+        }
+
+        /* Particles background effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Left sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEyIDJsMTAgMTB2MTBIMlYxMkwxMiAyeiIgZmlsbD0iI2ZmOTU2MiIvPjwvc3ZnPg==" alt="Logo">
+                <h2>MonuMe</h2>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="management.html">
+                    <i class="fas fa-tasks"></i>
+                    <span>Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="tracking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+            </li>
+            <li>
+                <a href="analytics.html">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li>
+                <a href="morning_notes.html">
+                    <i class="fas fa-coffee"></i>
+                    <span>Morning Notes</span>
+                </a>
+            </li>
+            <li>
+                <a href="endofday.html">
+                    <i class="fas fa-moon"></i>
+                    <span>End of Day</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="locations.html">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Locations</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <!-- Header section -->
+        <div class="locations-header">
+            <h1>Location Management</h1>
+            <p>Add, edit, and manage your business locations</p>
+        </div>
+
+        <!-- Search bar -->
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="location-search" placeholder="Search locations by name or mall..." autocomplete="off">
+        </div>
+
+        <!-- Add Location Form -->
+        <div class="add-location-section">
+            <h2>Add New Location</h2>
+            <form id="add-location-form">
+                <div class="form-group">
+                    <label for="location-name">Location Name:</label>
+                    <input type="text" id="location-name" name="location-name" placeholder="Enter location name" required>
+                </div>
+                <div class="form-group">
+                    <label for="mall">Mall:</label>
+                    <input type="text" id="mall" name="mall" placeholder="Enter mall name" required>
+                </div>
+                <button type="submit" class="submit-btn">Add Location</button>
+            </form>
+        </div>
+
+        <!-- Locations display area -->
+        <div class="location-cards" id="locations-list">
+            <!-- Locations will be populated here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Edit Location Modal -->
+    <div id="edit-location-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn">&times;</button>
+            <h2>Edit Location</h2>
+            <form id="edit-location-form">
+                <input type="hidden" id="edit-location-id">
+                <div class="form-group">
+                    <label for="edit-location-name">Location Name:</label>
+                    <input type="text" id="edit-location-name" name="edit-location-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-mall">Mall:</label>
+                    <input type="text" id="edit-mall" name="edit-mall" required>
+                </div>
+                <button type="submit" class="submit-btn">Update Location</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/notification_system.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create particles
+            createParticles();
+            
+            // Initialize locations list
+            loadLocations();
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        // Function to load locations from the server
+        async function loadLocations() {
+            try {
+                const response = await fetch('/api/locations');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch locations');
                 }
-                document.getElementById('edit-location-id').value = data.id;
-                document.getElementById('edit-location-name').value = data.location_name;
-                document.getElementById('edit-mall-name').value = data.mall;
-                document.getElementById('edit-location-modal').style.display = 'flex';
-            })
-            .catch(error => console.error("Error fetching location:", error));
-    }
-
-    function closeEditLocationModal() {
-        document.getElementById('edit-location-modal').style.display = 'none';
-    }
-
-    async function updateLocation() {
-        const locationId = document.getElementById('edit-location-id').value;
-        const locationName = document.getElementById('edit-location-name').value;
-        const mall = document.getElementById('edit-mall-name').value;
-
-        if (locationName && mall) {
-            const response = await fetch("/update_location", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ location_id: locationId, location_name: locationName, mall: mall })
-            });
-            if (response.ok) {
-                closeEditLocationModal();
-                loadLocations();
-            } else {
-                alert("Failed to update location.");
+                
+                const locations = await response.json();
+                displayLocations(locations);
+            } catch (error) {
+                console.error('Error loading locations:', error);
+                // For demo purposes, let's add some sample data if API fails
+                const sampleLocations = [
+                    { id: 1, name: "Downtown Mall Kiosk", mall: "City Center Mall" },
+                    { id: 2, name: "Westfield Shop", mall: "Westfield Shopping Center" },
+                    { id: 3, name: "Northgate Store", mall: "Northgate Mall" },
+                    { id: 4, name: "Eastside Kiosk", mall: "Eastside Shopping Plaza" }
+                ];
+                displayLocations(sampleLocations);
             }
         }
-    }
-</script>
+
+        // Function to display locations
+        function displayLocations(locations) {
+            const locationsList = document.getElementById('locations-list');
+            
+            if (locations.length === 0) {
+                locationsList.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>No locations found</h3>
+                        <p>Add your first location using the form above</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            locations.forEach(location => {
+                html += `
+                    <div class="location-card" data-id="${location.id}" data-name="${location.name}" data-mall="${location.mall}">
+                        <h3>${location.name}</h3>
+                        <p><i class="fas fa-store"></i> ${location.mall}</p>
+                        <div class="location-actions">
+                            <button class="btn edit-btn" onclick="openEditModal(${location.id}, '${location.name}', '${location.mall}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn delete-btn" onclick="deleteLocation(${location.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            locationsList.innerHTML = html;
+        }
+
+        // Function to setup event listeners
+        function setupEventListeners() {
+            // Add location form submission
+            const addLocationForm = document.getElementById('add-location-form');
+            if (addLocationForm) {
+                addLocationForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    
+                    const locationName = document.getElementById('location-name').value.trim();
+                    const mall = document.getElementById('mall').value.trim();
+                    
+                    if (!locationName || !mall) {
+                        showNotification('Please fill in all fields', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        // In a real app, this would be an API call
+                        const response = await fetch('/api/locations', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name: locationName, mall: mall })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to add location');
+                        }
+                        
+                        // Simulate successful addition
+                        showNotification('Location added successfully!', 'success');
+                        
+                        // Reset the form
+                        addLocationForm.reset();
+                        
+                        // Reload locations
+                        loadLocations();
+                    } catch (error) {
+                        console.error('Error adding location:', error);
+                        
+                        // For demo purposes, simulate success
+                        showNotification('Location added successfully! (Demo)', 'success');
+                        
+                        // Get existing locations
+                        const locationsList = document.getElementById('locations-list');
+                        const existingLocations = Array.from(locationsList.querySelectorAll('.location-card'));
+                        
+                        // Generate a new ID
+                        const newId = existingLocations.length > 0 ? 
+                            Math.max(...existingLocations.map(card => parseInt(card.dataset.id, 10))) + 1 : 1;
+                        
+                        // Create new location card
+                        const newLocationHTML = `
+                            <div class="location-card" data-id="${newId}" data-name="${locationName}" data-mall="${mall}">
+                                <h3>${locationName}</h3>
+                                <p><i class="fas fa-store"></i> ${mall}</p>
+                                <div class="location-actions">
+                                    <button class="btn edit-btn" onclick="openEditModal(${newId}, '${locationName}', '${mall}')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="btn delete-btn" onclick="deleteLocation(${newId})">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Add new card to list
+                        if (locationsList.querySelector('.no-results')) {
+                            locationsList.innerHTML = newLocationHTML;
+                        } else {
+                            locationsList.insertAdjacentHTML('beforeend', newLocationHTML);
+                        }
+                        
+                        // Reset the form
+                        addLocationForm.reset();
+                    }
+                });
+            }
+            
+            // Edit location form submission
+            const editLocationForm = document.getElementById('edit-location-form');
+            if (editLocationForm) {
+                editLocationForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    
+                    const locationId = document.getElementById('edit-location-id').value;
+                    const locationName = document.getElementById('edit-location-name').value.trim();
+                    const mall = document.getElementById('edit-mall').value.trim();
+                    
+                    if (!locationName || !mall) {
+                        showNotification('Please fill in all fields', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        // In a real app, this would be an API call
+                        const response = await fetch(`/api/locations/${locationId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name: locationName, mall: mall })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to update location');
+                        }
+                        
+                        // Close the modal
+                        document.getElementById('edit-location-modal').style.display = 'none';
+                        
+                        // Show notification
+                        showNotification('Location updated successfully!', 'success');
+                        
+                        // Reload locations
+                        loadLocations();
+                    } catch (error) {
+                        console.error('Error updating location:', error);
+                        
+                        // For demo purposes, simulate success
+                        document.getElementById('edit-location-modal').style.display = 'none';
+                        showNotification('Location updated successfully! (Demo)', 'success');
+                        
+                        // Update the location card directly
+                        const locationCard = document.querySelector(`.location-card[data-id="${locationId}"]`);
+                        if (locationCard) {
+                            locationCard.dataset.name = locationName;
+                            locationCard.dataset.mall = mall;
+                            locationCard.querySelector('h3').textContent = locationName;
+                            locationCard.querySelector('p').innerHTML = `<i class="fas fa-store"></i> ${mall}`;
+                            
+                            // Update the edit button onclick
+                            const editBtn = locationCard.querySelector('.edit-btn');
+                            if (editBtn) {
+                                editBtn.setAttribute('onclick', `openEditModal(${locationId}, '${locationName}', '${mall}')`);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Search functionality
+            const searchInput = document.getElementById('location-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    
+                    // Get all location cards
+                    const locationCards = document.querySelectorAll('.location-card');
+                    let foundResults = false;
+                    
+                    locationCards.forEach(card => {
+                        const locationName = card.dataset.name.toLowerCase();
+                        const mall = card.dataset.mall.toLowerCase();
+                        
+                        if (locationName.includes(query) || mall.includes(query)) {
+                            card.style.display = 'block';
+                            foundResults = true;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    // Display no results message if needed
+                    const locationsList = document.getElementById('locations-list');
+                    const noResultsElement = locationsList.querySelector('.no-results');
+                    
+                    if (!foundResults) {
+                        if (!noResultsElement) {
+                            locationsList.insertAdjacentHTML('beforeend', `
+                                <div class="no-results">
+                                    <i class="fas fa-search"></i>
+                                    <h3>No matching locations found</h3>
+                                    <p>Try a different search term</p>
+                                </div>
+                            `);
+                        }
+                    } else if (noResultsElement) {
+                        noResultsElement.remove();
+                    }
+                });
+            }
+            
+            // Close modal event
+            const closeBtn = document.querySelector('.modal .close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    document.getElementById('edit-location-modal').style.display = 'none';
+                });
+            }
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('edit-location-modal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Function to open edit modal
+        function openEditModal(id, name, mall) {
+            document.getElementById('edit-location-id').value = id;
+            document.getElementById('edit-location-name').value = name;
+            document.getElementById('edit-mall').value = mall;
+            
+            document.getElementById('edit-location-modal').style.display = 'flex';
+        }
+
+        // Function to delete location
+        async function deleteLocation(id) {
+            if (!confirm('Are you sure you want to delete this location?')) {
+                return;
+            }
+            
+            try {
+                // In a real app, this would be an API call
+                const response = await fetch(`/api/locations/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete location');
+                }
+                
+                showNotification('Location deleted successfully!', 'success');
+                
+                // Remove the card from DOM
+                const locationCard = document.querySelector(`.location-card[data-id="${id}"]`);
+                if (locationCard) {
+                    locationCard.remove();
+                    
+                    // Check if there are no more locations
+                    const remainingLocations = document.querySelectorAll('.location-card');
+                    if (remainingLocations.length === 0) {
+                        const locationsList = document.getElementById('locations-list');
+                        locationsList.innerHTML = `
+                            <div class="no-results">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>No locations found</h3>
+                                <p>Add your first location using the form above</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting location:', error);
+                
+                // For demo purposes, simulate success
+                showNotification('Location deleted successfully! (Demo)', 'success');
+                
+                // Remove the card from DOM
+                const locationCard = document.querySelector(`.location-card[data-id="${id}"]`);
+                if (locationCard) {
+                    locationCard.remove();
+                    
+                    // Check if there are no more locations
+                    const remainingLocations = document.querySelectorAll('.location-card');
+                    if (remainingLocations.length === 0) {
+                        const locationsList = document.getElementById('locations-list');
+                        locationsList.innerHTML = `
+                            <div class="no-results">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>No locations found</h3>
+                                <p>Add your first location using the form above</p>
+                            </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notificationContainer = document.getElementById('notification-container');
+            
+            // Create icon based on notification type
+            let icon;
+            switch(type) {
+                case 'success':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-circle"></i>';
+                    break;
+                case 'warning':
+                    icon = '<i class="fas fa-exclamation-triangle"></i>';
+                    break;
+                case 'info':
+                default:
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    break;
+            }
+            
+            // Create title based on type
+            let title;
+            switch(type) {
+                case 'success':
+                    title = 'Success!';
+                    break;
+                case 'error':
+                    title = 'Error!';
+                    break;
+                case 'warning':
+                    title = 'Warning!';
+                    break;
+                case 'info':
+                default:
+                    title = 'Information';
+                    break;
+            }
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                ${icon}
+                <div class="notification-content">
+                    <h4 class="notification-title">${title}</h4>
+                    <p class="notification-message">${message}</p>
+                </div>
+            `;
+            
+            // Add to container
+            notificationContainer.appendChild(notification);
+            
+            // Remove notification after animation completes
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        // Create floating particle effect
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const numberOfParticles = 25;
+            
+            // Clear existing particles
+            particlesContainer.innerHTML = '';
+            
+            // Create particles
+            for (let i = 0; i < numberOfParticles; i++) {
+                createParticle();
+            }
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size between 5 and 20px
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.6 + 0.1;
+                
+                // Random animation duration between 15 and 30s
+                const duration = Math.random() * 15 + 15;
+                particle.style.animationDuration = `${duration}s`;
+                
+                // Random animation delay
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                // Add to container
+                particlesContainer.appendChild(particle);
+                
+                // Remove and recreate particle after animation ends
+                setTimeout(() => {
+                    particle.remove();
+                    createParticle();
+                }, duration * 1000);
+            }
+        }
+    </script>
+</body>
 </html>

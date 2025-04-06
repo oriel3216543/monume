@@ -267,7 +267,7 @@
 
         .stat-card-description {
             font-size: 14px;
-            color: var(--text-secondary);
+            color: var (--text-secondary);
         }
 
         /* Icon backgrounds */
@@ -711,9 +711,55 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* Notification Banner Styles */
+        .notification-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+            display: none; /* Hidden by default */
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-banner .notification-message {
+            flex-grow: 1;
+        }
+        
+        .notification-banner .close-notification {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+        
+        /* Adjust main content when notification is visible */
+        body.has-notification .sidebar,
+        body.has-notification .main-content {
+            margin-top: 46px; /* Height of the notification banner */
+        }
     </style>
 </head>
 <body>
+    <!-- Notification Banner -->
+    <div class="notification-banner" id="notification-banner">
+        <div class="notification-message">
+            <i class="fas fa-exclamation-circle"></i>
+            You have a morning note to complete! <a href="morning_notes.html" style="color: white; text-decoration: underline;">Complete now</a>
+        </div>
+        <button class="close-notification" onclick="dismissNotification()">×</button>
+    </div>
+
     <!-- Particles background -->
     <div class="particles" id="particles"></div>
 
@@ -775,28 +821,6 @@
 
         <!-- Dashboard statistics cards -->
         <div class="dashboard-stats">
-            <div class="stat-card">
-                <div class="stat-card-header">
-                    <h3 class="stat-card-title">Total Sales</h3>
-                    <div class="stat-card-icon orange-bg">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                </div>
-                <p class="stat-card-value" id="totalSales">$0</p>
-                <p class="stat-card-description">Total sales across all locations</p>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-card-header">
-                    <h3 class="stat-card-title">Success Rate</h3>
-                    <div class="stat-card-icon green-bg">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                </div>
-                <p class="stat-card-value" id="successRate">0%</p>
-                <p class="stat-card-description">Average conversion rate</p>
-            </div>
-            
             <div class="stat-card">
                 <div class="stat-card-header">
                     <h3 class="stat-card-title">Active Users</h3>
@@ -898,6 +922,8 @@
             loadDashboardData();
             // Create particles
             createParticles();
+            // Check for incomplete morning notes
+            checkMorningNotes();
         });
 
         function setupEventListeners() {
@@ -910,6 +936,38 @@
                     openVerificationModal();
                 });
             }
+            
+            // Management link now navigates directly without verification
+            const managementLink = document.querySelector('.sidebar-menu li a[href="management.html"]');
+            if (managementLink) {
+                // No event.preventDefault() - let the normal link behavior work
+                // The href attribute will navigate directly to management.html
+            }
+        }
+        
+        // Function to check if user needs to complete morning notes
+        function checkMorningNotes() {
+            const today = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+            const lastCompletedNote = localStorage.getItem('lastCompletedMorningNote');
+            
+            // Show notification if no note completed today
+            if (lastCompletedNote !== today) {
+                showNotificationBanner();
+            }
+        }
+        
+        // Show notification banner
+        function showNotificationBanner() {
+            const banner = document.getElementById('notification-banner');
+            banner.style.display = 'flex';
+            document.body.classList.add('has-notification');
+        }
+        
+        // Dismiss notification
+        function dismissNotification() {
+            const banner = document.getElementById('notification-banner');
+            banner.style.display = 'none';
+            document.body.classList.remove('has-notification');
         }
 
         // Add new function to open verification modal directly
@@ -966,12 +1024,15 @@
 
         function cancelPasswordVerification() {
             document.getElementById('password-verification-modal').style.display = 'none';
+            localStorage.removeItem('verificationTarget');
         }
         
         function submitPasswordVerification() {
             const password = document.getElementById('verification-password').value;
+            const verificationTarget = localStorage.getItem('verificationTarget') || 'analytics.html';
             
-            // Check the password
+            // Remove management verification check
+            // Regular analytics verification (existing code)
             if (password === 'admin' || password === 'manager' || password === 'employee') {
                 // Determine role based on password
                 let role, location, username;
@@ -1006,6 +1067,9 @@
             } else {
                 alert('Invalid password. Please try again.');
             }
+            
+            // Clear verification target
+            localStorage.removeItem('verificationTarget');
         }
 
         // Function to load dashboard data
