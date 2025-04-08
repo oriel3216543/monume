@@ -329,7 +329,7 @@
 
         .detail-value {
             font-size: 0.875rem;
-            color: var(--color-surface-900);
+            color: var (--color-surface-900);
         }
 
         .user-card__actions {
@@ -382,7 +382,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 50;
+            z-index: 1050; /* Increased z-index */
             backdrop-filter: blur(4px);
         }
 
@@ -391,14 +391,15 @@
         }
 
         .modal {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 560px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
             animation: modalEnter 300ms cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(16px);
+            position: relative; /* Added position relative */
+            z-index: 1051; /* Higher z-index than overlay */
         }
 
         @keyframes modalEnter {
@@ -962,6 +963,155 @@
                 margin: 20px;
             }
         }
+
+        /* New Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            overflow: hidden;
+            animation: modalAppear 0.3s forwards;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-weight: 600;
+            font-size: 24px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--main-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff8542;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #f1f1f1;
+            color: #555;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e5e5;
+        }
     </style>
 </head>
 <body>
@@ -1042,50 +1192,59 @@
         </button>
     </div>
 
-    <!-- User Modal -->
-    <div class="modal-overlay" id="user-modal-overlay">
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="add-user-modal-overlay">
         <div class="modal">
-            <div class="modal__header">
-                <h3 class="modal__title" id="modal-title">Add New User</h3>
-                <button class="modal__close" onclick="closeModal()">&times;</button>
+            <div class="modal-header">
+                <h3 class="modal-title">Add New User</h3>
+                <button type="button" class="modal-close" id="modal-close-btn">&times;</button>
             </div>
-            <form id="user-form" class="form-grid">
-                <div class="form-group">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" id="username" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="passcode" class="form-label">Password</label>
-                    <input type="password" id="passcode" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="name" class="form-label">Full Name</label>
-                    <input type="text" id="name" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="form-label">Email Address</label>
-                    <input type="email" id="email" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label for="role" class="form-label">Role</label>
-                    <select id="role" class="form-select" required>
-                        <option value="" disabled selected>Select role</option>
-                        <option value="admin">Admin</option>
-                        <option value="manager">Manager</option>
-                        <option value="employee">Employee</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="location" class="form-label">Location</label>
-                    <select id="location" class="form-select" required>
-                        <option value="" disabled selected>Select location</option>
-                    </select>
-                </div>
-                <input type="hidden" id="user-id">
-            </form>
-            <div class="modal__footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-primary" id="save-user-btn">Save User</button>
+            <div class="modal-body">
+                <form id="add-user-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fullname">Full Name</label>
+                        <input type="text" id="fullname" name="fullname" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="role">Role</label>
+                            <select id="role" name="role" class="form-control" required>
+                                <option value="" disabled selected>Select Role</option>
+                                <option value="admin">Administrator</option>
+                                <option value="manager">Manager</option>
+                                <option value="employee">Employee</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <select id="location" name="location" class="form-control" required>
+                                <option value="" disabled selected>Select Location</option>
+                                <option value="main">Main Office</option>
+                                <option value="east">East Branch</option>
+                                <option value="west">West Branch</option>
+                                <option value="north">North Branch</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-user-btn">Save User</button>
             </div>
         </div>
     </div>
@@ -1095,569 +1254,316 @@
     <script src="/static/script.js"></script>
     <script src="/static/notification_system.js"></script>
     <script>
-        let isEditing = false;
-        let allUsers = [];
-        let filteredUsers = [];
-        let currentFilters = {
-            role: 'all',
-            location: 'all'
-        };
+    // Global variables
+    let isEditing = false;
+    let allUsers = [];
+    let filteredUsers = [];
+    let currentFilters = {
+        role: 'all',
+        location: 'all'
+    };
 
-        // Initialize when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load users
-            loadUsers();
-            
-            // Set up event listeners
-            setupEventListeners();
-        });
+    // Mock data for testing when API isn't available
+    const mockUsers = [
+        {
+            id: 1,
+            username: "admin",
+            name: "Admin User",
+            email: "admin@example.com",
+            role: "admin",
+            location: "Main Office"
+        },
+        {
+            id: 2,
+            username: "manager1",
+            name: "John Manager",
+            email: "manager@example.com",
+            role: "manager",
+            location: "West Branch"
+        },
+        {
+            id: 3,
+            username: "employee1",
+            name: "Jane Employee",
+            email: "employee@example.com",
+            role: "employee",
+            location: "East Branch"
+        }
+    ];
 
-        // Set up event listeners
-        function setupEventListeners() {
-            // Add user button in header
-            document.getElementById('header-add-user').addEventListener('click', openAddUserModal);
-            
-            // Save user button
-            document.getElementById('save-user-btn').addEventListener('click', saveUser);
-            
-            // Confirm delete button
-            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDeleteUser);
-            
-            // Filter toggle
-            document.getElementById('filter-button').addEventListener('click', toggleFilterMenu);
-            
-            // Filter actions
-            document.getElementById('filter-apply').addEventListener('click', applyFilters);
-            document.getElementById('filter-reset').addEventListener('click', resetFilters);
-            
-            // Search input
-            document.getElementById('user-search').addEventListener('input', function() {
-                filterUsers();
-            });
-            
-            // Close filter menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const filterMenu = document.getElementById('filter-menu');
-                const filterButton = document.getElementById('filter-button');
-                
-                if (filterMenu.classList.contains('active') && 
-                    !filterMenu.contains(event.target) && 
-                    !filterButton.contains(event.target)) {
-                    filterMenu.classList.remove('active');
-                }
-            });
-            
-            // Filter options click
-            document.querySelectorAll('.filter-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const filterType = this.getAttribute('data-filter');
-                    const filterValue = this.getAttribute('data-value');
-                    
-                    // Toggle active state in the same group
-                    document.querySelectorAll(`.filter-option[data-filter="${filterType}"]`).forEach(opt => {
-                        opt.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                });
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM fully loaded");
+        
+        // Load users
+        loadUsers();
+        
+        // Add User Button - When clicked, open the modal
+        const addUserBtn = document.getElementById('header-add-user');
+        const userModal = document.getElementById('add-user-modal-overlay');
+        const closeBtn = document.getElementById('modal-close-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const saveUserBtn = document.getElementById('save-user-btn');
+        
+        // Open modal when Add User button is clicked
+        if (addUserBtn) {
+            addUserBtn.addEventListener('click', function() {
+                console.log('Add User button clicked');
+                userModal.classList.add('active');
             });
         }
-
-        // Toggle filter menu
-        function toggleFilterMenu() {
-            const filterMenu = document.getElementById('filter-menu');
-            filterMenu.classList.toggle('active');
+        
+        // Close modal when X button is clicked
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                userModal.classList.remove('active');
+            });
         }
-
-        // Load users from the server
-        async function loadUsers() {
-            try {
-                // Show loading state
-                document.getElementById('users-grid').innerHTML = '<div class="loading-indicator">Loading users...</div>';
+        
+        // Close modal when Cancel button is clicked
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                userModal.classList.remove('active');
+            });
+        }
+        
+        // Handle save user
+        if (saveUserBtn) {
+            saveUserBtn.addEventListener('click', function() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const fullname = document.getElementById('fullname').value;
+                const email = document.getElementById('email').value;
+                const role = document.getElementById('role').value;
+                const location = document.getElementById('location').value;
                 
-                const response = await fetch('/get_users');
-                const data = await response.json();
-                
-                if (response.ok && data.users && data.users.length > 0) {
-                    allUsers = data.users;
-                    filteredUsers = [...allUsers];
-                    
-                    // Display users
-                    displayUsers(filteredUsers);
-                    document.getElementById('empty-state').style.display = 'none';
-                    
-                    // Update filter options for locations
-                    updateLocationFilters(data.users);
-                } else {
-                    document.getElementById('empty-state').style.display = 'flex';
-                    document.getElementById('users-grid').innerHTML = '';
+                if (!username || !password || !fullname) {
+                    alert('Please fill in all required fields');
+                    return;
                 }
                 
-                // Load locations for the dropdown
-                loadLocationsForDropdown();
-            } catch (error) {
-                console.error('Error loading users:', error);
-                showNotification('Failed to load users', 'error');
-                document.getElementById('users-grid').innerHTML = '<div class="error-state">Failed to load users</div>';
-            }
-        }
-
-        // Update location filters based on available users
-        function updateLocationFilters(users) {
-            const locations = [...new Set(users.map(user => user.location).filter(Boolean))];
-            const locationFiltersContainer = document.getElementById('location-filter-options');
-            
-            // Keep the "All" option and add the rest
-            locationFiltersContainer.innerHTML = '<div class="filter-option active" data-filter="location" data-value="all">All</div>';
-            
-            locations.forEach(location => {
-                const option = document.createElement('div');
-                option.className = 'filter-option';
-                option.setAttribute('data-filter', 'location');
-                option.setAttribute('data-value', location);
-                option.textContent = location;
-                
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-option[data-filter="location"]').forEach(opt => {
-                        opt.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                });
-                
-                locationFiltersContainer.appendChild(option);
-            });
-        }
-
-        // Load locations for the dropdown
-        async function loadLocationsForDropdown() {
-            try {
-                const response = await fetch('/get_locations');
-                const data = await response.json();
-                
-                const locationSelect = document.getElementById('location');
-                
-                // Clear previous options except the first one
-                while (locationSelect.options.length > 1) {
-                    locationSelect.remove(1);
-                }
-                
-                // Add locations to dropdown
-                if (data.locations && data.locations.length > 0) {
-                    data.locations.forEach(location => {
-                        const option = document.createElement('option');
-                        option.value = location.location_name;
-                        option.textContent = `${location.location_name} (${location.mall})`;
-                        locationSelect.appendChild(option);
-                    });
-                } else {
-                    // Add a default option if no locations found
-                    const option = document.createElement('option');
-                    option.value = "Default Location";
-                    option.textContent = "Default Location";
-                    locationSelect.appendChild(option);
-                }
-            } catch (error) {
-                console.error('Error loading locations:', error);
-                showNotification('Failed to load locations', 'error');
-            }
-        }
-
-        // Display users in the grid
-        function displayUsers(users) {
-            const grid = document.getElementById('users-grid');
-            grid.innerHTML = '';
-            
-            users.forEach(user => {
-                const initials = getInitials(user.name || user.username);
-                const card = document.createElement('div');
-                card.className = `user-card role-${user.role}`;
-                card.setAttribute('data-user-id', user.id || user.username);
-                card.setAttribute('data-role', user.role);
-                card.setAttribute('data-location', user.location || '');
-                
-                card.innerHTML = `
-                    <div class="user-card__header">
-                        <div class="user-avatar">${initials}</div>
-                        <h3 class="user-name">${user.name || user.username}</h3>
-                        <div class="user-role ${user.role}">
-                            <span class="role-badge-icon"></span>
-                            ${capitalizeFirstLetter(user.role)}
-                        </div>
-                    </div>
-                    <div class="user-card__body">
-                        <div class="user-detail">
-                            <div class="detail-icon">👤</div>
-                            <div class="detail-content">
-                                <div class="detail-label">Username</div>
-                                <div class="detail-value">${user.username}</div>
-                            </div>
-                        </div>
-                        <div class="user-detail">
-                            <div class="detail-icon">✉️</div>
-                            <div class="detail-content">
-                                <div class="detail-label">Email</div>
-                                <div class="detail-value">${user.email || 'Not provided'}</div>
-                            </div>
-                        </div>
-                        <div class="user-detail">
-                            <div class="detail-icon">📍</div>
-                            <div class="detail-content">
-                                <div class="detail-label">Location</div>
-                                <div class="detail-value">${user.location || 'Not assigned'}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="user-card__actions">
-                        <button class="action-button action-button--edit" onclick="openEditUserModal('${user.id || user.username}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                            </svg>
-                            Edit
-                        </button>
-                        <button class="action-button action-button--delete" onclick="openDeleteModal('${user.id || user.username}', '${user.name || user.username}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                            </svg>
-                            Delete
-                        </button>
-                    </div>
-                `;
-                
-                grid.appendChild(card);
-            });
-            
-            // Show empty state if no users
-            if (users.length === 0) {
-                grid.innerHTML = `
-                    <div class="no-results">
-                        <p>No users match your search or filters</p>
-                        <button class="btn btn-secondary" onclick="resetFilters()">Clear Filters</button>
-                    </div>
-                `;
-            }
-        }
-
-        // Get initials from name
-        function getInitials(name) {
-            return name
-                .split(' ')
-                .map(word => word.charAt(0))
-                .join('')
-                .toUpperCase()
-                .substring(0, 2);
-        }
-
-        // Capitalize first letter
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
-        // Open modal to add a new user
-        function openAddUserModal() {
-            isEditing = false;
-            document.getElementById('modal-title').textContent = 'Add New User';
-            document.getElementById('user-form').reset();
-            document.getElementById('user-id').value = '';
-            
-            openModal();
-        }
-
-        // Open modal to edit an existing user
-        function openEditUserModal(userId) {
-            isEditing = true;
-            document.getElementById('modal-title').textContent = 'Edit User';
-            
-            // Find user by ID
-            const user = allUsers.find(u => String(u.id) === String(userId) || String(u.username) === String(userId));
-            
-            if (user) {
-                document.getElementById('user-id').value = user.id || user.username;
-                document.getElementById('username').value = user.username || '';
-                document.getElementById('passcode').value = user.password || '';
-                document.getElementById('name').value = user.name || '';
-                document.getElementById('email').value = user.email || '';
-                document.getElementById('role').value = user.role || '';
-                document.getElementById('location').value = user.location || '';
-                
-                openModal();
-            } else {
-                showNotification('User not found', 'error');
-            }
-        }
-
-        // Open the user modal
-        function openModal() {
-            document.getElementById('user-modal-overlay').classList.add('active');
-        }
-
-        // Close the user modal
-        function closeModal() {
-            document.getElementById('user-modal-overlay').classList.remove('active');
-        }
-
-        // Open delete confirmation modal
-        function openDeleteModal(userId, userName) {
-            document.getElementById('delete-user-id').value = userId;
-            document.getElementById('delete-user-name').textContent = userName;
-            document.getElementById('delete-modal-overlay').classList.add('active');
-        }
-
-        // Close delete confirmation modal
-        function closeDeleteModal() {
-            document.getElementById('delete-modal-overlay').classList.remove('active');
-        }
-
-        // Save user (create or update)
-        async function saveUser(e) {
-            e.preventDefault();
-            
-            // Get values from form
-            const userId = document.getElementById('user-id').value;
-            const username = document.getElementById('username').value;
-            const passcode = document.getElementById('passcode').value;
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const role = document.getElementById('role').value;
-            const location = document.getElementById('location').value;
-            
-            // Basic validation
-            if (!username || !passcode || !name || !email || !role || !location) {
-                showNotification('Please fill in all required fields', 'error');
-                return;
-            }
-            
-            try {
-                // Show loading state
-                const saveBtn = document.getElementById('save-user-btn');
-                saveBtn.classList.add('btn-loading');
-                saveBtn.querySelector('.loader').style.display = 'inline-block';
-                saveBtn.disabled = true;
-                
-                // Prepare request data
-                const reqData = {
-                    username,
-                    passcode,
-                    name,
-                    email,
-                    role,
-                    location
+                // Create new user (in a real app, this would send data to a server)
+                const newUser = {
+                    id: Date.now(),
+                    username: username,
+                    name: fullname,
+                    email: email,
+                    role: role,
+                    location: location
                 };
                 
-                // If editing, include the user ID
-                if (isEditing) {
-                    reqData.user_id = userId;
-                }
+                console.log('New user created:', newUser);
                 
-                // Determine endpoint based on action
-                const endpoint = isEditing ? '/update_user' : '/create_user';
+                // Add to our array and update the display
+                allUsers.push(newUser);
+                filteredUsers = [...allUsers];
+                displayUsers(filteredUsers);
                 
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(reqData)
-                });
+                // Show success message
+                alert('User added successfully!');
                 
-                const result = await response.json();
-                
-                // Reset button state
-                saveBtn.classList.remove('btn-loading');
-                saveBtn.querySelector('.loader').style.display = 'none';
-                saveBtn.disabled = false;
-                
-                if (response.ok) {
-                    showNotification(
-                        isEditing ? 'User updated successfully' : 'User created successfully', 
-                        'success'
-                    );
-                    closeModal();
-                    loadUsers(); // Refresh user list
-                } else {
-                    showNotification(result.error || 'Failed to save user', 'error');
-                }
-            } catch (error) {
-                console.error('Error saving user:', error);
-                showNotification('An unexpected error occurred', 'error');
-                
-                // Reset button state
-                const saveBtn = document.getElementById('save-user-btn');
-                saveBtn.classList.remove('btn-loading');
-                saveBtn.querySelector('.loader').style.display = 'none';
-                saveBtn.disabled = false;
-            }
+                // Reset form and close modal
+                document.getElementById('add-user-form').reset();
+                userModal.classList.remove('active');
+            });
         }
+        
+        // Set up search functionality
+        const searchInput = document.getElementById('user-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', filterUsers);
+        }
+    });
+    
+    // Function to use mock data when API fails
+    function useMockData() {
+        allUsers = [...mockUsers];
+        filteredUsers = [...mockUsers];
+        displayUsers(filteredUsers);
+    }
 
-        // Confirm delete user
-        async function confirmDeleteUser() {
-            const userId = document.getElementById('delete-user-id').value;
-            
+    // Load users from API or use mock data
+    async function loadUsers() {
+        try {
+            // Show loading state
+            const usersGrid = document.getElementById('users-grid');
+            if (usersGrid) {
+                usersGrid.innerHTML = '<div class="loading-indicator"><div class="loading-spinner"></div>Loading users...</div>';
+            }
+
+            // Attempt to fetch users from the API
             try {
-                // Show loading state
-                const deleteBtn = document.getElementById('confirm-delete-btn');
-                deleteBtn.classList.add('btn-loading');
-                deleteBtn.querySelector('.loader').style.display = 'inline-block';
-                deleteBtn.disabled = true;
-                
-                const response = await fetch('/remove_user', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ user_id: userId })
-                });
-                
-                const result = await response.json();
-                
-                // Reset button state
-                deleteBtn.classList.remove('btn-loading');
-                deleteBtn.querySelector('.loader').style.display = 'none';
-                deleteBtn.disabled = false;
-                
+                const response = await fetch('/get_users');
                 if (response.ok) {
-                    showNotification('User deleted successfully', 'success');
-                    closeDeleteModal();
-                    loadUsers(); // Refresh user list
-                } else {
-                    showNotification(result.error || 'Failed to delete user', 'error');
+                    const data = await response.json();
+                    if (data.users && data.users.length > 0) {
+                        allUsers = data.users;
+                        filteredUsers = [...allUsers];
+                        displayUsers(filteredUsers);
+                        return;
+                    }
                 }
+                console.warn("API unavailable or returned no users, using mock data");
             } catch (error) {
-                console.error('Error deleting user:', error);
-                showNotification('An unexpected error occurred', 'error');
-                
-                // Reset button state
-                const deleteBtn = document.getElementById('confirm-delete-btn');
-                deleteBtn.classList.remove('btn-loading');
-                deleteBtn.querySelector('.loader').style.display = 'none';
-                deleteBtn.disabled = false;
-            }
-        }
-
-        // Apply filters
-        function applyFilters() {
-            // Get selected role
-            const roleOption = document.querySelector('.filter-option[data-filter="role"].active');
-            if (roleOption) {
-                currentFilters.role = roleOption.getAttribute('data-value');
+                console.error("API error, using mock data:", error);
             }
             
-            // Get selected location
-            const locationOption = document.querySelector('.filter-option[data-filter="location"].active');
-            if (locationOption) {
-                currentFilters.location = locationOption.getAttribute('data-value');
-            }
-            
-            // Close filter menu
-            document.getElementById('filter-menu').classList.remove('active');
-            
-            // Apply filters
-            filterUsers();
+            // If API fails or no users found, use mock data
+            setTimeout(() => {
+                useMockData();
+            }, 500); // Simulate loading delay
+        } catch (error) {
+            console.error("Error loading users:", error);
+            useMockData();
         }
+    }
 
-        // Reset filters
-        function resetFilters() {
-            currentFilters = {
-                role: 'all',
-                location: 'all'
-            };
+    // Function to open the "Add User" modal
+    function openAddUserModal() {
+        console.log("Opening add user modal");
+        const userModal = document.getElementById('add-user-modal-overlay');
+        
+        // Make sure modal is visible
+        if (userModal) {
+            userModal.classList.add('active');
+            console.log("Modal overlay activated");
             
-            // Reset UI
-            document.querySelectorAll('.filter-option').forEach(option => {
-                if (option.getAttribute('data-value') === 'all') {
-                    option.classList.add('active');
-                } else {
-                    option.classList.remove('active');
-                }
-            });
-            
-            document.getElementById('user-search').value = '';
-            
-            // Apply filters
-            filterUsers();
+            // Reset the form
+            const form = document.getElementById('add-user-form');
+            if (form) form.reset();
+        } else {
+            console.error("Modal overlay not found");
         }
+    }
 
-        // Filter users based on search and filters
-        function filterUsers() {
-            const searchTerm = document.getElementById('user-search').value.toLowerCase();
-            
-            filteredUsers = allUsers.filter(user => {
-                // Search term filter
-                const matchesSearch = 
-                    !searchTerm || 
-                    (user.username && user.username.toLowerCase().includes(searchTerm)) ||
-                    (user.name && user.name.toLowerCase().includes(searchTerm)) ||
-                    (user.email && user.email.toLowerCase().includes(searchTerm)) ||
-                    (user.location && user.location.toLowerCase().includes(searchTerm));
-                
-                // Role filter
-                const matchesRole = 
-                    currentFilters.role === 'all' || 
-                    user.role === currentFilters.role;
-                
-                // Location filter
-                const matchesLocation = 
-                    currentFilters.location === 'all' || 
-                    user.location === currentFilters.location;
-                
-                return matchesSearch && matchesRole && matchesLocation;
-            });
-            
-            // Display filtered users
-            displayUsers(filteredUsers);
+    // Function to close the modal
+    function closeModal() {
+        const modalOverlay = document.getElementById('add-user-modal-overlay');
+        if (modalOverlay) {
+            modalOverlay.classList.remove('active');
+        } else {
+            console.error("Modal overlay not found");
         }
-
-        // Show notification
-        function showNotification(message, type) {
-            const container = document.getElementById('notification-container');
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            
-            // Set icon based on type
-            let icon = '✓';
-            if (type === 'error') icon = '✕';
-            if (type === 'warning') icon = '⚠';
-            
-            notification.innerHTML = `
-                <div class="notification-icon">${icon}</div>
-                <div class="notification-content">
-                    <h4 class="notification-title">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Warning'}</h4>
-                    <p class="notification-message">${message}</p>
+    }
+    
+    // Display users in the grid
+    function displayUsers(users) {
+        const grid = document.getElementById('users-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        users.forEach(user => {
+            const initials = getInitials(user.name || user.username);
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            card.innerHTML = `
+                <div class="user-card__header">
+                    <div class="user-avatar">${initials}</div>
+                    <div class="user-info">
+                        <h3 class="user-name">${user.name || user.username}</h3>
+                        <span class="user-role">${capitalizeFirstLetter(user.role || 'employee')}</span>
+                    </div>
                 </div>
-                <button class="notification-close">&times;</button>
+                <div class="user-card__body">
+                    <div class="user-detail">
+                        <div class="detail-icon"><i class="fas fa-user"></i></div>
+                        <div class="detail-content">
+                            <div class="detail-label">Username</div>
+                            <div class="detail-value">${user.username}</div>
+                        </div>
+                    </div>
+                    <div class="user-detail">
+                        <div class="detail-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="detail-content">
+                            <div class="detail-label">Email</div>
+                            <div class="detail-value">${user.email || 'Not provided'}</div>
+                        </div>
+                    </div>
+                    <div class="user-detail">
+                        <div class="detail-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="detail-content">
+                            <div class="detail-label">Location</div>
+                            <div class="detail-value">${user.location || 'Not assigned'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-card__actions">
+                    <button class="action-button action-button--edit" onclick="openEditUserModal('${user.id || user.username}')">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                    </button>
+                    <button class="action-button action-button--delete" onclick="openDeleteModal('${user.id || user.username}', '${user.name || user.username}')">
+                        <i class="fas fa-trash"></i>
+                        Delete
+                    </button>
+                </div>
             `;
             
-            // Add to container
-            container.appendChild(notification);
-            
-            // Add close event
-            notification.querySelector('.notification-close').addEventListener('click', function() {
-                notification.classList.add('fade-out');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            });
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.classList.add('fade-out');
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 300);
-                }
-            }, 5000);
+            grid.appendChild(card);
+        });
+        
+        // Show empty state if no users
+        if (users.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state__icon">👥</div>
+                    <h3 class="empty-state__title">No Users Found</h3>
+                    <p class="empty-state__text">There are no users matching your filters.</p>
+                    <button class="btn btn-primary" onclick="openAddUserModal()">Add Your First User</button>
+                </div>
+            `;
         }
 
-        // Add event listener for ESC key to close modals
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-                closeDeleteModal();
-                document.getElementById('filter-menu').classList.remove('active');
-            }
+        // Update user count in header
+        const userCount = document.getElementById('user-count');
+        if (userCount) {
+            userCount.textContent = `${users.length} user${users.length !== 1 ? 's' : ''} total`;
+        }
+    }
+    
+    // Open modal to edit an existing user (stub function)
+    function openEditUserModal(userId) {
+        console.log(`Would edit user: ${userId}`);
+        alert(`This is just a demo. In a real app, you would be able to edit user ${userId}.`);
+    }
+    
+    // Delete modal function (stub function)
+    function openDeleteModal(userId, userName) {
+        console.log(`Would delete user: ${userName} (${userId})`);
+        alert(`This is just a demo. In a real app, you would be asked to confirm deletion of ${userName}.`);
+    }
+
+    // Helper functions
+    function getInitials(name) {
+        if (!name) return '??';
+        return name
+            .split(' ')
+            .map(word => word.charAt(0))
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
+    }
+    
+    function capitalizeFirstLetter(string) {
+        if (!string) return '';
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
+    function filterUsers() {
+        const searchTerm = document.getElementById('user-search')?.value.toLowerCase() || '';
+        
+        filteredUsers = allUsers.filter(user => {
+            return (
+                user.username?.toLowerCase().includes(searchTerm) ||
+                user.name?.toLowerCase().includes(searchTerm) ||
+                user.email?.toLowerCase().includes(searchTerm) ||
+                user.location?.toLowerCase().includes(searchTerm)
+            );
         });
-    </script>
+        
+        displayUsers(filteredUsers);
+    }
+</script>
 </body>
 </html>
