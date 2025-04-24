@@ -561,33 +561,14 @@
         const isLiveServer = window.location.port === '5500';
         const isActualDomain = window.location.hostname.includes('monumevip.com');
         // If we're on the actual domain, never use mock mode
-        const useMockMode = isLiveServer && !isActualDomain;
-        
-        // Set the API path based on environment
-        let apiBasePath = useMockMode ? '/mocks' : '..';
-        
-        // Special case for monumevip.com domain - determine the correct API path structure
-        if (isActualDomain) {
-            console.log('Running on monumevip.com domain - adjusting API paths');
-            
-            // On production domain, the API needs a direct path to the Flask API endpoints
-            // We'll try with an /api/ prefix which is a common convention
-            apiBasePath = '/api';
-            
-            // Check if we're in the /static/ path and adjust accordingly
-            if (window.location.pathname.includes('/static/')) {
-                console.log('Page is in static folder - adjusting paths for static context');
-            }
-        }
-        
-        console.log(`Running in ${useMockMode ? 'Mock' : 'Production'} mode. Using API base path: ${apiBasePath}`);
+        const useMockMode = false; // Disable mock mode
+        let apiBasePath = 'https://www.monumevip.com'; // Force production API path
+
+        console.log(`Running in Production mode. Using API base path: ${apiBasePath}`);
         console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
         
-        // Fall back to mock mode if on production domain (temporary solution)
-        const useTemporaryMockMode = isActualDomain || useMockMode;
-        if (isActualDomain) {
-            console.log("IMPORTANT: Using temporary mock mode on production domain until API routes are configured");
-        }
+        // Force real API calls, disable mock mode
+        const useTemporaryMockMode = false;
         
         // Mock data for development with Live Server
         const mockSettings = {
@@ -932,8 +913,7 @@
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     // Update status to success
-                    const mockModeText = isActualDomain ? ' (Temporary Mock Mode)' : ' (Mock Mode)';
-                    emailStatus.textContent = 'Test email sent successfully!' + mockModeText;
+                    emailStatus.textContent = 'Test email sent successfully!';
                     emailStatus.className = 'email-status success';
                     
                     // Refresh email logs
