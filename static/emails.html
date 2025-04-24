@@ -562,7 +562,16 @@
         const isActualDomain = window.location.hostname.includes('monumevip.com');
         // If we're on the actual domain, never use mock mode
         const useMockMode = isLiveServer && !isActualDomain;
-        const apiBasePath = useMockMode ? '/mocks' : '..';
+        
+        // Set the correct API path based on environment
+        let apiBasePath = useMockMode ? '/mocks' : '..';
+        
+        // Special case for monumevip.com domain - the static files are in /static/ folder
+        if (isActualDomain) {
+            // For monumevip.com domain, we need to adjust the path
+            apiBasePath = '';  // Use root-relative paths
+            console.log('Domain detected: Adjusting API paths for production domain');
+        }
         
         console.log(`Running in ${useMockMode ? 'Mock' : 'Production'} mode. Using API base path: ${apiBasePath}`);
         console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
