@@ -12,6 +12,16 @@ from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_from_directory, send_file, session, redirect, url_for
 # Add imports for production deployment
 import ssl
+# Add imports for email functionality
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
+import configparser
+# Import our email sender module
+import email_sender
+import pdf_generator
+
 # Make waitress import conditional
 try:
     from waitress import serve
@@ -37,7 +47,7 @@ BASE_PATH = os.environ.get('BASE_PATH', '')  # For GitHub Pages or subdirectory 
 
 # Configure Flask app with proper error handling and static file serving
 app = Flask(__name__, 
-    static_url_path=os.path.join(BASE_PATH, 'static'),
+    static_url_path=os.path.join('/', BASE_PATH, 'static'),  # Added leading slash
     static_folder='static',
     template_folder='static'
 )
@@ -115,16 +125,7 @@ def full_path(path):
 mimetypes.add_type('text/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
-# Serve static files with proper MIME types
-@app.route('/<path:path>')
-def serve_file(path):
-    if os.path.exists(path):
-        return send_from_directory('.', path, mimetype=mimetypes.guess_type(path)[0])
-    elif os.path.exists(os.path.join('static', path)):
-        return send_from_directory('static', path, mimetype=mimetypes.guess_type(path)[0])
-    return 'File not found', 404
-
-# Modified static file serving with proper MIME types
+# Modified static file serving with proper MIME types and improved file not found handling
 @app.route('/<path:filename>')
 def serve_static(filename):
     # Map file extensions to MIME types
@@ -143,27 +144,48 @@ def serve_static(filename):
     ext = os.path.splitext(filename)[1].lower()
     mime_type = mime_types.get(ext, 'application/octet-stream')
     
-    # Check if the file exists in the static folder first
-    static_path = os.path.join(app.static_folder, filename)
-    if os.path.isfile(static_path):
+    # First check if it's an HTML page in the static folder
+    static_html_path = os.path.join(app.static_folder, filename)
+    if os.path.isfile(static_html_path):
+        logger.info(f"Serving static file: {filename} from static folder")
         response = send_from_directory(app.static_folder, filename)
         response.headers['Content-Type'] = mime_type
         return response
     
+    # Check if the file exists in the static folder first
+    if '/' in filename:
+        # Handle nested paths by splitting correctly
+        path_parts = filename.split('/')
+        if len(path_parts) > 1:
+            nested_folder = os.path.join(app.static_folder, *path_parts[:-1])
+            if os.path.isdir(nested_folder) and os.path.isfile(os.path.join(nested_folder, path_parts[-1])):
+                logger.info(f"Serving nested static file: {filename}")
+                return send_from_directory(nested_folder, path_parts[-1], mimetype=mime_type)
+    
     # If not in static folder, try serving from the root directory
     root_path = os.path.join(root_dir, filename)
     if os.path.isfile(root_path):
+        logger.info(f"Serving file from root: {filename}")
         response = send_file(root_path)
         response.headers['Content-Type'] = mime_type
         return response
+    
+    # Special case for dashboard.html and other static HTML files
+    if filename.endswith('.html'):
+        static_html = os.path.join(app.static_folder, filename)
+        if os.path.isfile(static_html):
+            logger.info(f"Serving HTML file: {filename}")
+            return send_file(static_html, mimetype='text/html')
     
     # If file not found in either location, return 404
     logger.warning(f"File not found: {filename}")
     return jsonify({"error": "File not found"}), 404
 
-# Special route for files in /static/ URL path that are actually in root
+# Special route for files in /static/ URL path 
 @app.route('/static/<path:filename>')
 def serve_from_root_or_static(filename):
+    logger.info(f"Requested static file: {filename}")
+    
     # Map file extensions to MIME types
     mime_types = {
         '.css': 'text/css',
@@ -183,25 +205,61 @@ def serve_from_root_or_static(filename):
     # First check if file exists in the static folder
     static_path = os.path.join(app.static_folder, filename)
     if os.path.isfile(static_path):
+        logger.info(f"Serving from static folder: {filename}")
         response = send_from_directory(app.static_folder, filename)
         response.headers['Content-Type'] = mime_type
         return response
     
+    # Check for nested paths in static folder
+    if '/' in filename:
+        path_parts = filename.split('/')
+        nested_folder = os.path.join(app.static_folder, *path_parts[:-1])
+        if os.path.isdir(nested_folder) and os.path.isfile(os.path.join(nested_folder, path_parts[-1])):
+            logger.info(f"Serving from nested static folder: {filename}")
+            return send_from_directory(nested_folder, path_parts[-1], mimetype=mime_type)
+    
     # If not in static folder, check if it exists in the root directory
     root_path = os.path.join(root_dir, filename)
     if os.path.isfile(root_path):
+        logger.info(f"Serving from root: {filename}")
         response = send_file(root_path)
         response.headers['Content-Type'] = mime_type
         return response
     
-    # If file not found in either location, return 404
-    logger.warning(f"File not found in static or root: {filename}")
+    # If file not found, return 404
+    logger.warning(f"Static file not found: {filename}")
     return jsonify({"error": "File not found"}), 404
 
 # Add root route to serve index.html
 @app.route('/')
 def serve_index():
-    return send_from_directory(app.static_folder, 'index.html')
+    logger.info("Serving index.html from root")
+    index_path = os.path.join(root_dir, 'index.html')
+    if os.path.isfile(index_path):
+        return send_file(index_path)
+    else:
+        logger.error("index.html not found in root directory")
+        return jsonify({"error": "Index file not found"}), 404
+
+# Serve all HTML pages in static folder
+@app.route('/static/<path:page>.html')
+def serve_html_page_from_static(page):
+    file_path = os.path.join(app.static_folder, page + '.html')
+    if os.path.isfile(file_path):
+        logger.info(f"Serving HTML page from static: {page}.html")
+        return send_file(file_path)
+    logger.warning(f"HTML page not found in static: {page}.html")
+    return jsonify({"error": "Page not found"}), 404
+
+# Direct route for dashboard.html for better reliability
+@app.route('/static/dashboard.html')
+def serve_dashboard():
+    dashboard_path = os.path.join(app.static_folder, 'dashboard.html')
+    if os.path.isfile(dashboard_path):
+        logger.info("Serving dashboard.html")
+        return send_file(dashboard_path)
+    logger.error("dashboard.html not found")
+    return jsonify({"error": "Dashboard file not found"}), 404
 
 # Add favicon route
 @app.route('/favicon.ico')
@@ -880,54 +938,34 @@ def sync_users_location():
 @app.route("/get_email_settings")
 @manager_required
 def get_email_settings():
+    """Get email configuration settings from email_sender module"""
     try:
-        # For now, return some default values
-        return jsonify({
-            "auto_email_enabled": True,
-            "daily_email_enabled": False,
-            "weekly_email_enabled": True
-        }), 200
+        # Get settings from email_sender module
+        settings = email_sender.get_email_settings()
+        return jsonify(settings), 200
     except Exception as e:
         logger.error(f"Error getting email settings: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/get_email_sender_config")
-@admin_required
-def get_email_sender_config():
-    try:
-        # Return default email configuration
-        return jsonify({
-            "sender_name": "MonuMe Tracker",
-            "sender_email": "noreply@monumetracker.com",
-            "smtp_server": "",
-            "smtp_port": 587,
-            "smtp_username": "",
-            "use_tls": True
-        }), 200
-    except Exception as e:
-        logger.error(f"Error getting email sender config: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/save_email_sender_config", methods=["POST"])
-@admin_required
-def save_email_sender_config():
-    try:
-        data = request.json
-        # In a real app, you would save this to a config file or database
-        logger.info(f"Email config saved: {data}")
-        return jsonify({"message": "Email configuration saved successfully"}), 200
-    except Exception as e:
-        logger.error(f"Error saving email sender config: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route("/update_email_setting", methods=["POST"])
 @manager_required
 def update_email_setting():
+    """Update a specific email setting using email_sender module"""
     try:
         data = request.json
-        # In a real app, you would save this to a config file or database
-        logger.info(f"Email setting updated: {data}")
-        return jsonify({"message": "Setting updated successfully"}), 200
+        if not data or 'setting' not in data or 'value' not in data:
+            return jsonify({"error": "Setting name and value are required"}), 400
+            
+        setting = data.get("setting")
+        value = data.get("value")
+        
+        # Update the setting
+        result = email_sender.update_email_setting(setting, value)
+        
+        if result.get('success'):
+            return jsonify({"message": "Setting updated successfully"}), 200
+        else:
+            return jsonify({"error": result.get('error', 'Unknown error')}), 500
     except Exception as e:
         logger.error(f"Error updating email setting: {e}")
         return jsonify({"error": str(e)}), 500
@@ -935,29 +973,21 @@ def update_email_setting():
 @app.route("/send_test_email", methods=["POST"])
 @manager_required
 def send_test_email():
+    """Send a test email using email_sender module"""
     try:
         data = request.json
         email = data.get("email")
-        subject = data.get("subject", "Test Email from MonuMe Tracker")
-        message = data.get("message", "This is a test email from the MonuMe Tracker system.")
         
         if not email:
             return jsonify({"error": "Email address is required"}), 400
         
-        # In a real app, you would actually send an email here
-        # For now, just log it and pretend it worked
-        logger.info(f"Test email would be sent to: {email}")
+        # Send test email using our module
+        result = email_sender.send_test_email(email)
         
-        # Add a log entry
-        conn = get_db_connection()
-        conn.execute(
-            "INSERT INTO email_logs (recipient, subject, type, status) VALUES (?, ?, ?, ?)",
-            (email, subject, "test", "success")
-        )
-        conn.commit()
-        conn.close()
-        
-        return jsonify({"message": "Test email sent successfully"}), 200
+        if result.get('success'):
+            return jsonify({"message": "Test email sent successfully"}), 200
+        else:
+            return jsonify({"error": result.get('error', 'Failed to send test email')}), 500
     except Exception as e:
         logger.error(f"Error sending test email: {e}")
         return jsonify({"error": str(e)}), 500
@@ -965,12 +995,11 @@ def send_test_email():
 @app.route("/get_email_logs")
 @manager_required
 def get_email_logs():
+    """Get recent email logs from email_sender module"""
     try:
-        conn = get_db_connection()
-        logs = conn.execute("SELECT * FROM email_logs ORDER BY timestamp DESC LIMIT 20").fetchall()
-        conn.close()
-        
-        return jsonify({"logs": [dict(log) for log in logs]}), 200
+        # Get logs from email_sender module (limit to 20)
+        logs = email_sender.get_email_logs(20)
+        return jsonify({"logs": logs}), 200
     except Exception as e:
         logger.error(f"Error getting email logs: {e}")
         return jsonify({"error": str(e), "logs": []}), 500
@@ -1010,6 +1039,304 @@ def get_usernames():
     except Exception as e:
         logger.error(f"Error fetching usernames: {e}")
         return jsonify({"error": "Server error", "usernames": []}), 500
+
+# Add form-related endpoints
+@app.route("/api/forms", methods=["GET"])
+def get_forms():
+    try:
+        conn = get_db_connection()
+        forms = conn.execute("SELECT * FROM forms ORDER BY created_at DESC").fetchall()
+        conn.close()
+        
+        form_list = []
+        for form in forms:
+            form_data = dict(form)
+            # Convert JSON string to object if needed
+            if 'questions' in form_data and form_data['questions']:
+                try:
+                    form_data['questions'] = json.loads(form_data['questions'])
+                except:
+                    form_data['questions'] = []
+            form_list.append(form_data)
+        
+        return jsonify({"forms": form_list}), 200
+    except Exception as e:
+        logger.error(f"Error getting forms: {e}")
+        return jsonify({"error": str(e), "forms": []}), 500
+
+@app.route("/api/forms/<int:form_id>", methods=["GET"])
+def get_form(form_id):
+    try:
+        conn = get_db_connection()
+        form = conn.execute("SELECT * FROM forms WHERE id = ?", (form_id,)).fetchone()
+        conn.close()
+        
+        if not form:
+            return jsonify({"error": "Form not found"}), 404
+            
+        form_data = dict(form)
+        # Convert JSON string to object if needed
+        if 'questions' in form_data and form_data['questions']:
+            try:
+                form_data['questions'] = json.loads(form_data['questions'])
+            except:
+                form_data['questions'] = []
+        
+        return jsonify({"form": form_data}), 200
+    except Exception as e:
+        logger.error(f"Error getting form: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/forms", methods=["POST"])
+def create_form():
+    try:
+        data = request.json
+        
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        title = data.get("title")
+        description = data.get("description")
+        questions = data.get("questions", [])
+        
+        if not title:
+            return jsonify({"error": "Form title is required"}), 400
+            
+        # Convert questions to JSON string for storage
+        questions_json = json.dumps(questions)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO forms (title, description, questions, created_at, updated_at) VALUES (?, ?, ?, datetime('now'), datetime('now'))",
+            (title, description, questions_json)
+        )
+        form_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "message": "Form created successfully",
+            "form_id": form_id
+        }), 201
+    except Exception as e:
+        logger.error(f"Error creating form: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/forms/<int:form_id>", methods=["PUT"])
+def update_form(form_id):
+    try:
+        data = request.json
+        
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        title = data.get("title")
+        description = data.get("description")
+        questions = data.get("questions", [])
+        
+        if not title:
+            return jsonify({"error": "Form title is required"}), 400
+            
+        # Convert questions to JSON string for storage
+        questions_json = json.dumps(questions)
+        
+        conn = get_db_connection()
+        
+        # Check if form exists
+        form = conn.execute("SELECT id FROM forms WHERE id = ?", (form_id,)).fetchone()
+        if not form:
+            conn.close()
+            return jsonify({"error": "Form not found"}), 404
+        
+        # Update the form
+        conn.execute(
+            "UPDATE forms SET title = ?, description = ?, questions = ?, updated_at = datetime('now') WHERE id = ?",
+            (title, description, questions_json, form_id)
+        )
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "message": "Form updated successfully",
+            "form_id": form_id
+        }), 200
+    except Exception as e:
+        logger.error(f"Error updating form: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/forms/<int:form_id>", methods=["DELETE"])
+def delete_form(form_id):
+    try:
+        conn = get_db_connection()
+        
+        # Check if form exists
+        form = conn.execute("SELECT id FROM forms WHERE id = ?", (form_id,)).fetchone()
+        if not form:
+            conn.close()
+            return jsonify({"error": "Form not found"}), 404
+        
+        # Delete the form
+        conn.execute("DELETE FROM forms WHERE id = ?", (form_id,))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "message": "Form deleted successfully"
+        }), 200
+    except Exception as e:
+        logger.error(f"Error deleting form: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Add form submission endpoint
+@app.route("/api/forms/<int:form_id>/submit", methods=["POST"])
+def submit_form_response(form_id):
+    try:
+        data = request.json
+        
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        responses = data.get("responses")
+        submitted_by = data.get("submitted_by", "anonymous")
+        
+        if not responses:
+            return jsonify({"error": "Form responses are required"}), 400
+            
+        # Check if form exists
+        conn = get_db_connection()
+        form = conn.execute("SELECT id FROM forms WHERE id = ?", (form_id,)).fetchone()
+        
+        if not form:
+            conn.close()
+            return jsonify({"error": "Form not found"}), 404
+            
+        # Convert responses to JSON string for storage
+        responses_json = json.dumps(responses)
+        
+        # Save form response
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO form_responses (form_id, responses, submitted_by) VALUES (?, ?, ?)",
+            (form_id, responses_json, submitted_by)
+        )
+        response_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "message": "Form response submitted successfully",
+            "response_id": response_id
+        }), 201
+    except Exception as e:
+        logger.error(f"Error submitting form response: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Get form responses endpoint
+@app.route("/api/forms/<int:form_id>/responses", methods=["GET"])
+@manager_required
+def get_form_responses(form_id):
+    try:
+        conn = get_db_connection()
+        
+        # Check if form exists
+        form = conn.execute("SELECT id FROM forms WHERE id = ?", (form_id,)).fetchone()
+        if not form:
+            conn.close()
+            return jsonify({"error": "Form not found"}), 404
+            
+        # Get responses
+        responses = conn.execute("SELECT * FROM form_responses WHERE form_id = ? ORDER BY submitted_at DESC", (form_id,)).fetchall()
+        conn.close()
+        
+        response_list = []
+        for response in responses:
+            response_data = dict(response)
+            # Convert JSON string to object
+            if 'responses' in response_data and response_data['responses']:
+                try:
+                    response_data['responses'] = json.loads(response_data['responses'])
+                except:
+                    response_data['responses'] = {}
+            response_list.append(response_data)
+        
+        return jsonify({"responses": response_list}), 200
+    except Exception as e:
+        logger.error(f"Error getting form responses: {e}")
+        return jsonify({"error": str(e), "responses": []}), 500
+
+# Send email function
+def send_email(recipient, subject, body, is_html=False):
+    """Send an email using the configured SMTP server."""
+    try:
+        # Read email configuration
+        config = configparser.ConfigParser()
+        email_config_path = os.path.join(root_dir, 'config', 'email_config.ini')
+        
+        if not os.path.exists(email_config_path):
+            logger.warning(f"Email config file not found: {email_config_path}")
+            return False, "Email configuration file not found"
+            
+        config.read(email_config_path)
+        
+        # Get SMTP configuration
+        smtp_server = config.get('SMTP', 'server', fallback='')
+        smtp_port = config.getint('SMTP', 'port', fallback=587)
+        smtp_user = config.get('SMTP', 'username', fallback='')
+        smtp_password = config.get('SMTP', 'password', fallback='')
+        sender_email = config.get('SENDER', 'email', fallback='noreply@monumetracker.com')
+        sender_name = config.get('SENDER', 'name', fallback='MonuMe Tracker')
+        use_tls = config.getboolean('SMTP', 'use_tls', fallback=True)
+        
+        if not smtp_server or not smtp_user or not smtp_password:
+            logger.warning("SMTP configuration is incomplete")
+            return False, "SMTP configuration is incomplete"
+        
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{sender_name} <{sender_email}>"
+        msg['To'] = recipient
+        
+        # Attach body
+        if is_html:
+            msg.attach(MIMEText(body, 'html'))
+        else:
+            msg.attach(MIMEText(body, 'plain'))
+        
+        # Send email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            if use_tls:
+                server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+        
+        # Log successful email
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO email_logs (recipient, subject, type, status) VALUES (?, ?, ?, ?)",
+            (recipient, subject, "notification", "success")
+        )
+        conn.commit()
+        conn.close()
+        
+        return True, "Email sent successfully"
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        
+        # Log failed email
+        try:
+            conn = get_db_connection()
+            conn.execute(
+                "INSERT INTO email_logs (recipient, subject, type, status, error_message) VALUES (?, ?, ?, ?, ?)",
+                (recipient, subject, "notification", "failed", str(e))
+            )
+            conn.commit()
+            conn.close()
+        except Exception as log_error:
+            logger.error(f"Error logging email failure: {log_error}")
+        
+        return False, str(e)
 
 # Initialize database tables on startup
 def init_db():
@@ -1070,10 +1397,36 @@ def init_db():
             )
         ''')
         
+        # Create forms table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS forms (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                questions TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Create form responses table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS form_responses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                form_id INTEGER NOT NULL,
+                responses TEXT,
+                submitted_by TEXT,
+                submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE
+            )
+        ''')
+        
         # Create indexes for better performance
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_username ON users(username)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_response_user_date ON employee_responses(user_id, date)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_email_logs_timestamp ON email_logs(timestamp)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_forms_created_at ON forms(created_at)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_form_responses_form_id ON form_responses(form_id)')
         
         # Add default admin user if none exists
         admin_exists = cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'").fetchone()[0]
@@ -1085,6 +1438,109 @@ def init_db():
             """, ('admin', 'ori3', 'admin@monume.com', 'Admin User', 'admin', 'HQ'))
             logger.info("Created default admin user with username 'admin'")
             
+        # Add sample forms if none exist
+        form_count = cursor.execute("SELECT COUNT(*) FROM forms").fetchone()[0]
+        if form_count == 0:
+            # Create some sample forms
+            sample_forms = [
+                {
+                    "title": "Team Feedback Form",
+                    "description": "Please share your feedback to help us improve our team processes.",
+                    "questions": json.dumps([
+                        {
+                            "id": "q1",
+                            "title": "How would you rate team communication?",
+                            "type": "linear-scale"
+                        },
+                        {
+                            "id": "q2",
+                            "title": "What aspects of our team process work well?",
+                            "type": "long-text"
+                        },
+                        {
+                            "id": "q3",
+                            "title": "What could be improved?",
+                            "type": "long-text"
+                        }
+                    ])
+                },
+                {
+                    "title": "Project Evaluation",
+                    "description": "Evaluate the outcomes and processes of our recent project.",
+                    "questions": json.dumps([
+                        {
+                            "id": "q1",
+                            "title": "How would you rate the project outcome?",
+                            "type": "linear-scale"
+                        },
+                        {
+                            "id": "q2",
+                            "title": "Were project timelines met?",
+                            "type": "multiple-choice",
+                            "options": ["Yes", "Partially", "No"]
+                        },
+                        {
+                            "id": "q3",
+                            "title": "What were the key challenges?",
+                            "type": "long-text"
+                        }
+                    ])
+                },
+                {
+                    "title": "Client Satisfaction Survey",
+                    "description": "Help us improve our services by providing your feedback.",
+                    "questions": json.dumps([
+                        {
+                            "id": "q1",
+                            "title": "How satisfied are you with our services?",
+                            "type": "linear-scale"
+                        },
+                        {
+                            "id": "q2",
+                            "title": "Would you recommend our services to others?",
+                            "type": "multiple-choice",
+                            "options": ["Definitely", "Probably", "Not sure", "Probably not", "Definitely not"]
+                        },
+                        {
+                            "id": "q3",
+                            "title": "What additional services would you like us to offer?",
+                            "type": "long-text"
+                        }
+                    ])
+                },
+                {
+                    "title": "Event Registration",
+                    "description": "Register for our upcoming team building event.",
+                    "questions": json.dumps([
+                        {
+                            "id": "q1",
+                            "title": "Will you be attending the event?",
+                            "type": "multiple-choice",
+                            "options": ["Yes", "No", "Maybe"]
+                        },
+                        {
+                            "id": "q2",
+                            "title": "Any dietary restrictions we should know about?",
+                            "type": "checkbox",
+                            "options": ["Vegetarian", "Vegan", "Gluten-free", "Nut allergies", "None"]
+                        },
+                        {
+                            "id": "q3",
+                            "title": "Any additional comments?",
+                            "type": "long-text"
+                        }
+                    ])
+                }
+            ]
+            
+            for form in sample_forms:
+                cursor.execute(
+                    "INSERT INTO forms (title, description, questions, created_at, updated_at) VALUES (?, ?, ?, datetime('now'), datetime('now'))",
+                    (form["title"], form["description"], form["questions"])
+                )
+            
+            logger.info(f"Added {len(sample_forms)} sample forms")
+            
         conn.commit()
         conn.close()
         logger.info("Database initialized successfully")
@@ -1094,10 +1550,52 @@ def init_db():
         logger.error(traceback.format_exc())
         raise
 
+# Make sure email_config.ini exists with default values
+def ensure_email_config_exists():
+    """Ensure that the email_config.ini file exists with default values."""
+    try:
+        config_dir = os.path.join(root_dir, 'config')
+        config_path = os.path.join(config_dir, 'email_config.ini')
+        
+        # Create config directory if it doesn't exist
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        
+        # Create default config if file doesn't exist
+        if not os.path.exists(config_path):
+            config = configparser.ConfigParser()
+            
+            # EMAIL section with default settings
+            config['EMAIL'] = {
+                'smtp_server': 'smtp.gmail.com',
+                'smtp_port': '587',
+                'sender_email': 'monume.tracker@gmail.com',
+                'sender_name': 'MonuMe Tracker',
+                'password': '',
+                'use_tls': 'true',
+                'auto_email_enabled': 'true',
+                'daily_email_enabled': 'false',
+                'weekly_email_enabled': 'true'
+            }
+            
+            # Write config to file
+            with open(config_path, 'w') as f:
+                config.write(f)
+            
+            logger.info(f"Created default email_config.ini at {config_path}")
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error creating email config: {e}")
+        return False
+
 if __name__ == '__main__':
     try:
         # Initialize database
         init_db()
+        
+        # Ensure email config exists
+        ensure_email_config_exists()
         
         # Configure app for production
         if PRODUCTION:

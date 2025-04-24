@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonuMe Team Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        :root {
+            --main-color: #ff9562;
+            --gradient-start: #ff7f42;
+            --gradient-end: #ff9562;
+            --sidebar-bg: #272430;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+        }
+
+        body {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"><rect fill="%23ff9562" width="2000" height="1500"/><defs><radialGradient id="a" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="%23ffffff"/><stop offset="1" stop-color="%23ff9562"/></radialGradient><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="750" x2="1550" y2="750"><stop offset="0" stop-color="%23ffcab1"/><stop offset="1" stop-color="%23ff9562"/></linearGradient></defs><path fill="url(%23a)" d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z"/></svg>') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .chat-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .current-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .current-user:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(255, 149, 98, 0.05);
+            border-left: 1px solid rgba(255, 149, 98, 0.1);
+            border-right: 1px solid rgba(255, 149, 98, 0.1);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 18px;
+            position: relative;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(255, 149, 98, 0.15);
+            font-size: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border-bottom-right-radius: 4px;
+            margin-left: 20%;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: rgba(30, 30, 40, 0.7);
+            color: white;
+            border-bottom-left-radius: 4px;
+            margin-right: 25%;
+            border-left: 3px solid var(--main-color);
+            position: relative;
+        }
+
+        /* Add gradient hint to received messages */
+        .message.received::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 149, 98, 0.2));
+            border-top-right-radius: 18px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 149, 98, 0.2);
+            padding-bottom: 6px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            text-transform: capitalize;
+            display: flex;
+            align-items: center;
+        }
+
+        .sender-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end), rgba(255, 149, 98, 0.7));
+            margin-right: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 4px rgba(255, 149, 98, 0.3);
+        }
+
+        .message-time {
+            color: rgba(255, 149, 98, 0.7);
+            font-size: 0.75rem;
+        }
+
+        .message-content {
+            word-break: break-word;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 400;
+            letter-spacing: 0.2px;
+        }
+
+        .message.sent .message-content {
+            color: white;
+        }
+
+        .message.received .message-content {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .message-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .message-date-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .message-date-divider::before,
+        .message-date-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 149, 98, 0.3);
+        }
+
+        .message-date-divider-text {
+            padding: 0 10px;
+            color: var(--main-color);
+            font-size: 0.85rem;
+            margin: 0 10px;
+            background: rgba(30, 30, 40, 0.6);
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 149, 98, 0.2);
+        }
+
+        .message-options {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message:hover .message-options {
+            opacity: 1;
+        }
+
+        .message-option-button {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px;
+        }
+
+        .message-option-button:hover {
+            color: white;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(255, 149, 98, 0.3);
+        }
+
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .send-button {
+            background: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-button:hover {
+            background: var(--gradient-start);
+            transform: translateY(-2px);
+        }
+
+        .send-button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .users-section {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .users-header {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .users-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .users-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-item.active {
+            background: rgba(255, 149, 98, 0.3);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .user-status {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .user-status.online {
+            color: #4CAF50;
+        }
+
+        .user-status.offline {
+            color: #ff3b30; /* Change to red color for offline status */
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 149, 98, 0.4);
+        }
+
+        .user-status.online .status-indicator {
+            background-color: #4CAF50;
+        }
+
+        .user-status.offline .status-indicator {
+            background-color: #ff3b30; /* Change to match red color */
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .auth-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-title {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .auth-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .auth-confirm {
+            background: var(--main-color);
+            color: white;
+        }
+
+        .auth-cancel {
+            background: #f0f0f0;
+            color: var(--text-secondary);
+        }
+
+        .auth-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .users-section {
+                width: 100%;
+                height: 300px;
+            }
+
+            .chat-section {
+                height: calc(100vh - 340px);
+            }
+        }
+
+        /* Sidebar integration */
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            transition: var(--transition);
+        }
+
+        @media screen and (max-width: 1200px) {
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+            }
+        }
+
+        /* Sidebar styles with enhanced design */
+        .sidebar {
+            width: 280px;
+            background: #272430;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: var(--transition);
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-header {
+            padding: 35px 25px 15px;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: transparent;
+            box-shadow: none;
+            position: relative;
+        }
+
+        /* Add a subtle gradient overlay to the header */
+        .sidebar-header:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .sidebar-brand a {
+            text-decoration: none;
+            border-bottom: none;
+            box-shadow: none;
+            outline: none;
+        }
+
+        .app-title {
+            color: var(--main-color);
+            font-size: 42px;
+            font-weight: 800;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            text-shadow: none;
+            letter-spacing: 1px;
+            margin: 0;
+            text-align: center;
+            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 18px;
+        }
+
+        .app-title:hover {
+            transform: scale(1.05);
+            text-shadow: none;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
+            margin-top: 30px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-menu li a i {
+            min-width: 24px;
+            margin-right: 15px;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-menu li a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.8;
+            z-index: -1;
+            transition: width 0.3s ease;
+            border-radius: 12px;
+        }
+
+        /* Enhanced hover and active states */
+        .sidebar-menu li:hover a::before,
+        .sidebar-menu li.active a::before {
+            width: 100%;
+        }
+
+        .sidebar-menu li:hover a,
+        .sidebar-menu li.active a {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu li:hover a i,
+        .sidebar-menu li.active a i {
+            transform: scale(1.2);
+        }
+
+        /* Add subtle indicators for menu items */
+        .sidebar-menu li:not(.active)::after {
+            content: none; /* Changed from '' to none to completely remove the dot */
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-menu li:not(.active):hover::after {
+            opacity: 0; /* Changed from 1 to 0 to hide the dot */
+        }
+
+        /* Responsive sidebar styles */
+        @media screen and (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            .sidebar-header h2,
+            .sidebar-menu li a span {
+                font-size: 16px;
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                overflow: hidden;
+            }
+            
+            .sidebar-header h2,
+            .sidebar-menu li a span {
+                display: none;
+            }
+            
+            .sidebar-menu li a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+        }
+
+        .user-selection-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(255, 149, 98, 0.1);
+            border: 1px solid rgba(255, 149, 98, 0.15);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .user-selection-item:hover {
+            background: rgba(255, 149, 98, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-selection-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            margin-right: 12px;
+            box-shadow: 0 2px 5px rgba(255, 149, 98, 0.3);
+        }
+        
+        .user-selection-info {
+            flex: 1;
+        }
+        
+        .user-selection-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+        
+        .user-selection-status {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .user-selection-status.online {
+            color: #4CAF50;
+        }
+        
+        .user-selection-status.offline {
+            color: rgba(255, 149, 98, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <!-- Add sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <a href="dashboard.html" title="Go to Dashboard">
+                    <h1 class="app-title">MonuMe</h1>
+                </a>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="management.html">
+                    <i class="fas fa-tasks"></i>
+                    <span>Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="tracking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" id="analytics-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="team_chat.html">
+                    <i class="fas fa-comments"></i>
+                    <span>Team Chat</span>
+                </a>
+            </li>
+            <li>
+                <a href="endofday.html">
+                    <i class="fas fa-moon"></i>
+                    <span>End of Day</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="main-container">
+            <div class="chat-section">
+                <div class="chat-header">
+                    <h1 class="chat-title">Team Chat</h1>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be loaded here -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" class="message-input" id="messageInput" placeholder="Type your message...">
+                    <button class="send-button" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Send</span>
+                    </button>
+                </div>
+            </div>
+            <div class="users-section">
+                <div class="users-header">
+                    <h2 class="users-title">Team Members</h2>
+                </div>
+                <div class="users-list" id="usersList">
+                    <!-- Users will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-content">
+            <h2 class="auth-title">Verify User</h2>
+            <input type="password" class="auth-input" id="authPassword" placeholder="Enter your password">
+            <div class="auth-buttons">
+                <button class="auth-button auth-cancel" id="authCancel">Cancel</button>
+                <button class="auth-button auth-confirm" id="authConfirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Selection Modal -->
+    <div id="user-selection-modal" class="auth-modal">
+        <div class="auth-content">
+            <h2 class="auth-title">Select User</h2>
+            <p>Choose which user to send as:</p>
+            <div id="user-selection-list" style="margin: 20px 0; text-align: left;">
+                <!-- Users will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const usersList = document.getElementById('usersList');
+            const authModal = document.getElementById('authModal');
+            const userSelectionModal = document.getElementById('user-selection-modal');
+            const userSelectionList = document.getElementById('user-selection-list');
+            const authPassword = document.getElementById('authPassword');
+            const authConfirm = document.getElementById('authConfirm');
+            const authCancel = document.getElementById('authCancel');
+            
+            let pendingMessage = ''; // Store message waiting for authentication
+            let selectedUser = null;
+
+            // Update the users data structure to include location information
+            const defaultUsers = [
+                { username: 'admin', password: 'admin', status: 'online', location: 'New York' },
+                { username: 'manager', password: 'manager', status: 'online', location: 'Chicago' },
+                { username: 'employee', password: 'employee', status: 'online', location: 'Los Angeles' }
+            ];
+
+            if (!localStorage.getItem('users')) {
+                localStorage.setItem('users', JSON.stringify(defaultUsers));
+            }
+
+            // Load test messages if no messages exist
+            if (!localStorage.getItem('chatMessages')) {
+                // Create some sample messages spanning the last week
+                const now = new Date();
+                const messages = [
+                    {
+                        user: 'admin',
+                        message: 'Welcome to the MonuMe Tracker team chat!',
+                        timestamp: new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString() // 6 days ago
+                    },
+                    {
+                        user: 'manager',
+                        message: 'Remember to complete your daily reports everyone.',
+                        timestamp: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days ago
+                    },
+                    {
+                        user: 'employee',
+                        message: 'Has anyone seen the new dashboard updates?',
+                        timestamp: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
+                    },
+                    {
+                        user: 'admin',
+                        message: 'Team meeting scheduled for tomorrow at 10 AM.',
+                        timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString() // 12 hours ago
+                    }
+                ];
+                localStorage.setItem('chatMessages', JSON.stringify(messages));
+            }
+
+            // Fetch users from the server instead of hardcoded defaults
+            function fetchTeamMembers() {
+                // Skip server calls and directly use localStorage to prevent 404 errors
+                const users = getLocalStorageUsers();
+                populateUsersList(users);
+                // Store simplified users in localStorage for chat authentication
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            // Get users from localStorage if available
+            function getLocalStorageUsers() {
+                try {
+                    // Get active users list first
+                    const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+                    const activeUsernames = activeUsers.map(user => user.username);
+                    
+                    // First try to get from monumeUsers (shared with other parts of the app)
+                    const monumeUsers = JSON.parse(localStorage.getItem('monumeUsers'));
+                    if (monumeUsers && monumeUsers.length > 0) {
+                        return monumeUsers.map(user => ({
+                            ...user,
+                            status: activeUsernames.includes(user.username) ? 'online' : 'offline'
+                        }));
+                    }
+                    
+                    // Then try the usersall database used by notification system
+                    const usersAll = JSON.parse(localStorage.getItem('usersall'));
+                    if (usersAll && usersAll.length > 0) {
+                        return usersAll.map(user => ({
+                            ...user,
+                            status: activeUsernames.includes(user.username) ? 'online' : 'offline'
+                        }));
+                    }
+                    
+                    // Finally fall back to default users
+                    return [
+                        { username: 'admin', status: activeUsernames.includes('admin') ? 'online' : 'offline', location: 'Main Office' },
+                        { username: 'manager', status: activeUsernames.includes('manager') ? 'online' : 'offline', location: 'West Branch' },
+                        { username: 'employee', status: activeUsernames.includes('employee') ? 'online' : 'offline', location: 'East Branch' }
+                    ];
+                } catch (error) {
+                    console.error('Error getting users from localStorage:', error);
+                    return [
+                        { username: 'admin', status: 'offline', location: 'Main Office' },
+                        { username: 'manager', status: 'offline', location: 'West Branch' },
+                        { username: 'employee', status: 'offline', location: 'East Branch' }
+                    ];
+                }
+            }
+
+            // Update the populateUsersList function to handle user data from server
+            function populateUsersList(users) {
+                usersList.innerHTML = users.map(user => `
+                    <div class="user-item" data-username="${user.username}">
+                        <div class="user-avatar">
+                            ${user.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">${user.username}</div>
+                            <div class="user-status ${user.status || 'offline'}">
+                                <span class="status-indicator"></span>
+                                ${user.status || 'offline'} · ${user.location || 'Unknown location'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Initialize chat system
+            function initializeChat() {
+                // Fetch team members from server or local storage
+                fetchTeamMembers();
+                
+                // Load messages
+                loadMessages();
+                
+                // Set up auto-refresh for messages and users
+                setInterval(loadMessages, 5000);
+                setInterval(fetchTeamMembers, 30000); // Refresh user list every 30 seconds
+            }
+
+            // Load messages from localStorage
+            function loadMessages() {
+                try {
+                    const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+                    
+                    // Filter messages from last 7 days
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+                    // Filter messages from last 7 days
+                    const recentMessages = messages.filter(msg => 
+                        new Date(msg.timestamp) > sevenDaysAgo
+                    );
+
+                    // Group messages by date
+                    const messagesByDate = {};
+                    recentMessages.forEach(msg => {
+                        const dateKey = new Date(msg.timestamp).toDateString();
+                        if (!messagesByDate[dateKey]) {
+                            messagesByDate[dateKey] = [];
+                        }
+                        messagesByDate[dateKey].push(msg);
+                    });
+
+                    // Clear chat area
+                    chatMessages.innerHTML = '';
+                    
+                    if (recentMessages.length === 0) {
+                        chatMessages.innerHTML = '<div style="text-align:center; padding: 20px; color: rgba(255,255,255,0.6);">No messages yet. Be the first to say hello!</div>';
+                        return;
+                    }
+
+                    // Add messages with date dividers
+                    Object.keys(messagesByDate).forEach(dateKey => {
+                        // Add date divider
+                        const today = new Date().toDateString();
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const yesterdayString = yesterday.toDateString();
+                        
+                        let dateText;
+                        if (dateKey === today) {
+                            dateText = "Today";
+                        } else if (dateKey === yesterdayString) {
+                            dateText = "Yesterday";
+                        } else {
+                            dateText = new Date(dateKey).toLocaleDateString('en-US', { 
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+                        
+                        chatMessages.innerHTML += `
+                            <div class="message-date-divider">
+                                <span class="message-date-divider-text">${dateText}</span>
+                            </div>
+                        `;
+                        
+                        // Add messages for this date
+                        messagesByDate[dateKey].forEach(msg => {
+                            // All messages are displayed as "received" since we're showing all messages
+                            const messageType = 'received';
+                            
+                            // Create the message element
+                            const messageEl = document.createElement('div');
+                            messageEl.className = `message ${messageType}`;
+                            
+                            // Create sender avatar with first letter
+                            const senderInitial = msg.user.charAt(0).toUpperCase();
+                            
+                            // Create message HTML
+                            messageEl.innerHTML = `
+                                <div class="message-header">
+                                    <span class="message-sender">
+                                        <span class="sender-avatar">${senderInitial}</span>
+                                        ${escapeHtml(msg.user)}
+                                    </span>
+                                    <span class="message-time">${formatTime(msg.timestamp)}</span>
+                                </div>
+                                <div class="message-content">${escapeHtml(msg.message)}</div>
+                                <div class="message-options">
+                                    <button class="message-option-button" title="Copy message">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            `;
+                            
+                            chatMessages.appendChild(messageEl);
+                        });
+                    });
+
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } catch (error) {
+                    console.error('Error loading messages:', error);
+                    chatMessages.innerHTML = '<div class="message received">Error loading messages. Please try refreshing the page.</div>';
+                }
+            }
+            
+            // Show user selection modal when sending a message
+            function sendMessageWithAuth() {
+                const message = messageInput.value.trim();
+                if (message) {
+                    pendingMessage = message;
+                    // Get users directly from localStorage instead of making API calls
+                    const users = getLocalStorageUsers();
+                    
+                    // Generate simplified user selection list HTML - only showing username, no status
+                    userSelectionList.innerHTML = users.map(user => `
+                        <div class="user-selection-item" data-username="${user.username}">
+                            <div class="user-selection-avatar">
+                                ${user.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="user-selection-info">
+                                <div class="user-selection-name">${user.username}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Show the user selection modal
+                    userSelectionModal.style.display = 'flex';
+                    
+                    // Add click handlers to user items in the selection modal
+                    document.querySelectorAll('#user-selection-list .user-selection-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const username = this.dataset.username;
+                            selectUserForAuth(username);
+                        });
+                    });
+                }
+            }
+            
+            // Select user and show auth modal
+            function selectUserForAuth(username) {
+                selectedUser = username;
+                userSelectionModal.style.display = 'none';
+                
+                // Show auth modal
+                authModal.style.display = 'flex';
+                authPassword.value = '';
+                setTimeout(() => authPassword.focus(), 100);
+            }
+            
+            // Verify password and send message
+            function verifyUserAndSendMessage() {
+                const password = authPassword.value;
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const user = users.find(u => u.username === selectedUser);
+                
+                if (user && password === user.password) {
+                    // Password verified, send the message
+                    authModal.style.display = 'none';
+                    
+                    const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+                    const newMessage = {
+                        user: selectedUser,
+                        message: pendingMessage,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    messages.push(newMessage);
+                    localStorage.setItem('chatMessages', JSON.stringify(messages));
+                    
+                    // Clear input and reset
+                    messageInput.value = '';
+                    pendingMessage = '';
+                    selectedUser = null;
+                    
+                    // Reload messages
+                    loadMessages();
+                } else {
+                    alert('Invalid password. Please try again.');
+                    authPassword.value = '';
+                    authPassword.focus();
+                }
+            }
+            
+            // Event Listeners
+            sendButton.addEventListener('click', function() {
+                sendMessageWithAuth();
+            });
+            
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessageWithAuth();
+                }
+            });
+            
+            // Auth modal buttons
+            authConfirm.addEventListener('click', verifyUserAndSendMessage);
+            
+            authCancel.addEventListener('click', function() {
+                authModal.style.display = 'none';
+                pendingMessage = '';
+                selectedUser = null;
+            });
+            
+            authPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyUserAndSendMessage();
+                }
+            });
+            
+            // Helper functions for formatting and displaying
+            function formatTime(timestamp) {
+                const date = new Date(timestamp);
+                return date.toLocaleString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+            
+            // Initialize
+            initializeChat();
+        });
+    </script>
+</body>
+</html>

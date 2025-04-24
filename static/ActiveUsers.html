@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonuMe Tracker - Active Users</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        :root {
+            --main-color: #ff9562;
+            --gradient-start: #ff7f42;
+            --gradient-end: #ff9562;
+            --sidebar-bg: #272430;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #f8f9fa;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
+        }
+
+        body {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"><rect fill="%23ff9562" width="2000" height="1500"/><defs><radialGradient id="a" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="%23ffffff"/><stop offset="1" stop-color="%23ff9562"/></radialGradient><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="750" x2="1550" y2="750"><stop offset="0" stop-color="%23ffcab1"/><stop offset="1" stop-color="%23ff9562"/></linearGradient></defs><path fill="url(%23a)" d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z"/><path d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z" fill="url(%23b)"/></svg>') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Main content styles */
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 40px;
+            transition: var(--transition);
+        }
+
+        /* Welcome container with glassmorphism */
+        .welcome-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-bottom: 40px;
+            color: white;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 127, 66, 0.7), rgba(255, 149, 98, 0.7));
+            z-index: -1;
+        }
+
+        .welcome-container h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .welcome-container p {
+            opacity: 0.9;
+            font-size: 18px;
+            max-width: 600px;
+        }
+
+        /* Active Users Card */
+        .active-users-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .active-users-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            transition: width 0.3s ease;
+        }
+
+        .active-users-card:hover::before {
+            width: 7px;
+        }
+
+        .active-users-card h2 {
+            color: var(--main-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .active-users-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .active-users-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .active-users-count {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--main-color);
+            margin: 20px 0;
+            text-shadow: 0 2px 10px rgba(255, 149, 98, 0.3);
+        }
+
+        /* Enhanced buttons for Start Session and View Active with sidebar color scheme and blue hover */
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .start-button, .active-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 50px; /* Rounded pill buttons */
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: #272430; /* Matching sidebar background */
+            color: white;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(39, 36, 48, 0.3);
+            min-width: 180px;
+        }
+
+        .start-button::before, .active-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 149, 98, 0.3), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .start-button:hover::before, .active-button:hover::before {
+            left: 100%;
+        }
+
+        .start-button i, .active-button i {
+            margin-right: 10px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            color: var(--main-color); /* Orange icon color */
+        }
+
+        .start-button:hover, .active-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(39, 36, 48, 0.4);
+            border-bottom: 3px solid var(--main-color);
+        }
+        
+        .start-button:active, .active-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(39, 36, 48, 0.4);
+        }
+
+        /* Adding subtle orange accent when hovering */
+        .start-button:hover i, .active-button:hover i {
+            transform: scale(1.2);
+            color: #ff9562;
+        }
+
+        /* Adding orange border bottom indicator on hover */
+        .start-button:after, .active-button:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .start-button:hover:after, .active-button:hover:after {
+            width: 80%;
+        }
+
+        /* User Selection Modal */
+        .user-selection-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--main-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .user-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .user-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .user-list::-webkit-scrollbar-thumb {
+            background: var(--main-color);
+            border-radius: 10px;
+        }
+
+        .user-item {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .user-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .modal-cancel:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* Password Verification Modal */
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .password-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .password-content h3 {
+            margin-top: 0;
+            color: var (--main-color);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .password-content p {
+            margin-bottom: 20px;
+            color: var (--text-secondary);
+        }
+
+        .password-content input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .password-content input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+        }
+
+        .password-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .password-buttons button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .password-verify {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .password-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.3);
+        }
+
+        .password-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+
+        .password-cancel:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* Active Users List Modal */
+        .active-users-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .active-users-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .active-users-content h3 {
+            margin-top: 0;
+            color: var(--main-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .active-user-list {
+            margin-bottom: 25px;
+        }
+
+        .active-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
+
+        .active-user-item:last-child {
+            border-bottom: none;
+        }
+
+        .active-user-item:hover {
+            background-color: rgba(255, 149, 98, 0.05);
+            transform: translateX(5px);
+        }
+
+        .active-user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .active-user-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .unactive-btn, .forceout-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .unactive-btn {
+            background-color: rgba(255, 149, 98, 0.15);
+            color: var(--main-color);
+        }
+
+        .unactive-btn:hover {
+            background-color: rgba(255, 149, 98, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255, 127, 66, 0.2);
+        }
+
+        .forceout-btn {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+
+        .forceout-btn:hover {
+            background-color: rgba(220, 53, 69, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(220, 53, 69, 0.2);
+        }
+
+        .modal-close {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .modal-close-btn {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive styles */
+        @media screen and (max-width: 1200px) {
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                padding: 30px 20px;
+            }
+            
+            .user-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .welcome-container h1 {
+                font-size: 28px;
+            }
+            
+            .active-users-count {
+                font-size: 40px;
+            }
+            
+            .button-container {
+                flex-direction: column;
+            }
+        }
+
+        @media screen and (max-width: 576px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .welcome-container h1 {
+                font-size: 24px;
+            }
+            
+            .welcome-container p {
+                font-size: 16px;
+            }
+            
+            .active-users-count {
+                font-size: 36px;
+            }
+        }
+
+        /* Particle background effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Force Out Modal Styles */
+        .forceout-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .forceout-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+            position: relative;
+            border-top: 6px solid #f44336;
+        }
+
+        .forceout-content h3 {
+            margin-top: 0;
+            color: #f44336;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .forceout-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .forceout-user-dropdown {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .forceout-user-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat;
+            background-position: right 15px center;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .forceout-user-select:focus {
+            outline: none;
+            border-color: #f44336;
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.2);
+        }
+
+        .forceout-password-field {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .forceout-password-field:focus {
+            outline: none;
+            border-color: #f44336;
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.2);
+        }
+
+        .forceout-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .forceout-buttons button {
+            flex: 1;
+            padding: 14px 0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .forceout-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+
+        .forceout-cancel:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .forceout-confirm {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .forceout-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .forceout-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+            transition: all 0.2s;
+        }
+
+        .forceout-close:hover {
+            color: #f44336;
+            transform: scale(1.2);
+        }
+
+        .forceout-error {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Include sidebar -->
+    <div id="sidebar-container"></div>
+    
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="welcome-container">
+            <h1>MonuMe Active Users</h1>
+            <p>Manage active users and start new sessions</p>
+        </div>
+        
+        <div class="active-users-card">
+            <h2>MonuMe Team</h2>
+            <h3>Active Users</h3>
+            <p>Press to start a session</p>
+            
+            <div class="active-users-count" id="active-users-count">0</div>
+            
+            <div class="button-container">
+                <button class="start-button" id="start-session-btn">
+                    <i class="fas fa-play"></i> Start Session
+                </button>
+                <button class="active-button" id="view-active-btn">
+                    <i class="fas fa-users"></i> View Active
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Selection Modal -->
+    <div id="user-selection-modal" class="user-selection-modal">
+        <div class="modal-content">
+            <h3>Select User</h3>
+            <p>Choose a user to start a new session</p>
+            
+            <div class="user-list" id="user-list">
+                <!-- User items will be populated here -->
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-cancel" id="cancel-selection">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Password Verification Modal -->
+    <div id="password-modal" class="password-modal">
+        <div class="password-content">
+            <h3>Password Verification</h3>
+            <p>Enter password for <span id="selected-username">User</span></p>
+            
+            <input type="password" id="user-password" placeholder="Enter password">
+            
+            <div class="password-buttons">
+                <button class="password-cancel" id="cancel-password">Cancel</button>
+                <button class="password-verify" id="verify-password">Start</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Users Modal -->
+    <div id="active-users-modal" class="active-users-modal">
+        <div class="active-users-content">
+            <h3>Current Active Users</h3>
+            
+            <div class="active-user-list" id="active-user-list">
+                <!-- Active user items will be populated here -->
+            </div>
+            
+            <div class="modal-close">
+                <button class="modal-close-btn" id="close-active-users">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Force Out Modal -->
+    <div id="forceout-modal" class="forceout-modal">
+        <div class="forceout-content">
+            <button class="forceout-close" id="forceout-close">&times;</button>
+            <h3>Force Out User</h3>
+            <p>Select a user to force out of the active session</p>
+            
+            <div class="forceout-user-dropdown">
+                <select id="forceout-user-select" class="forceout-user-select">
+                    <!-- User options will be populated here -->
+                </select>
+            </div>
+            
+            <p>Enter your password to confirm:</p>
+            <input type="password" id="forceout-password" class="forceout-password-field" placeholder="Your password">
+            
+            <p id="forceout-error" class="forceout-error">Invalid password. Please try again.</p>
+            
+            <div class="forceout-buttons">
+                <button class="forceout-cancel" id="forceout-cancel-btn">Cancel</button>
+                <button class="forceout-confirm" id="forceout-confirm-btn">Force Out</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load the sidebar
+            fetch('sidebar.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('sidebar-container').innerHTML = data;
+                    
+                    // After loading sidebar, highlight active page
+                    setTimeout(() => {
+                        const currentPage = window.location.pathname.split('/').pop();
+                        // Find the corresponding link and make it active
+                        const menuItems = document.querySelectorAll('.sidebar-menu li');
+                        menuItems.forEach(item => {
+                            const link = item.querySelector('a');
+                            if (link && link.getAttribute('href') === 'ActiveUsers.html') {
+                                item.classList.add('active');
+                            } else {
+                                item.classList.remove('active');
+                            }
+                        });
+                    }, 100);
+                });
+            
+            // Initialize particles
+            createParticles();
+            
+            // Initialize the users database if needed
+            initializeUsersDatabase();
+            
+            // Load active users count
+            updateActiveUsersCount();
+            
+            // Set up event listeners
+            document.getElementById('start-session-btn').addEventListener('click', openUserSelectionModal);
+            document.getElementById('view-active-btn').addEventListener('click', openActiveUsersModal);
+            document.getElementById('cancel-selection').addEventListener('click', closeUserSelectionModal);
+            document.getElementById('cancel-password').addEventListener('click', closePasswordModal);
+            document.getElementById('verify-password').addEventListener('click', verifyPasswordAndStart);
+            document.getElementById('close-active-users').addEventListener('click', closeActiveUsersModal);
+            
+            // Set up event delegation for user list items
+            document.getElementById('user-list').addEventListener('click', function(e) {
+                const userItem = e.target.closest('.user-item');
+                if (userItem) {
+                    const username = userItem.getAttribute('data-username');
+                    selectUser(username);
+                }
+            });
+            
+            // Set up event delegation for active user list buttons
+            document.getElementById('active-user-list').addEventListener('click', function(e) {
+                if (e.target.classList.contains('unactive-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    deactivateUser(username);
+                } else if (e.target.classList.contains('forceout-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    forceOutUser(username);
+                }
+            });
+        });
+        
+        // Initialize users database
+        function initializeUsersDatabase() {
+            // Check if the users DB exists, if not create default users
+            if (!localStorage.getItem('monumeUsers')) {
+                const defaultUsers = [
+                    { 
+                        id: 1,
+                        username: "Admin", 
+                        password: "admin123", 
+                        role: "admin",
+                        name: "Admin User",
+                        email: "admin@example.com",
+                        location: "Main Office" 
+                    },
+                    { 
+                        id: 2,
+                        username: "Manager", 
+                        password: "manager123", 
+                        role: "manager",
+                        name: "John Manager",
+                        email: "manager@example.com",
+                        location: "West Branch" 
+                    },
+                    { 
+                        id: 3,
+                        username: "Staff1", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Jane Employee",
+                        email: "employee@example.com",
+                        location: "East Branch" 
+                    },
+                    { 
+                        id: 4,
+                        username: "Staff2", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Bob Worker",
+                        email: "bob@example.com",
+                        location: "North Branch" 
+                    }
+                ];
+                localStorage.setItem('monumeUsers', JSON.stringify(defaultUsers));
+            }
+            
+            if (!localStorage.getItem('activeUsers')) {
+                localStorage.setItem('activeUsers', JSON.stringify([]));
+            }
+        }
+        
+        // Update active users count
+        function updateActiveUsersCount() {
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            document.getElementById('active-users-count').textContent = activeUsers.length;
+        }
+        
+        // Open user selection modal
+        function openUserSelectionModal() {
+            const modal = document.getElementById('user-selection-modal');
+            const userList = document.getElementById('user-list');
+            
+            // Clear previous list
+            userList.innerHTML = '';
+            
+            // Get all users and active users
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            const activeUsernames = activeUsers.map(user => user.username);
+            
+            // Create user items, excluding already active users
+            users.forEach(user => {
+                if (!activeUsernames.includes(user.username)) {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    userItem.setAttribute('data-username', user.username);
+                    userItem.textContent = user.name || user.username; // Show the full name if available
+                    userList.appendChild(userItem);
+                }
+            });
+            
+            // Show the modal
+            modal.style.display = 'flex';
+        }
+        
+        // Close user selection modal
+        function closeUserSelectionModal() {
+            document.getElementById('user-selection-modal').style.display = 'none';
+        }
+        
+        // Select a user and open password modal
+        function selectUser(username) {
+            document.getElementById('selected-username').textContent = username;
+            document.getElementById('user-password').value = '';
+            
+            // Close selection modal and open password modal
+            closeUserSelectionModal();
+            document.getElementById('password-modal').style.display = 'flex';
+            
+            // Focus on password field
+            setTimeout(() => {
+                document.getElementById('user-password').focus();
+            }, 100);
+        }
+        
+        // Close password modal
+        function closePasswordModal() {
+            document.getElementById('password-modal').style.display = 'none';
+        }
+        
+        // Verify password and start session
+        function verifyPasswordAndStart() {
+            const username = document.getElementById('selected-username').textContent;
+            const password = document.getElementById('user-password').value;
+            
+            // Get users from localStorage
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === username);
+            
+            if (user && user.password === password) {
+                // Add user to active users
+                const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+                activeUsers.push({
+                    username: user.username,
+                    role: user.role,
+                    startTime: new Date().toISOString()
+                });
+                localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
+                
+                // Update count
+                updateActiveUsersCount();
+                
+                // Close password modal
+                closePasswordModal();
+                
+                // Redirect to tracking page - this is the line that was opening a new page
+                // Now we'll update dashboard active users count without redirecting
+                window.location.href = 'tracking.html';
+            } else {
+                alert('Invalid password. Please try again.');
+                document.getElementById('user-password').value = '';
+                document.getElementById('user-password').focus();
+            }
+        }
+        
+        // Open active users modal
+        function openActiveUsersModal() {
+            const modal = document.getElementById('active-users-modal');
+            const activeUserList = document.getElementById('active-user-list');
+            
+            // Clear previous list
+            activeUserList.innerHTML = '';
+            
+            // Get active users
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            
+            if (activeUsers.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'No active users at the moment.';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.padding = '20px';
+                emptyMessage.style.color = '#666';
+                activeUserList.appendChild(emptyMessage);
+            } else {
+                // Create user items
+                activeUsers.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'active-user-item';
+                    userItem.setAttribute('data-username', user.username);
+                    
+                    const startTime = new Date(user.startTime);
+                    const timeActive = getTimeActive(startTime);
+                    
+                    userItem.innerHTML = `
+                        <div class="active-user-name">${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span></div>
+                        <div class="active-user-buttons">
+                            <button class="unactive-btn">Unactive</button>
+                            <button class="forceout-btn">Force Out</button>
+                        </div>
+                    `;
+                    
+                    activeUserList.appendChild(userItem);
+                });
+            }
+            
+            // Show the modal
+            modal.style.display = 'flex';
+        }
+        
+        // Close active users modal
+        function closeActiveUsersModal() {
+            document.getElementById('active-users-modal').style.display = 'none';
+        }
+        
+        // Deactivate a user (requires password verification) - IMPROVED VERSION
+        function deactivateUser(username) {
+            // Create a styled modal for password verification
+            const verificationModal = document.createElement('div');
+            verificationModal.style.position = 'fixed';
+            verificationModal.style.top = '0';
+            verificationModal.style.left = '0';
+            verificationModal.style.width = '100%';
+            verificationModal.style.height = '100%';
+            verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            verificationModal.style.backdropFilter = 'blur(5px)';
+            verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
+            verificationModal.style.display = 'flex';
+            verificationModal.style.justifyContent = 'center';
+            verificationModal.style.alignItems = 'center';
+            verificationModal.style.zIndex = '2000';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.borderRadius = '20px';
+            modalContent.style.padding = '30px';
+            modalContent.style.width = '350px';
+            modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.animation = 'modalFadeIn 0.3s ease';
+            modalContent.style.position = 'relative';
+            
+            // Add a colored top border
+            modalContent.style.borderTop = '6px solid #ff9562';
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Password Verification';
+            title.style.marginTop = '0';
+            title.style.color = '#ff9562';
+            title.style.fontSize = '22px';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '15px';
+            
+            const text = document.createElement('p');
+            text.innerHTML = `Please enter <span style="color: #ff9562; font-weight: 600;">${username}</span>'s password to deactivate:`;
+            text.style.marginBottom = '20px';
+            text.style.color = '#666';
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'password';
+            passwordInput.placeholder = 'Enter password';
+            passwordInput.style.width = '100%';
+            passwordInput.style.padding = '12px 15px';
+            passwordInput.style.margin = '10px 0 20px';
+            passwordInput.style.border = '1px solid #ddd';
+            passwordInput.style.borderRadius = '10px';
+            passwordInput.style.fontSize = '16px';
+            passwordInput.style.boxSizing = 'border-box';
+            
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.justifyContent = 'space-between';
+            buttonsDiv.style.gap = '15px';
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.style.flex = '1';
+            cancelButton.style.padding = '12px 0';
+            cancelButton.style.border = 'none';
+            cancelButton.style.borderRadius = '10px';
+            cancelButton.style.fontWeight = '600';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.style.transition = 'all 0.2s ease';
+            cancelButton.style.backgroundColor = '#f0f0f0';
+            cancelButton.style.color = '#666';
+            
+            const verifyButton = document.createElement('button');
+            verifyButton.textContent = 'Verify';
+            verifyButton.style.flex = '1';
+            verifyButton.style.padding = '12px 0';
+            verifyButton.style.border = 'none';
+            verifyButton.style.borderRadius = '10px';
+            verifyButton.style.fontWeight = '600';
+            verifyButton.style.cursor = 'pointer';
+            verifyButton.style.transition = 'all 0.2s ease';
+            verifyButton.style.background = 'linear-gradient(135deg, #ff7f42, #ff9562)';
+            verifyButton.style.color = 'white';
+            
+            // Add hover effects
+            cancelButton.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#e0e0e0';
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            cancelButton.addEventListener('mouseout', function() {
+                this.style.backgroundColor = '#f0f0f0';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            verifyButton.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(255, 127, 66, 0.3)';
+            });
+            
+            verifyButton.addEventListener('mouseout', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+            
+            // Add event listeners
+            cancelButton.addEventListener('click', function() {
+                document.body.removeChild(verificationModal);
+            });
+            
+            verifyButton.addEventListener('click', function() {
+                const password = passwordInput.value;
+                if (!password) {
+                    alert('Please enter a password');
+                    return;
+                }
+                
+                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                const user = users.find(u => u.username === username);
+                
+                if (user && user.password === password) {
+                    // Remove from active users
+                    removeActiveUser(username);
+                    
+                    // Remove the modal
+                    document.body.removeChild(verificationModal);
+                    
+                    // Show success message
+                    const successToast = createToast(`${username} has been deactivated successfully`, 'success');
+                    document.body.appendChild(successToast);
+                    setTimeout(() => {
+                        successToast.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(successToast);
+                        }, 500);
+                    }, 3000);
+                    
+                    // Refresh active users modal
+                    openActiveUsersModal();
+                } else {
+                    // Show error message
+                    const errorMsg = document.createElement('p');
+                    errorMsg.textContent = 'Invalid password. Please try again.';
+                    errorMsg.style.color = '#ff3333';
+                    errorMsg.style.margin = '0 0 15px 0';
+                    errorMsg.style.fontSize = '14px';
+                    
+                    // Remove any existing error message
+                    const existingError = modalContent.querySelector('.error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add class for easy removal
+                    errorMsg.classList.add('error-message');
+                    
+                    // Insert before buttons
+                    buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
+                    
+                    // Clear password field
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    // Add shake animation
+                    modalContent.style.animation = 'none';
+                    setTimeout(() => {
+                        modalContent.style.animation = 'shake 0.5s';
+                    }, 10);
+                }
+            });
+            
+            // Add keypress handler for Enter key
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyButton.click();
+                }
+            });
+            
+            // Add a close button in top right
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.background = 'none';
+            closeButton.style.border = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.color = '#aaa';
+            closeButton.style.transition = 'color 0.2s';
+            
+            closeButton.addEventListener('mouseover', function() {
+                this.style.color = '#ff9562';
+            });
+            
+            closeButton.addEventListener('mouseout', function() {
+                this.style.color = '#aaa';
+            });
+            
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(verificationModal);
+            });
+            
+            // Assemble the modal
+            buttonsDiv.appendChild(cancelButton);
+            buttonsDiv.appendChild(verifyButton);
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(title);
+            modalContent.appendChild(text);
+            modalContent.appendChild(passwordInput);
+            modalContent.appendChild(buttonsDiv);
+            
+            verificationModal.appendChild(modalContent);
+            document.body.appendChild(verificationModal);
+            
+            // Focus the password field
+            setTimeout(() => {
+                passwordInput.focus();
+            }, 100);
+        }
+        
+        // Create a toast notification
+        function createToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.padding = '15px 20px';
+            toast.style.borderRadius = '10px';
+            toast.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '10px';
+            toast.style.zIndex = '2001';
+            toast.style.transition = 'opacity 0.5s ease';
+            
+            // Set color based on type
+            if (type === 'success') {
+                toast.style.backgroundColor = '#4caf50';
+                toast.style.color = 'white';
+                toast.innerHTML = '<i class="fas fa-check-circle"></i> ';
+            } else if (type === 'error') {
+                toast.style.backgroundColor = '#f44336';
+                toast.style.color = 'white';
+                toast.innerHTML = '<i class="fas fa-exclamation-circle"></i> ';
+            } else {
+                toast.style.backgroundColor = '#2196f3';
+                toast.style.color = 'white';
+                toast.innerHTML = '<i class="fas fa-info-circle"></i> ';
+            }
+            
+            toast.innerHTML += message;
+            
+            return toast;
+        }
+        
+        // Force out a user (admin/manager only) - IMPROVED VERSION
+        function forceOutUser(username) {
+            // Always show the modal regardless of permissions
+            // Create verification modal
+            const verificationModal = document.createElement('div');
+            verificationModal.style.position = 'fixed';
+            verificationModal.style.top = '0';
+            verificationModal.style.left = '0';
+            verificationModal.style.width = '100%';
+            verificationModal.style.height = '100%';
+            verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            verificationModal.style.backdropFilter = 'blur(5px)';
+            verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
+            verificationModal.style.display = 'flex';
+            verificationModal.style.justifyContent = 'center';
+            verificationModal.style.alignItems = 'center';
+            verificationModal.style.zIndex = '2000';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.borderRadius = '20px';
+            modalContent.style.padding = '30px';
+            modalContent.style.width = '400px';
+            modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.animation = 'modalFadeIn 0.3s ease';
+            modalContent.style.position = 'relative';
+            
+            // Add a colored top border - red for force out
+            modalContent.style.borderTop = '6px solid #f44336';
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Authentication Check';
+            title.style.marginTop = '0';
+            title.style.color = '#f44336';
+            title.style.fontSize = '22px';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '15px';
+            
+            const currentUser = localStorage.getItem('currentUser') || localStorage.getItem('username') || 'Guest';
+            const currentRole = getCurrentUserRole();
+            
+            // Check permissions (but still allow the user to attempt)
+            const isAdmin = currentRole === 'admin';
+            const isManager = currentRole === 'manager';
+            const hasPermission = isAdmin || isManager;
+            
+            const text = document.createElement('p');
+            
+            if (hasPermission) {
+                text.innerHTML = `Select an admin or manager account to force out <span style="color: #f44336; font-weight: 600;">${username}</span>:`;
+            } else {
+                text.innerHTML = `<span style="color: #f44336;">Permission Check:</span> You must be an admin or manager to force out <span style="color: #f44336; font-weight: 600;">${username}</span>.<br>Select an admin or manager account and provide their password:`;
+            }
+            
+            text.style.marginBottom = '20px';
+            text.style.color = '#666';
+            
+            // Add dropdown for admin/manager selection
+            const adminManagerSelect = document.createElement('select');
+            adminManagerSelect.style.width = '100%';
+            adminManagerSelect.style.padding = '12px 15px';
+            adminManagerSelect.style.margin = '0 0 15px 0';
+            adminManagerSelect.style.border = '1px solid #ddd';
+            adminManagerSelect.style.borderRadius = '10px';
+            adminManagerSelect.style.fontSize = '16px';
+            adminManagerSelect.style.appearance = 'none';
+            adminManagerSelect.style.WebkitAppearance = 'none';
+            adminManagerSelect.style.background = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>\') no-repeat';
+            adminManagerSelect.style.backgroundPosition = 'right 15px center';
+            adminManagerSelect.style.backgroundColor = 'white';
+            adminManagerSelect.style.cursor = 'pointer';
+            adminManagerSelect.style.transition = 'all 0.2s ease';
+            
+            // Get all admins and managers
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const adminsAndManagers = users.filter(user => user.role === 'admin' || user.role === 'manager');
+            
+            // Populate the dropdown
+            if (adminsAndManagers.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'No admins or managers found';
+                option.disabled = true;
+                adminManagerSelect.appendChild(option);
+            } else {
+                adminsAndManagers.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.username;
+                    option.textContent = `${user.name || user.username} (${user.role})`;
+                    adminManagerSelect.appendChild(option);
+                });
+                
+                // Try to preselect current user if they are admin/manager
+                const currentUserOption = Array.from(adminManagerSelect.options).find(option => option.value === currentUser);
+                if (currentUserOption) {
+                    currentUserOption.selected = true;
+                }
+            }
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'password';
+            passwordInput.placeholder = 'Enter password for selected account';
+            passwordInput.style.width = '100%';
+            passwordInput.style.padding = '12px 15px';
+            passwordInput.style.margin = '10px 0 20px';
+            passwordInput.style.border = '1px solid #ddd';
+            passwordInput.style.borderRadius = '10px';
+            passwordInput.style.fontSize = '16px';
+            passwordInput.style.boxSizing = 'border-box';
+            
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.justifyContent = 'space-between';
+            buttonsDiv.style.gap = '15px';
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.style.flex = '1';
+            cancelButton.style.padding = '12px 0';
+            cancelButton.style.border = 'none';
+            cancelButton.style.borderRadius = '10px';
+            cancelButton.style.fontWeight = '600';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.style.transition = 'all 0.2s ease';
+            cancelButton.style.backgroundColor = '#f0f0f0';
+            cancelButton.style.color = '#666';
+            
+            const forceOutButton = document.createElement('button');
+            forceOutButton.textContent = 'Force Out';
+            forceOutButton.style.flex = '1';
+            forceOutButton.style.padding = '12px 0';
+            forceOutButton.style.border = 'none';
+            forceOutButton.style.borderRadius = '10px';
+            forceOutButton.style.fontWeight = '600';
+            forceOutButton.style.cursor = 'pointer';
+            forceOutButton.style.transition = 'all 0.2s ease';
+            forceOutButton.style.backgroundColor = '#f44336';
+            forceOutButton.style.color = 'white';
+            
+            // Add hover effects
+            cancelButton.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#e0e0e0';
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            cancelButton.addEventListener('mouseout', function() {
+                this.style.backgroundColor = '#f0f0f0';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            forceOutButton.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(244, 67, 54, 0.3)';
+            });
+            
+            forceOutButton.addEventListener('mouseout', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+            
+            // Add event listeners
+            cancelButton.addEventListener('click', function() {
+                document.body.removeChild(verificationModal);
+            });
+            
+            forceOutButton.addEventListener('click', function() {
+                const selectedAdminUsername = adminManagerSelect.value;
+                const password = passwordInput.value;
+                
+                if (!selectedAdminUsername) {
+                    alert('Please select an admin or manager account');
+                    return;
+                }
+                
+                if (!password) {
+                    alert('Please enter a password');
+                    return;
+                }
+                
+                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                const selectedAdminUser = users.find(u => u.username === selectedAdminUsername);
+                
+                if (selectedAdminUser && selectedAdminUser.password === password) {
+                    // Password is correct, now check role permissions
+                    if (selectedAdminUser.role === 'admin' || 
+                        (selectedAdminUser.role === 'manager' && checkUserRoleToForceOut(username))) {
+                        // Remove from active users
+                        removeActiveUser(username);
+                        
+                        // Remove the modal
+                        document.body.removeChild(verificationModal);
+                        
+                        // Show success message
+                        const successToast = createToast(`${username} has been forced out by ${selectedAdminUsername}`, 'success');
+                        document.body.appendChild(successToast);
+                        setTimeout(() => {
+                            successToast.style.opacity = '0';
+                            setTimeout(() => {
+                                document.body.removeChild(successToast);
+                            }, 500);
+                        }, 3000);
+                        
+                        // Refresh active users modal
+                        openActiveUsersModal();
+                    } else {
+                        // Correct password but no permission
+                        const errorMsg = document.createElement('p');
+                        if (selectedAdminUser.role === 'manager') {
+                            errorMsg.textContent = 'As a manager, you can only force out employees and other managers, not admins.';
+                        } else {
+                            errorMsg.textContent = 'The selected account does not have permission to force out users. Only admins and managers can do this.';
+                        }
+                        
+                        errorMsg.style.color = '#ff3333';
+                        errorMsg.style.margin = '0 0 15px 0';
+                        errorMsg.style.fontSize = '14px';
+                        
+                        // Remove any existing error message
+                        const existingError = modalContent.querySelector('.error-message');
+                        if (existingError) {
+                            existingError.remove();
+                        }
+                        
+                        // Add class for easy removal
+                        errorMsg.classList.add('error-message');
+                        
+                        // Insert before buttons
+                        buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
+                        
+                        // Add shake animation
+                        modalContent.style.animation = 'none';
+                        setTimeout(() => {
+                            modalContent.style.animation = 'shake 0.5s';
+                        }, 10);
+                    }
+                } else {
+                    // Incorrect password
+                    const errorMsg = document.createElement('p');
+                    errorMsg.textContent = 'Invalid password for selected account. Please try again.';
+                    errorMsg.style.color = '#ff3333';
+                    errorMsg.style.margin = '0 0 15px 0';
+                    errorMsg.style.fontSize = '14px';
+                    
+                    // Remove any existing error message
+                    const existingError = modalContent.querySelector('.error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add class for easy removal
+                    errorMsg.classList.add('error-message');
+                    
+                    // Insert before buttons
+                    buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
+                    
+                    // Clear password field
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    // Add shake animation
+                    modalContent.style.animation = 'none';
+                    setTimeout(() => {
+                        modalContent.style.animation = 'shake 0.5s';
+                    }, 10);
+                }
+            });
+            
+            // Add keypress handler for Enter key
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent default form submission
+                    forceOutButton.click();
+                }
+            });
+            
+            // Add a close button in top right
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.background = 'none';
+            closeButton.style.border = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.color = '#aaa';
+            closeButton.style.transition = 'color 0.2s';
+            
+            closeButton.addEventListener('mouseover', function() {
+                this.style.color = '#f44336';
+            });
+            
+            closeButton.addEventListener('mouseout', function() {
+                this.style.color = '#aaa';
+            });
+            
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(verificationModal);
+            });
+            
+            // Assemble the modal
+            buttonsDiv.appendChild(cancelButton);
+            buttonsDiv.appendChild(forceOutButton);
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(title);
+            modalContent.appendChild(text);
+            modalContent.appendChild(adminManagerSelect);
+            modalContent.appendChild(passwordInput);
+            modalContent.appendChild(buttonsDiv);
+            
+            verificationModal.appendChild(modalContent);
+            document.body.appendChild(verificationModal);
+            
+            // Focus the password field
+            setTimeout(() => {
+                passwordInput.focus();
+            }, 100);
+        }
+        
+        // Helper function to check if a manager can force out another user
+        function checkUserRoleToForceOut(username) {
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const targetUser = users.find(u => u.username === username);
+            
+            // Managers can force out other managers and employees, but not admins
+            return targetUser && targetUser.role !== 'admin';
+        }
+        
+        // Get time active in human-readable format
+        function getTimeActive(startTime) {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000); // seconds
+            
+            if (diff < 60) {
+                return `${diff} sec`;
+            } else if (diff < 3600) {
+                return `${Math.floor(diff / 60)} min`;
+            } else {
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+        }
+        
+        // Get current user role
+        function getCurrentUserRole() {
+            const currentUser = localStorage.getItem('currentUser');
+            
+            if (!currentUser) return 'guest';
+            
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === currentUser);
+            
+            return user ? user.role : 'guest';
+        }
+        
+        // Create particles for background effect
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const numberOfParticles = 25;
+            
+            for (let i = 0; i < numberOfParticles; i++) {
+                createParticle();
+            }
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                particle.style.opacity = Math.random() * 0.6 + 0.1;
+                
+                const duration = Math.random() * 15 + 15;
+                particle.style.animationDuration = `${duration}s`;
+                
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                particlesContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                    createParticle();
+                }, duration * 1000);
+            }
+        }
+        
+        // Add keypress handling for password input
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('user-password');
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPasswordAndStart();
+                }
+            });
+        });
+        
+        // Add shake animation for error feedback
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+            </style>
+        `);
+        
+        // Force Out Modal Events and Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up Force Out modal event listeners
+            document.getElementById('forceout-close').addEventListener('click', closeForceOutModal);
+            document.getElementById('forceout-cancel-btn').addEventListener('click', closeForceOutModal);
+            document.getElementById('forceout-confirm-btn').addEventListener('click', confirmForceOut);
+            
+            // Add keypress handler for Force Out password field
+            const forceOutPasswordInput = document.getElementById('forceout-password');
+            forceOutPasswordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    confirmForceOut();
+                }
+            });
+        });
+        
+        // Open the Force Out modal with multi-user selection
+        function openForceOutModal() {
+            const modal = document.getElementById('forceout-modal');
+            const userSelect = document.getElementById('forceout-user-select');
+            const errorElement = document.getElementById('forceout-error');
+            
+            // Clear previous error
+            errorElement.style.display = 'none';
+            
+            // Clear password field
+            document.getElementById('forceout-password').value = '';
+            
+            // Clear previous options
+            userSelect.innerHTML = '';
+            
+            // Get active users
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            const currentUserRole = getCurrentUserRole();
+            
+            // Filter users based on current user's role
+            const eligibleUsers = activeUsers.filter(user => {
+                if (currentUserRole === 'admin') {
+                    // Admins can force out anyone
+                    return true;
+                } else if (currentUserRole === 'manager') {
+                    // Managers can force out managers and employees, but not admins
+                    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                    const userDetails = users.find(u => u.username === user.username);
+                    return userDetails && userDetails.role !== 'admin';
+                } else {
+                    // Employees can't force out anyone (shouldn't reach here due to UI constraints)
+                    return false;
+                }
+            });
+            
+            // If no eligible users, show message and return
+            if (eligibleUsers.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'No users available';
+                option.disabled = true;
+                userSelect.appendChild(option);
+                return;
+            }
+            
+            // Populate the dropdown with eligible users
+            eligibleUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                option.textContent = user.username;
+                userSelect.appendChild(option);
+            });
+            
+            // Show the modal
+            modal.style.display = 'flex';
+            
+            // Focus the password field
+            setTimeout(() => {
+                document.getElementById('forceout-password').focus();
+            }, 100);
+        }
+        
+        // Close the Force Out modal
+        function closeForceOutModal() {
+            document.getElementById('forceout-modal').style.display = 'none';
+        }
+        
+        // Confirm Force Out action with password verification
+        function confirmForceOut() {
+            const userSelect = document.getElementById('forceout-user-select');
+            const password = document.getElementById('forceout-password').value;
+            const errorElement = document.getElementById('forceout-error');
+            
+            // Validate inputs
+            if (!userSelect.value) {
+                errorElement.textContent = 'Please select a user to force out.';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (!password) {
+                errorElement.textContent = 'Please enter your password to continue.';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            // Get current user
+            const currentUser = localStorage.getItem('username') || localStorage.getItem('currentUser');
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === currentUser);
+            
+            // Verify password
+            if (user && user.password === password) {
+                // Password is correct, proceed with force out
+                const targetUsername = userSelect.value;
+                
+                // Check if we have permission (double-check for security)
+                const currentUserRole = user.role;
+                const targetUser = users.find(u => u.username === targetUsername);
+                
+                if (!targetUser) {
+                    errorElement.textContent = 'User not found.';
+                    errorElement.style.display = 'block';
+                    return;
+                }
+                
+                // Verify permissions again
+                if (currentUserRole === 'admin' || 
+                    (currentUserRole === 'manager' && targetUser.role !== 'admin')) {
+                    // Remove from active users
+                    removeActiveUser(targetUsername);
+                    
+                    // Close the modal
+                    closeForceOutModal();
+                    
+                    // Show success toast
+                    const successToast = createToast(`${targetUsername} has been forced out by ${currentUser}`, 'success');
+                    document.body.appendChild(successToast);
+                    setTimeout(() => {
+                        successToast.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(successToast);
+                        }, 500);
+                    }, 3000);
+                    
+                    // Refresh active users modal
+                    openActiveUsersModal();
+                } else {
+                    errorElement.textContent = 'You do not have permission to force out this user.';
+                    errorElement.style.display = 'block';
+                }
+            } else {
+                // Incorrect password
+                errorElement.textContent = 'Invalid password. Please try again.';
+                errorElement.style.display = 'block';
+                document.getElementById('forceout-password').value = '';
+                
+                // Add shake animation to modal
+                const modalContent = document.querySelector('.forceout-content');
+                modalContent.style.animation = 'none';
+                setTimeout(() => {
+                    modalContent.style.animation = 'shake 0.5s';
+                }, 10);
+            }
+        }
+        
+        // Helper function to remove a user from active users
+        function removeActiveUser(username) {
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            const updatedActiveUsers = activeUsers.filter(user => user.username !== username);
+            localStorage.setItem('activeUsers', JSON.stringify(updatedActiveUsers));
+            
+            // Update count
+            updateActiveUsersCount();
+            
+            // Return true if user was removed, false otherwise
+            return activeUsers.length !== updatedActiveUsers.length;
+        }
+    </script>
+</body>
+</html>

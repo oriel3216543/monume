@@ -4,9 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MonuMe Tracker - Dashboard</title>
+    <!-- Authentication Check -->
+    <script>
+        // Immediate authentication check - runs before page loads
+        (function() {
+            const username = localStorage.getItem("username");
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+            
+            if (!username || !isLoggedIn) {
+                console.log("Authentication failed, redirecting to login page");
+                window.location.href = "../index.html";
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
@@ -19,7 +32,7 @@
             --main-color: #ff9562;
             --gradient-start: #ff7f42;
             --gradient-end: #ff9562;
-            --sidebar-bg: rgba(15, 23, 42, 0.9);
+            --sidebar-bg: #272430; /* Updated to match sidebar.html */
             --card-bg: rgba(255, 255, 255, 0.85);
             --card-hover-bg: rgba(255, 255, 255, 0.95);
             --text-primary: #333;
@@ -39,12 +52,14 @@
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Sidebar styles with glassmorphism */
+        /* Sidebar styles with enhanced design from sidebar.html */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: #272430; /* Direct hexcode to ensure it's applied */
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             min-height: 100vh;
@@ -54,36 +69,68 @@
             transition: var(--transition);
             z-index: 100;
             box-shadow: var(--shadow-md);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sidebar-header {
-            padding: 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 35px 25px 15px;
+            border-bottom: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            background: transparent;
+            box-shadow: none;
+            position: relative;
+        }
+
+        /* Add a subtle gradient overlay to the header */
+        .sidebar-header:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
 
         .sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            width: 100%;
         }
 
-        .sidebar-brand img {
-            width: 35px;
-            height: 35px;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        .sidebar-brand a {
+            text-decoration: none;
+            border-bottom: none;
+            box-shadow: none;
+            outline: none;
         }
 
-        .sidebar-header h2 {
+        .app-title {
             color: var(--main-color);
-            font-size: 28px;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            letter-spacing: 0.5px;
+            font-size: 42px; /* Slightly bigger */
+            font-weight: 800;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            text-shadow: none; /* Removed the white glow effect */
+            letter-spacing: 1px;
+            margin: 0;
+            transition: transform 0.3s ease;
+            text-align: center;
+            background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 18px;
+        }
+        
+        .app-title:hover {
+            transform: scale(1.05);
+            text-shadow: none; /* Removed the white glow effect on hover */
         }
 
         .sidebar-menu {
@@ -93,7 +140,7 @@
         }
 
         .sidebar-menu li {
-            margin-bottom: 8px;
+            margin-bottom: 10px; /* Slightly more spacing */
             border-radius: 12px;
             overflow: hidden;
             transition: var(--transition);
@@ -102,8 +149,8 @@
         .sidebar-menu li a {
             display: flex;
             align-items: center;
-            padding: 15px 20px;
-            color: rgba(255, 255, 255, 0.75);
+            padding: 16px 20px; /* Slightly taller */
+            color: rgba(255, 255, 255, 0.8); /* Brighter text */
             text-decoration: none;
             font-size: 16px;
             border-radius: 12px;
@@ -117,6 +164,7 @@
             min-width: 24px;
             margin-right: 15px;
             font-size: 18px;
+            transition: transform 0.3s ease; /* Animate the icon */
         }
 
         .sidebar-menu li a::before {
@@ -133,6 +181,7 @@
             border-radius: 12px;
         }
 
+        /* Enhanced hover and active states */
         .sidebar-menu li:hover a::before,
         .sidebar-menu li.active a::before {
             width: 100%;
@@ -142,6 +191,30 @@
         .sidebar-menu li.active a {
             color: white;
             transform: translateX(5px);
+        }
+        
+        .sidebar-menu li:hover a i,
+        .sidebar-menu li.active a i {
+            transform: scale(1.2); /* Scale up icon on hover */
+        }
+
+        /* Add subtle indicators for menu items */
+        .sidebar-menu li:not(.active)::after {
+            content: none; /* Changed from '' to none to completely remove the dot */
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-menu li:not(.active):hover::after {
+            opacity: 0; /* Changed from 1 to 0 to hide the dot */
         }
 
         /* Main content styles */
@@ -245,17 +318,26 @@
             color: var(--text-secondary);
             font-weight: 600;
         }
-
-        .stat-card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
+        
+        /* Enhanced Team MonuMe title styling */
+        .team-monume-title {
             font-size: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: #ff7f42; /* Orange color to match the icon */
+            font-weight: 800; /* Extra bold */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        
+        /* Add a subtle underline to the title */
+        .team-monume-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #ff7f42, transparent);
         }
 
         .stat-card-value {
@@ -347,8 +429,8 @@
             background: rgba(255, 255, 255, 0.5);
             border-radius: 12px;
             text-decoration: none;
-            color: var(--text-primary);
-            transition: var(--transition);
+            color: var (--text-primary);
+            transition: var (--transition);
             border: 1px solid rgba(255, 255, 255, 0.2);
             position: relative;
             overflow: hidden;
@@ -378,7 +460,7 @@
             font-size: 26px;
             margin-bottom: 10px;
             color: var(--main-color);
-            transition: var(--transition);
+            transition: var (--transition);
         }
 
         .action-button:hover i {
@@ -401,7 +483,7 @@
             align-items: center;
             padding: 15px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: var(--transition);
+            transition: var (--transition);
         }
 
         .recent-item:last-child {
@@ -433,7 +515,7 @@
 
         .recent-item-details p {
             font-size: 14px;
-            color: var(--text-secondary);
+            color: var (--text-secondary);
         }
 
         /* Modal Styles */
@@ -748,14 +830,1368 @@
         body.has-notification .main-content {
             margin-top: 46px; /* Height of the notification banner */
         }
+
+        /* Logo upload modal */
+        .logo-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 35px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1001;
+            width: 380px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-modal h2 {
+            margin-top: 0;
+            color: var(--main-color);
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .logo-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logo-upload-area:hover {
+            border-color: var(--main-color);
+            background: rgba(255, 149, 98, 0.05);
+        }
+
+        .logo-upload-area i {
+            font-size: 40px;
+            color: var(--main-color);
+            margin-bottom: 10px;
+        }
+
+        .logo-upload-area p {
+            color: var(--text-secondary);
+        }
+
+        .logo-preview {
+            width: 100%;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .logo-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .logo-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            flex-grow: 1;
+            margin: 0 5px;
+        }
+
+        .cancel-btn {
+            background-color: #f0f0f0;
+            color: var(--text-secondary);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.4);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Chat box styling enhancements */
+        .mini-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 350px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--main-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .chat-title {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .users-btn {
+            background: white;
+            border: none;
+            color: var(--main-color);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .users-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+        }
+        
+        .users-btn i {
+            font-size: 11px;
+            transition: transform 0.3s ease;
+            color: var(--main-color);
+        }
+        
+        .users-btn:hover i {
+            transform: rotate(180deg);
+        }
+        
+        .users-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 150px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            overflow: hidden;
+            display: none;
+            margin-top: 5px;
+            border: 1px solid var(--main-color);
+            animation: slideDown 0.25s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .users-dropdown.show {
+            display: block;
+        }
+        
+        .dropdown-user {
+            padding: 10px 16px;
+            color: var(--main-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-user:before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--main-color);
+            border-radius: 50%;
+            margin-right: 10px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-user:hover {
+            background: rgba(255, 149, 98, 0.1);
+            padding-left: 20px;
+        }
+        
+        .dropdown-user:hover:before {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            background-color: white;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 149, 98, 0.2);
+            border-radius: 6px;
+        }
+        
+        .chat-message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .chat-message.received {
+            align-self: flex-start;
+            background: rgba(255, 149, 98, 0.1);
+            color: var(--main-color);
+            border-bottom-left-radius: 4px;
+        }
+        
+        .chat-message.sent {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            color: var(--main-color);
+        }
+        
+        .message-time {
+            opacity: 0.8;
+            color: var(--main-color);
+        }
+        
+        .message-content {
+            word-break: break-word;
+            color: var(--main-color) !important;
+            font-weight: 500;
+        }
+        
+        .chat-message.sent .message-content {
+            color: white !important;
+        }
+
+        /* Chat message header color fixes for sent messages */
+        .chat-message.sent .message-header {
+            color: white;
+            opacity: 0.9;
+        }
+        
+        .chat-message.sent .message-sender,
+        .chat-message.sent .message-time {
+            color: white !important;
+        }
+        
+        .chat-input-wrapper {
+            padding: 10px 15px;
+            background: var(--main-color);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .message-input-container {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 20px;
+            padding: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .message-input-container:focus-within {
+            background: white;
+            box-shadow: 0 0 0 2px rgba(255, 149, 98, 0.3);
+        }
+        
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 8px 15px;
+            color: var(--main-color);
+            font-size: 13px;
+            outline: none;
+            border-radius: 20px;
+        }
+        
+        .message-input::placeholder {
+            color: rgba(255, 149, 98, 0.5);
+        }
+        
+        .send-btn {
+            background: var(--main-color);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            margin-right: 2px;
+        }
+        
+        .send-btn:hover:not(:disabled) {
+            background: var(--gradient-start);
+            transform: scale(1.1);
+        }
+        
+        .send-btn:disabled {
+            background: rgba(255, 149, 98, 0.15);
+            cursor: not-allowed;
+        }
+
+        /* User Authentication Modal - Enhanced Design */
+        .user-auth-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .user-auth-modal .modal-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            text-align: center;
+            animation: modalFadeIn 0.4s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .user-auth-modal .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        }
+        
+        .user-auth-modal h3 {
+            margin-top: 5px;
+            color: var(--main-color);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-auth-modal h3::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 3px;
+        }
+        
+        .user-auth-modal p {
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .user-auth-modal #selected-username {
+            color: var(--main-color);
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .user-auth-modal .auth-input {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) inset;
+            background-color: #f9f9f9;
+        }
+        
+        .user-auth-modal .auth-input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.15);
+            background-color: #fff;
+        }
+        
+        .user-auth-modal .auth-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        .user-auth-modal .auth-buttons button {
+            padding: 14px 0;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 48%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .user-auth-modal .auth-buttons button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        
+        .user-auth-modal .auth-buttons button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .user-auth-modal .cancel-btn {
+            background-color: #f0f0f0;
+            color: #777;
+        }
+        
+        .user-auth-modal .cancel-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .user-auth-modal .confirm-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+        
+        .user-auth-modal .confirm-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(255, 127, 66, 0.4);
+        }
+        
+        /* Enhanced modal animation */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Dashboard split container styles */
+        .dashboard-split-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .dashboard-split-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-split-section.left-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .dashboard-split-section.left-section .placeholder-content {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .dashboard-split-section.left-section .placeholder-content i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: var(--main-color);
+        }
+
+        /* Custom style for Team MonuMe card */
+        .active-users-info {
+            margin-bottom: 15px;
+        }
+
+        .stat-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-card-actions .action-button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 149, 98, 0.15);
+            color: #ff7f42;
+        }
+
+        .stat-card-actions .start-btn {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+        }
+
+        .stat-card-actions .view-btn {
+            background: rgba(63, 135, 245, 0.15);
+            color: #3f87f5;
+        }
+
+        .stat-card-actions .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.2);
+        }
+
+        .stat-card-actions .start-btn:hover {
+            background: rgba(255, 158, 94, 0.3);
+            box-shadow: 0 5px 15px rgba(255, 158, 94, 0.3);
+        }
+
+        .stat-card-actions .view-btn:hover {
+            background: rgba(255, 203, 107, 0.3);
+            box-shadow: 0 5px 15px rgba(255, 203, 107, 0.3);
+        }
+
+        .stat-card-actions .start-btn {
+            background: rgba(255, 127, 66, 0.15);
+            color: #ff7f42;
+        }
+
+        .stat-card-actions .view-btn {
+            background: rgba(255, 185, 120, 0.15);
+            color: #ffb978;
+        }
+
+        .stat-card-actions .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.2);
+        }
+
+        .stat-card-actions .start-btn:hover {
+            background: rgba(255, 127, 66, 0.25);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.2);
+        }
+
+        .stat-card-actions .view-btn:hover {
+            background: rgba(255, 185, 120, 0.25);
+            box-shadow: 0 5px 15px rgba(255, 185, 120, 0.2);
+        }
+
+        /* Modals for Team MonuMe */
+        .team-modal {
+            display: none;
+            position: fixed;
+            border-top: 6px solid #ff7f42;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .team-modal-title {
+            color: #ff7f42;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .team-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+            transition: all 0.2s;
+        }
+
+        .team-modal-close:hover {
+            color: #ff7f42;
+            transform: scale(1.2);
+        }
+
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .user-item {
+            background: linear-gradient(135deg, #ff7f42, #ff9562);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .user-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.3);
+        }
+
+        .user-item.active {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+        }
+
+        .active-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.2s;
+        }
+
+        .active-user-item:last-child {
+            border-bottom: none;
+        }
+
+        .active-user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .active-user-time {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .active-user-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .active-user-action {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .deactivate-btn {
+            background-color: rgba(255, 149, 98, 0.15);
+            color: #ff9562;
+        }
+
+        .deactivate-btn:hover {
+            background-color: rgba(255, 149, 98, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255, 127, 66, 0.2);
+        }
+
+        .team-modal-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .team-modal-button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .team-modal-button:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* User Selection Modal */
+        .user-selection-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--main-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .user-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .user-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .user-list::-webkit-scrollbar-thumb {
+            background: var(--main-color);
+            border-radius: 10px;
+        }
+
+        .user-item {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .user-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .modal-cancel:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* Password Verification Modal */
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .password-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .password-content h3 {
+            margin-top: 0;
+            color: var(--main-color);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .password-content p {
+            margin-bottom: 20px;
+            color: var (--text-secondary);
+        }
+
+        .password-content input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .password-content input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.2);
+        }
+
+        .password-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .password-buttons button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .password-verify {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .password-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 127, 66, 0.3);
+        }
+
+        .password-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+
+        .password-cancel:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Team MonuMe card action buttons */
+        .stat-card-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card-actions .action-button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 15px;
+            border: none;
+            border-radius: 50px; /* Rounded pill buttons */
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: #272430; /* Matching sidebar background */
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(39, 36, 48, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card-actions .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 149, 98, 0.3), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .stat-card-actions .action-button i {
+            margin-right: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: var(--main-color); /* Orange icon color */
+        }
+
+        .stat-card-actions .action-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(39, 36, 48, 0.4);
+            border-bottom: 3px solid var(--main-color);
+        }
+        
+        .stat-card-actions .action-button:hover::before {
+            left: 100%;
+        }
+        
+        .stat-card-actions .action-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(39, 36, 48, 0.4);
+        }
+
+        /* Adding subtle orange accent when hovering */
+        .stat-card-actions .action-button:hover i {
+            transform: scale(1.2);
+            color: #ff9562;
+        }
+
+        /* Adding orange border bottom indicator on hover */
+        .stat-card-actions .action-button:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .stat-card-actions .action-button:hover:after {
+            width: 80%;
+        }
+
+        /* Active Users List Modal */
+        .active-users-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .active-users-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .active-users-content h3 {
+            margin-top: 0;
+            color: var(--main-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .active-user-list {
+            margin-bottom: 25px;
+        }
+
+        .active-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
+
+        .active-user-item:last-child {
+            border-bottom: none;
+        }
+
+        .active-user-item:hover {
+            background-color: rgba(255, 149, 98, 0.05);
+            transform: translateX(5px);
+        }
+
+        .active-user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .active-user-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .unactive-btn, .forceout-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .unactive-btn {
+            background-color: rgba(255, 149, 98, 0.15);
+            color: var(--main-color);
+        }
+
+        .unactive-btn:hover {
+            background-color: rgba(255, 149, 98, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255, 127, 66, 0.2);
+        }
+
+        .forceout-btn {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+
+        .forceout-btn:hover {
+            background-color: rgba(220, 53, 69, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(220, 53, 69, 0.2);
+        }
+
+        .modal-close {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .modal-close-btn {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Force Out Modal Styles */
+        .forceout-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .forceout-content {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+            position: relative;
+            border-top: 6px solid #f44336;
+        }
+
+        .forceout-content h3 {
+            margin-top: 0;
+            color: #f44336;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .forceout-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .forceout-user-dropdown {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .forceout-user-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat;
+            background-position: right 15px center;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .forceout-user-select:focus {
+            outline: none;
+            border-color: #f44336;
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.2);
+        }
+
+        .forceout-password-field {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .forceout-password-field:focus {
+            outline: none;
+            border-color: #f44336;
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.2);
+        }
+
+        .forceout-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .forceout-buttons button {
+            flex: 1;
+            padding: 14px 0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .forceout-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+
+        .forceout-cancel:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .forceout-confirm {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .forceout-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .forceout-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+            transition: all 0.2s;
+        }
+
+        .forceout-close:hover {
+            color: #f44336;
+            transform: scale(1.2);
+        }
+
+        .forceout-error {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
     </style>
 </head>
 <body>
+    <script>
+        // Secondary authentication check (when DOM is loaded)
+        document.addEventListener('DOMContentLoaded', function() {
+            const username = localStorage.getItem("username");
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+            
+            if (!username || !isLoggedIn) {
+                console.log("Authentication check failed during DOM load, redirecting to login page");
+                window.location.href = "../index.html";
+                return;
+            }
+            
+            console.log("User authenticated:", username);
+            
+            // Rest of your initialization code
+            // ...
+        });
+    </script>
+
     <!-- Notification Banner -->
     <div class="notification-banner" id="notification-banner">
         <div class="notification-message">
             <i class="fas fa-exclamation-circle"></i>
-            You have a morning note to complete! <a href="morning_notes.html" style="color: white; text-decoration: underline;">Complete now</a>
+            You have a morning note to complete! <a href="team_chat.html" style="color: white; text-decoration: underline;">Complete now</a>
         </div>
         <button class="close-notification" onclick="dismissNotification()">×</button>
     </div>
@@ -763,129 +2199,115 @@
     <!-- Particles background -->
     <div class="particles" id="particles"></div>
 
-    <!-- Left sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-brand">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEyIDJsMTAgMTB2MTBIMlYxMkwxMiAyeiIgZmlsbD0iI2ZmOTU2MiIvPjwvc3ZnPg==" alt="Logo">
-                <h2>MonuMe</h2>
-            </div>
-        </div>
-        <ul class="sidebar-menu">
-            <li class="active">
-                <a href="dashboard.html">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="management.html">
-                    <i class="fas fa-tasks"></i>
-                    <span>Management</span>
-                </a>
-            </li>
-            <li>
-                <a href="tracking.html">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Performance</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" id="analytics-link">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Analytics</span>
-                </a>
-            </li>
-            <li>
-                <a href="morning_notes.html">
-                    <i class="fas fa-coffee"></i>
-                    <span>Morning Notes</span>
-                </a>
-            </li>
-            <li>
-                <a href="endofday.html">
-                    <i class="fas fa-moon"></i>
-                    <span>End of Day</span>
-                </a>
-            </li>
-            <!-- Removed users, emails, and locations links -->
-        </ul>
-    </div>
+    <!-- Include sidebar -->
+    <div id="sidebar-container"></div>
 
     <!-- Main content area -->
     <div class="main-content">
         <div class="welcome-container">
-            <h1>Welcome to MonuMe Tracker</h1>
-            <p>Monitor your team's performance and manage resources efficiently</p>
+            <h1>Welcome to MonuMe Performance</h1>
+            <p>See The Result, Shape The Future.</p>
         </div>
 
         <!-- Dashboard statistics cards -->
         <div class="dashboard-stats">
             <div class="stat-card">
                 <div class="stat-card-header">
-                    <h3 class="stat-card-title">Active Users</h3>
-                    <div class="stat-card-icon blue-bg">
+                    <p class="team-monume-title">Team MonuMe</p>
+                    <div class="stat-card-icon orange-bg">
                         <i class="fas fa-users"></i>
                     </div>
                 </div>
-                <p class="stat-card-value" id="activeUsers">0</p>
-                <p class="stat-card-description">Users who reported this week</p>
+                <div class="active-users-info">
+                    <h2 class="stat-card-value" id="activeUsers">0</2>
+                    <p class="stat-card-description">Active Users</p>
+                </div>
+                <div class="stat-card-actions">
+                    <button id="start-session-btn" class="action-button start-btn">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button id="view-active-users-btn" class="action-button view-btn">
+                        <i class="fas fa-eye"></i> Activate
+                    </button>
+                </div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-card-header">
-                    <h3 class="stat-card-title">Total Locations</h3>
-                    <div class="stat-card-icon purple-bg">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
                 </div>
-                <p class="stat-card-value" id="totalLocations">0</p>
-                <p class="stat-card-description">Active tracking locations</p>
+                <h2 class="stat-card-value">87%</h2>
+                <p class="stat-card-description">Current Quarter</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                </div>
+                <h2 class="stat-card-value">4</h2>
+                <p class="stat-card-description">New Today</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                </div>
+                <h2 class="stat-card-value">28%</</h2>
+                <p class="stat-card-description">Growth Rate</p>
             </div>
         </div>
 
-        <!-- Split section for chart and quick actions -->
-        <div class="dashboard-sections">
-            <!-- Left section with chart -->
-            <div class="dashboard-card">
-                <h3>Performance Trend</h3>
-                <div class="chart-container" id="performanceChart">
-                    <p style="text-align: center; padding-top: 120px; color: #888;">
-                        Chart loading... If you don't see a chart, please check your data.
-                    </p>
+        <!-- Dashboard sections container with split layout -->
+        <div class="dashboard-split-container">
+            <!-- Left side placeholder for future content -->
+            <div class="dashboard-split-section left-section">
+                <div class="placeholder-content">
+                    <i class="fas fa-columns"></i>
+                    <p>Future content area</p>
                 </div>
             </div>
             
-            <!-- Right section with quick actions and recent items -->
-            <div class="dashboard-card">
-                <h3>Quick Actions</h3>
-                <div class="quick-actions">
-                    <a href="tracking.html" class="action-button">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>New Entry</span>
-                    </a>
-                    <a href="analytics.html" class="action-button">
-                        <i class="fas fa-chart-pie"></i>
-                        <span>Analytics</span>
-                    </a>
-                    <a href="management.html" class="action-button">
-                        <i class="fas fa-cogs"></i>
-                        <span>Management</span>
-                    </a>
+            <!-- Right side team chat box -->
+            <div class="dashboard-split-section right-section">
+                <div class="dashboard-chat-section">
+                    <div class="chat-header">
+                        <h2 class="chat-title">Team Chat</h2>
+                        <a href="team_chat.html" class="view-full-chat">
+                            <i class="fas fa-expand-alt"></i> Full View
+                        </a>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be loaded here -->
+                    </div>
+                    <div class="chat-input">
+                        <div class="improved-message-input-container">
+                            <input type="text" class="improved-message-input" id="messageInput" placeholder="Type your message here...">
+                            <button class="improved-send-btn" id="sendButton" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
-                <h3 style="margin-top: 25px;">Recent Activity</h3>
-                <ul class="recent-items" id="recentActivity">
-                    <li class="recent-item">
-                        <div class="recent-item-icon blue-bg">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="recent-item-details">
-                            <h4>Loading recent activities...</h4>
-                            <p>Please wait</p>
-                        </div>
-                    </li>
-                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Selection Modal for Chat -->
+    <div id="chat-user-selection-modal" class="auth-modal">
+        <div class="auth-content">
+            <h2 class="auth-title">Select User</h2>
+            <p>Choose which user to send as:</p>
+            <div id="user-selection-list" style="margin: 20px 0; text-align: left;">
+                <!-- Users will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-content">
+            <h2 class="auth-title">Verify User</h2>
+            <input type="password" class="auth-input" id="authPassword" placeholder="Enter your password">
+            <div class="auth-buttons">
+                <button class="auth-button auth-cancel" id="authCancel">Cancel</button>
+                <button class="auth-button auth-confirm" id="authConfirm">Confirm</button>
             </div>
         </div>
     </div>
@@ -914,9 +2336,154 @@
         </div>
     </div>
 
+    <!-- Logo Upload Modal -->
+    <div id="logoModal" class="logo-modal">
+        <h2>Change Logo</h2>
+        <div id="logo-upload-area" class="logo-upload-area">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click or drag image to upload</p>
+            <input type="file" id="file-input" accept="image/*" />
+        </div>
+        <img id="logo-preview" class="logo-preview" alt="Logo preview" />
+        <div class="logo-buttons">
+            <button class="logo-btn cancel-btn" onclick="closeLogoModal()">Cancel</button>
+            <button class="logo-btn save-btn" onclick="saveLogo()">Save Logo</button>
+        </div>
+    </div>
+
+    <!-- Team MonuMe Modals -->
+    <div id="team-start-modal" class="team-modal">
+        <div class="team-modal-content">
+            <button class="team-modal-close">&times;</button>
+            <h3 class="team-modal-title">Start a New Session</h3>
+            <p>Select team members to start a new session:</p>
+            <div class="user-grid" id="team-user-grid">
+                <!-- User items will be dynamically added here -->
+            </div>
+            <div class="team-modal-buttons">
+                <button id="team-start-session" class="team-modal-button">Start Session</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="team-active-modal" class="team-modal">
+        <div class="team-modal-content">
+            <button class="team-modal-close">&times;</button>
+            <h3 class="team-modal-title">Active Team Members</h3>
+            <div id="active-users-list">
+                <!-- Active users will be populated here -->
+            </div>
+            <div class="team-modal-buttons">
+                <button id="close-active-users" class="team-modal-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Selection Modal - EXACT COPY FROM ActiveUsers.html -->
+    <div id="user-selection-modal" class="user-selection-modal">
+        <div class="modal-content">
+            <h3>Select User</h3>
+            <p>Choose a user to start a new session</p>
+            
+            <div class="user-list" id="user-list">
+                <!-- User items will be populated here -->
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-cancel" id="cancel-selection">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Password Verification Modal - EXACT COPY FROM ActiveUsers.html -->
+    <div id="password-modal" class="password-modal">
+        <div class="password-content">
+            <h3>Password Verification</h3>
+            <p>Enter password for <span id="selected-username">User</span></p>
+            
+            <input type="password" id="user-password" placeholder="Enter password">
+            
+            <div class="password-buttons">
+                <button class="password-cancel" id="cancel-password">Cancel</button>
+                <button class="password-verify" id="verify-password">Start</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Users Modal - EXACT COPY FROM ActiveUsers.html -->
+    <div id="active-users-modal" class="active-users-modal">
+        <div class="active-users-content">
+            <h3>Current Active Users</h3>
+            
+            <div class="active-user-list" id="active-user-list">
+                <!-- Active user items will be populated here -->
+            </div>
+            
+            <div class="modal-close">
+                <button class="modal-close-btn" id="active-users-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Force Out Modal - EXACT COPY FROM ActiveUsers.html -->
+    <div id="forceout-modal" class="forceout-modal">
+        <div class="forceout-content">
+            <button class="forceout-close" id="forceout-close">&times;</button>
+            <h3>Force Out User</h3>
+            <p>Select a user to force out of the active session</p>
+            
+            <div class="forceout-user-dropdown">
+                <select id="forceout-user-select" class="forceout-user-select">
+                    <!-- User options will be populated here -->
+                </select>
+            </div>
+            
+            <p>Enter your password to confirm:</p>
+            <input type="password" id="forceout-password" class="forceout-password-field" placeholder="Your password">
+            
+            <p id="forceout-error" class="forceout-error">Invalid password. Please try again.</p>
+            
+            <div class="forceout-buttons">
+                <button class="forceout-cancel" id="forceout-cancel-btn">Cancel</button>
+                <button class="forceout-confirm" id="forceout-confirm-btn">Force Out</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Load the sidebar
+        fetch('sidebar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('sidebar-container').innerHTML = data;
+                
+                // After loading sidebar, highlight active page
+                setTimeout(() => {
+                    const currentPage = window.location.pathname.split('/').pop();
+                    // If it's the root, consider it as dashboard.html
+                    const activePage = currentPage === '' || currentPage === 'index.html' ? 'dashboard.html' : currentPage;
+                    
+                    // Find the corresponding link and make it active
+                    const menuItems = document.querySelectorAll('.sidebar-menu li');
+                    menuItems.forEach(item => {
+                        const link = item.querySelector('a');
+                        if (link && link.getAttribute('href') === activePage) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+
+                    // Update morning_notes.html links to team_chat.html
+                    const morningNotesLinks = document.querySelectorAll('a[href="morning_notes.html"]');
+                    morningNotesLinks.forEach(link => {
+                        link.setAttribute('href', 'team_chat.html');
+                    });
+                }, 100);
+            });
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Set up event listeners for the links
+            // Set up event listeners for the links and buttons
             setupEventListeners();
             // Load dashboard data
             loadDashboardData();
@@ -924,352 +2491,1350 @@
             createParticles();
             // Check for incomplete morning notes
             checkMorningNotes();
+            // Set up logo change functionality if the button exists
+            if (document.getElementById('change-logo-btn')) {
+                setupLogoChange();
+            } else {
+                console.warn('Logo button not found, skipping setup');
+            }
+            // Check for a custom logo in local storage
+            const customLogo = localStorage.getItem('customLogo');
+            const sidebarLogo = document.getElementById('sidebar-logo');
+            if (customLogo && sidebarLogo) {
+                sidebarLogo.src = customLogo;
+            }
+            
+            // Set up Active Users functionality
+            setupActiveUsersButtons();
+            // Initialize users database if needed
+            initializeUsersDatabase();
+            // Update active users count
+            updateActiveUsersCount();
         });
 
+        // Function to set up all event listeners for the dashboard
         function setupEventListeners() {
-            // Set up analytics link event listener
-            const analyticsLink = document.getElementById('analytics-link');
-            if (analyticsLink) {
-                analyticsLink.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    // Open verification modal directly
-                    openVerificationModal();
+            // Set up click events for navigation items
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // If it's the same page, prevent default and don't reload
+                    if (window.location.pathname.endsWith(this.getAttribute('href'))) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Set up notification dismissal if it exists
+            const dismissBtn = document.querySelector('.close-notification');
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', function() {
+                    document.getElementById('notification-banner').style.display = 'none';
+                    document.body.classList.remove('has-notification');
                 });
             }
-            
-            // Management link now navigates directly without verification
-            const managementLink = document.querySelector('.sidebar-menu li a[href="management.html"]');
-            if (managementLink) {
-                // No event.preventDefault() - let the normal link behavior work
-                // The href attribute will navigate directly to management.html
-            }
-        }
-        
-        // Function to check if user needs to complete morning notes
-        function checkMorningNotes() {
-            const today = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
-            const lastCompletedNote = localStorage.getItem('lastCompletedMorningNote');
-            
-            // Show notification if no note completed today
-            if (lastCompletedNote !== today) {
-                showNotificationBanner();
-            }
-        }
-        
-        // Show notification banner
-        function showNotificationBanner() {
-            const banner = document.getElementById('notification-banner');
-            banner.style.display = 'flex';
-            document.body.classList.add('has-notification');
-        }
-        
-        // Dismiss notification
-        function dismissNotification() {
-            const banner = document.getElementById('notification-banner');
-            banner.style.display = 'none';
-            document.body.classList.remove('has-notification');
-        }
 
-        // Add new function to open verification modal directly
-        function openVerificationModal() {
-            document.getElementById('verification-username').textContent = 'user'; // Reset username display
-            document.getElementById('verification-password').value = ''; // Clear previous input
-            document.getElementById('password-verification-modal').style.display = 'flex';
-        }
-
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                // For demo purposes, we'll simulate the authentication
-                // In a real application, this would be a server request
-                let role, location;
-                
-                if (username === 'admin' && password === 'admin') {
-                    role = 'admin';
-                    location = 'all';
-                } else if (username === 'manager' && password === 'manager') {
-                    role = 'manager';
-                    location = 'Location1';
-                } else if (username === 'employee' && password === 'employee') {
-                    role = 'employee';
-                    location = 'Location1';
-                } else {
-                    throw new Error('Invalid credentials');
-                }
-
-                // Store user info in localStorage for persistence
-                localStorage.setItem('username', username);
-                localStorage.setItem('role', role);
-                localStorage.setItem('location', location);
-
-                // Alert to confirm successful login
-                alert(`Login successful! Welcome, ${username}.`);
-
-                // Open history page in a new tab
-                window.open('history.html', '_blank');
-                
-                // Close the login modal
-                closeLoginModal();
-
-            } catch (error) {
-                document.getElementById('login-error').textContent = error.message || 'Error logging in';
-            }
-        }
-
-        function closeLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
-        }
-
-        function cancelPasswordVerification() {
-            document.getElementById('password-verification-modal').style.display = 'none';
-            localStorage.removeItem('verificationTarget');
-        }
-        
-        function submitPasswordVerification() {
-            const password = document.getElementById('verification-password').value;
-            const verificationTarget = localStorage.getItem('verificationTarget') || 'analytics.html';
-            
-            // Remove management verification check
-            // Regular analytics verification (existing code)
-            if (password === 'admin' || password === 'manager' || password === 'employee') {
-                // Determine role based on password
-                let role, location, username;
-                
-                if (password === 'admin') {
-                    role = 'admin';
-                    location = 'all';
-                    username = 'admin';
-                } else if (password === 'manager') {
-                    role = 'manager';
-                    location = 'Location1';
-                    username = 'manager';
-                } else if (password === 'employee') {
-                    role = 'employee';
-                    location = 'Location1';
-                    username = 'employee';
-                }
-                
-                // Store user info in localStorage for persistence
-                localStorage.setItem('username', username);
-                localStorage.setItem('role', role);
-                localStorage.setItem('location', location);
-                
-                // Alert confirmation
-                alert(`Verification successful! Welcome, ${username}.`);
-                
-                // Close the verification modal
-                document.getElementById('password-verification-modal').style.display = 'none';
-                
-                // Open analytics page in a new tab
-                window.open('analytics.html', '_blank');
-            } else {
-                alert('Invalid password. Please try again.');
-            }
-            
-            // Clear verification target
-            localStorage.removeItem('verificationTarget');
-        }
-
-        // Function to load dashboard data
-        function loadDashboardData() {
-            // Load sales data from localStorage
-            try {
-                const performanceData = localStorage.getItem('Performancestorge');
-                if (performanceData) {
-                    const data = JSON.parse(performanceData);
-                    
-                    // Calculate total sales
-                    let totalSalesAmount = 0;
-                    let totalDemos = 0;
-                    let totalSold = 0;
-                    const uniqueUsers = new Set();
-                    const uniqueLocations = new Set();
-                    
-                    data.forEach(item => {
-                        const opalSales = parseInt(item.opalSales || 0);
-                        const scanSold = parseInt(item.scanSold || 0);
-                        const opalDemos = parseInt(item.opalDemos || 0);
-                        const scanDemos = parseInt(item.scanDemos || 0);
-                        
-                        totalSalesAmount += (opalSales + scanSold) * 199;
-                        totalDemos += opalDemos + scanDemos;
-                        totalSold += opalSales + scanSold;
-                        
-                        if (item.userId) uniqueUsers.add(item.userId);
-                        if (item.location) uniqueLocations.add(item.location);
+            // Add custom event listeners for dashboard interactive elements
+            const quickActionButtons = document.querySelectorAll('.action-button');
+            if (quickActionButtons.length > 0) {
+                quickActionButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const action = this.getAttribute('data-action');
+                        if (action) {
+                            handleQuickAction(action);
+                        }
                     });
-                    
-                    // Update the dashboard cards with animations
-                    animateCounter('totalSales', 0, totalSalesAmount, '$');
-                    
-                    const successRateValue = totalDemos > 0 ? Math.round((totalSold / totalDemos) * 100) : 0;
-                    animateCounter('successRate', 0, successRateValue, '', '%');
-                    
-                    animateCounter('activeUsers', 0, uniqueUsers.size);
-                    animateCounter('totalLocations', 0, uniqueLocations.size > 0 ? uniqueLocations.size : 1);
-                    
-                    // Load recent activity
-                    loadRecentActivity(data);
-                }
-            } catch (error) {
-                console.error('Error loading dashboard data:', error);
+                });
             }
+
+            console.log('Event listeners set up successfully');
         }
 
-        // Function to animate counter
-        function animateCounter(elementId, start, end, prefix = '', suffix = '') {
-            const element = document.getElementById(elementId);
-            const duration = 1200;
-            const frameDuration = 1000 / 60;
-            const totalFrames = Math.round(duration / frameDuration);
-            const easeOutQuad = t => t * (2 - t);
-            
-            let frame = 0;
-            const countTo = parseInt(end, 10);
-            
-            const counter = setInterval(() => {
-                frame++;
-                
-                const progress = easeOutQuad(frame / totalFrames);
-                const currentCount = Math.round(countTo * progress);
-                
-                if (elementId === 'totalSales') {
-                    element.textContent = prefix + currentCount.toLocaleString() + suffix;
-                } else {
-                    element.textContent = prefix + currentCount + suffix;
-                }
-                
-                if (frame === totalFrames) {
-                    clearInterval(counter);
-                }
-            }, frameDuration);
+        // Function to load dashboard data (placeholder for now)
+        function loadDashboardData() {
+            console.log('Loading dashboard data...');
+            // This would typically make API calls or load from localStorage
+            // For now, it's just a placeholder
         }
 
-        // Function to load recent activity
-        function loadRecentActivity(data) {
-            if (!data || data.length === 0) {
-                document.getElementById('recentActivity').innerHTML = `
-                    <li class="recent-item">
-                        <div class="recent-item-icon blue-bg">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <div class="recent-item-details">
-                            <h4>No recent activity</h4>
-                            <p>Start tracking to see activity here</p>
-                        </div>
-                    </li>
-                `;
-                return;
-            }
-            
-            // Sort by date (most recent first)
-            data.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Take only the 5 most recent entries
-            const recentItems = data.slice(0, 5);
-            
-            const activityHtml = recentItems.map(item => {
-                const iconClass = determineActivityIcon(item);
-                const activityTitle = createActivityTitle(item);
-                const formattedDate = formatDate(item.date);
-                
-                return `
-                    <li class="recent-item">
-                        <div class="recent-item-icon ${iconClass}">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div class="recent-item-details">
-                            <h4>${activityTitle}</h4>
-                            <p>${formattedDate}</p>
-                        </div>
-                    </li>
-                `;
-            }).join('');
-            
-            document.getElementById('recentActivity').innerHTML = activityHtml;
-        }
-        
-        function determineActivityIcon(item) {
-            const opalSales = parseInt(item.opalSales || 0);
-            const scanSold = parseInt(item.scanSold || 0);
-            
-            if (opalSales > 0 || scanSold > 0) {
-                return 'green-bg';
-            } else {
-                return 'blue-bg';
-            }
-        }
-        
-        function createActivityTitle(item) {
-            const username = item.username || 'Unknown user';
-            const opalSales = parseInt(item.opalSales || 0);
-            const scanSold = parseInt(item.scanSold || 0);
-            const totalSales = opalSales + scanSold;
-            
-            if (totalSales > 0) {
-                return `${username} made ${totalSales} sales`;
-            } else {
-                return `${username} logged activity`;
-            }
-        }
-        
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
-        }
-
-        // Create floating particle effect
+        // Function to create particle effects in the background
         function createParticles() {
             const particlesContainer = document.getElementById('particles');
-            const numberOfParticles = 25;
+            if (!particlesContainer) return;
             
-            // Create particles
-            for (let i = 0; i < numberOfParticles; i++) {
-                createParticle();
-            }
+            // Clear existing particles
+            particlesContainer.innerHTML = '';
             
-            function createParticle() {
+            // Create new particles
+            for (let i = 0; i < 20; i++) {
+                const size = Math.floor(Math.random() * 20) + 5;
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                
-                // Random size between 5 and 20px
-                const size = Math.random() * 15 + 5;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                
-                // Random position
                 particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                
-                // Random opacity
-                particle.style.opacity = Math.random() * 0.6 + 0.1;
-                
-                // Random animation duration between 15 and 30s
-                const duration = Math.random() * 15 + 15;
-                particle.style.animationDuration = `${duration}s`;
-                
-                // Random animation delay
+                particle.style.bottom = `-${size}px`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animationDuration = `${Math.random() * 15 + 15}s`;
                 particle.style.animationDelay = `${Math.random() * 10}s`;
-                
-                // Add to container
                 particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Function to check for incomplete morning notes
+        function checkMorningNotes() {
+            // Placeholder function for checking morning notes
+            // This would typically check if the user has completed their morning notes
+            const hasIncompleteMorningNotes = Math.random() > 0.7; // Random check for demo
+            
+            if (hasIncompleteMorningNotes) {
+                const notificationBanner = document.getElementById('notification-banner');
+                if (notificationBanner) {
+                    notificationBanner.style.display = 'flex';
+                    document.body.classList.add('has-notification');
+                }
+            }
+        }
+
+        // Function to dismiss notification
+        function dismissNotification() {
+            const notificationBanner = document.getElementById('notification-banner');
+            if (notificationBanner) {
+                notificationBanner.style.display = 'none';
+                document.body.classList.remove('has-notification');
+                // Save to localStorage that the notification was dismissed
+                localStorage.setItem('notificationDismissed', new Date().toISOString());
+            }
+        }
+
+        // Function to handle quick actions
+        function handleQuickAction(action) {
+            console.log('Handling quick action:', action);
+            // This would implement actual functionality based on the action
+        }
+
+        // Function to set up logo change functionality
+        function setupLogoChange() {
+            const changeLogoBtn = document.getElementById('change-logo-btn');
+            if (!changeLogoBtn) return;
+            
+            changeLogoBtn.addEventListener('click', function() {
+                const logoModal = document.getElementById('logoModal');
+                if (logoModal) {
+                    logoModal.style.display = 'block';
+                }
+            });
+            
+            // Set up logo upload area
+            const logoUploadArea = document.getElementById('logo-upload-area');
+            const fileInput = document.getElementById('file-input');
+            const logoPreview = document.getElementById('logo-preview');
+            
+            if (logoUploadArea && fileInput) {
+                logoUploadArea.addEventListener('click', function() {
+                    fileInput.click();
+                });
                 
-                // Remove and recreate particle after animation ends
-                setTimeout(() => {
-                    particle.remove();
-                    createParticle();
-                }, duration * 1000);
+                fileInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            logoPreview.src = e.target.result;
+                            logoPreview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        }
+
+        // Function to close the logo modal
+        function closeLogoModal() {
+            const logoModal = document.getElementById('logoModal');
+            if (logoModal) {
+                logoModal.style.display = 'none';
+            }
+        }
+
+        // Function to save the uploaded logo
+        function saveLogo() {
+            const logoPreview = document.getElementById('logo-preview');
+            if (logoPreview && logoPreview.src) {
+                localStorage.setItem('customLogo', logoPreview.src);
+                const sidebarLogo = document.getElementById('sidebar-logo');
+                if (sidebarLogo) {
+                    sidebarLogo.src = logoPreview.src;
+                }
+                closeLogoModal();
+                
+                // Show a success message
+                alert('Logo updated successfully!');
             }
         }
     </script>
-    <script src="/static/script.js"></script>
+    <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/static/notification_system.js"></script>
+    <script src="notification_system.js"></script>
+
+    <!-- Add the user authentication modal before closing body tag -->
+    <div id="user-auth-modal" class="user-auth-modal">
+        <div class="modal-content">
+            <h3>User Authentication</h3>
+            <p id="auth-user-text">Enter password for <strong id="selected-username">Username</strong></p>
+            <input type="password" id="auth-password" class="auth-input" placeholder="Enter password">
+            <div class="auth-buttons">
+                <button id="cancel-auth" class="cancel-btn">Cancel</button>
+                <button id="confirm-auth" class="confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom script to initialize team chat -->
+    <script src="js/dashboard-chat.js"></script>
+    <script src="js/active-users-dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up Team MonuMe card functionality
+            const startSessionBtn = document.getElementById('start-session-btn');
+            const viewActiveUsersBtn = document.getElementById('view-active-users-btn');
+            
+            // Initialize active users in localStorage if not present
+            if (!localStorage.getItem('activeUsers')) {
+                localStorage.setItem('activeUsers', JSON.stringify([]));
+            }
+            
+            // Initialize sample users if none exist
+            if (!localStorage.getItem('monumeUsers')) {
+                const defaultUsers = [
+                    { 
+                        id: 1,
+                        username: "Admin", 
+                        password: "admin123", 
+                        role: "admin",
+                        name: "Admin User",
+                        email: "admin@example.com",
+                        location: "Main Office" 
+                    },
+                    { 
+                        id: 2,
+                        username: "Manager", 
+                        password: "manager123", 
+                        role: "manager",
+                        name: "John Manager",
+                        email: "manager@example.com",
+                        location: "West Branch" 
+                    },
+                    { 
+                        id: 3,
+                        username: "Staff1", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Jane Employee",
+                        email: "employee@example.com",
+                        location: "East Branch" 
+                    },
+                    { 
+                        id: 4,
+                        username: "Staff2", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Bob Worker",
+                        email: "bob@example.com",
+                        location: "North Branch" 
+                    }
+                ];
+                localStorage.setItem('monumeUsers', JSON.stringify(defaultUsers));
+            }
+            
+            // Handle start session button
+            if (startSessionBtn) {
+                startSessionBtn.addEventListener('click', function() {
+                    openUserSelectionModal();
+                });
+            }
+            
+            // Handle view active users button
+            if (viewActiveUsersBtn) {
+                viewActiveUsersBtn.addEventListener('click', function() {
+                    openActiveUsersModal();
+                });
+            }
+            
+            // Set up the modal event listeners
+            document.getElementById('cancel-selection').addEventListener('click', closeUserSelectionModal);
+            document.getElementById('cancel-password').addEventListener('click', closePasswordModal);
+            document.getElementById('verify-password').addEventListener('click', verifyPasswordAndStart);
+            
+            // Make sure we're using the correct selector for the close active users button
+            const closeActiveUsersBtn = document.getElementById('close-active-users');
+            if (closeActiveUsersBtn) {
+                closeActiveUsersBtn.addEventListener('click', closeActiveUsersModal);
+            }
+            
+            // Set up event delegation for user selection with event delegation
+            document.getElementById('user-list').addEventListener('click', function(e) {
+                const userItem = e.target.closest('.user-item');
+                if (userItem) {
+                    const username = userItem.getAttribute('data-username');
+                    selectUser(username);
+                }
+            });
+            
+            // Set up event delegation for active user list buttons
+            document.getElementById('active-user-list').addEventListener('click', function(e) {
+                if (e.target.classList.contains('unactive-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    deactivateUser(username);
+                } else if (e.target.classList.contains('forceout-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    forceOutUser(username);
+                }
+            });
+            
+            // Add keypress handling for password input
+            const passwordInput = document.getElementById('user-password');
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPasswordAndStart();
+                }
+            });
+            
+            // Update active users count on load
+            updateActiveUsersCount();
+            
+            // Update count every 30 seconds
+            setInterval(updateActiveUsersCount, 30000);
+        });
+        
+        // Update active users count
+        function updateActiveUsersCount() {
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            const activeUsersElement = document.getElementById('activeUsers');
+            if (activeUsersElement) {
+                activeUsersElement.textContent = activeUsers.length;
+            }
+        }
+        
+        // Open user selection modal
+        function openUserSelectionModal() {
+            const modal = document.getElementById('user-selection-modal');
+            const userList = document.getElementById('user-list');
+            
+            // Clear previous list
+            userList.innerHTML = '';
+            
+            // Get all users and active users
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            const activeUsernames = activeUsers.map(user => user.username);
+            
+            // Create user items, excluding already active users
+            users.forEach(user => {
+                if (!activeUsernames.includes(user.username)) {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    userItem.setAttribute('data-username', user.username);
+                    userItem.textContent = user.name || user.username; // Show the full name if available
+                    userList.appendChild(userItem);
+                }
+            });
+            
+            // Show the modal
+            modal.style.display = 'flex';
+        }
+        
+        // Close user selection modal
+        function closeUserSelectionModal() {
+            document.getElementById('user-selection-modal').style.display = 'none';
+        }
+        
+        // Select a user and open password modal
+        function selectUser(username) {
+            document.getElementById('selected-username').textContent = username;
+            document.getElementById('user-password').value = '';
+            
+            // Close selection modal and open password modal
+            closeUserSelectionModal();
+            document.getElementById('password-modal').style.display = 'flex';
+            
+            // Focus on password field
+            setTimeout(() => {
+                document.getElementById('user-password').focus();
+            }, 100);
+        }
+        
+        // Close password modal
+        function closePasswordModal() {
+            document.getElementById('password-modal').style.display = 'none';
+        }
+        
+        // Verify password and start session
+        function verifyPasswordAndStart() {
+            const username = document.getElementById('selected-username').textContent;
+            const password = document.getElementById('user-password').value;
+            
+            // Get users from localStorage
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === username);
+            
+            if (user && user.password === password) {
+                // Add user to active users
+                const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+                activeUsers.push({
+                    username: user.username,
+                    role: user.role,
+                    startTime: new Date().toISOString()
+                });
+                localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
+                
+                // Update count
+                updateActiveUsersCount();
+                
+                // Close password modal
+                closePasswordModal();
+                
+                // Redirect to tracking page
+                window.location.href = 'tracking.html';
+            } else {
+                alert('Invalid password. Please try again.');
+                document.getElementById('user-password').value = '';
+                document.getElementById('user-password').focus();
+            }
+        }
+        
+        // Open active users modal
+        function openActiveUsersModal() {
+            const modal = document.getElementById('active-users-modal');
+            const activeUserList = document.getElementById('active-user-list');
+            
+            // Clear previous list
+            activeUserList.innerHTML = '';
+            
+            // Get active users
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            
+            if (activeUsers.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'No active users at the moment.';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.padding = '20px';
+                emptyMessage.style.color = '#666';
+                activeUserList.appendChild(emptyMessage);
+            } else {
+                // Create user items
+                activeUsers.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'active-user-item';
+                    userItem.setAttribute('data-username', user.username);
+                    
+                    const startTime = new Date(user.startTime);
+                    const timeActive = getTimeActive(startTime);
+                    
+                    userItem.innerHTML = `
+                        <div class="active-user-name">${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span></div>
+                        <div class="active-user-buttons">
+                            <button class="unactive-btn">Unactive</button>
+                            <button class="forceout-btn">Force Out</button>
+                        </div>
+                    `;
+                    
+                    activeUserList.appendChild(userItem);
+                });
+            }
+            
+            // Show the modal with a fade-in effect
+            modal.style.display = 'flex';
+            
+            // Set up event delegation for active user list buttons
+            document.getElementById('active-user-list').addEventListener('click', function(e) {
+                if (e.target.classList.contains('unactive-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    deactivateUser(username);
+                } else if (e.target.classList.contains('forceout-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    forceOutUser(username);
+                }
+            });
+        }
+        
+        // Close active users modal
+        function closeActiveUsersModal() {
+            const modal = document.getElementById('active-users-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Get time active in human-readable format
+        function getTimeActive(startTime) {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000); // seconds
+            
+            if (diff < 60) {
+                return `${diff} sec`;
+            } else if (diff < 3600) {
+                return `${Math.floor(diff / 60)} min`;
+            } else {
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+        }
+        
+        // Get current user role
+        function getCurrentUserRole() {
+            const currentUser = localStorage.getItem('currentUser');
+            
+            if (!currentUser) return 'guest';
+            
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === currentUser);
+            
+            return user ? user.role : 'guest';
+        }
+        
+        // Deactivate a user
+        function deactivateUser(username) {
+            // Create a styled modal for password verification
+            const verificationModal = document.createElement('div');
+            verificationModal.style.position = 'fixed';
+            verificationModal.style.top = '0';
+            verificationModal.style.left = '0';
+            verificationModal.style.width = '100%';
+            verificationModal.style.height = '100%';
+            verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            verificationModal.style.backdropFilter = 'blur(5px)';
+            verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
+            verificationModal.style.display = 'flex';
+            verificationModal.style.justifyContent = 'center';
+            verificationModal.style.alignItems = 'center';
+            verificationModal.style.zIndex = '2000';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.borderRadius = '20px';
+            modalContent.style.padding = '30px';
+            modalContent.style.width = '350px';
+            modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.animation = 'modalFadeIn 0.3s ease';
+            modalContent.style.position = 'relative';
+            
+            // Add a colored top border
+            modalContent.style.borderTop = '6px solid #ff9562';
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Password Verification';
+            title.style.marginTop = '0';
+            title.style.color = '#ff9562';
+            title.style.fontSize = '22px';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '15px';
+            
+            const text = document.createElement('p');
+            text.innerHTML = `Please enter <span style="color: #ff9562; font-weight: 600;">${username}</span>'s password to deactivate:`;
+            text.style.marginBottom = '20px';
+            text.style.color = '#666';
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'password';
+            passwordInput.placeholder = 'Enter password';
+            passwordInput.style.width = '100%';
+            passwordInput.style.padding = '12px 15px';
+            passwordInput.style.margin = '10px 0 20px';
+            passwordInput.style.border = '1px solid #ddd';
+            passwordInput.style.borderRadius = '10px';
+            passwordInput.style.fontSize = '16px';
+            passwordInput.style.boxSizing = 'border-box';
+            
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.justifyContent = 'space-between';
+            buttonsDiv.style.gap = '15px';
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.style.flex = '1';
+            cancelButton.style.padding = '12px 0';
+            cancelButton.style.border = 'none';
+            cancelButton.style.borderRadius = '10px';
+            cancelButton.style.fontWeight = '600';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.style.transition = 'all 0.2s ease';
+            cancelButton.style.backgroundColor = '#f0f0f0';
+            cancelButton.style.color = '#666';
+            
+            const verifyButton = document.createElement('button');
+            verifyButton.textContent = 'Verify';
+            verifyButton.style.flex = '1';
+            verifyButton.style.padding = '12px 0';
+            verifyButton.style.border = 'none';
+            verifyButton.style.borderRadius = '10px';
+            verifyButton.style.fontWeight = '600';
+            verifyButton.style.cursor = 'pointer';
+            verifyButton.style.transition = 'all 0.2s ease';
+            verifyButton.style.background = 'linear-gradient(135deg, #ff7f42, #ff9562)';
+            verifyButton.style.color = 'white';
+            
+            // Add hover effects
+            cancelButton.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#e0e0e0';
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            cancelButton.addEventListener('mouseout', function() {
+                this.style.backgroundColor = '#f0f0f0';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            verifyButton.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(255, 127, 66, 0.3)';
+            });
+            
+            verifyButton.addEventListener('mouseout', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+            
+            // Add event listeners
+            cancelButton.addEventListener('click', function() {
+                document.body.removeChild(verificationModal);
+            });
+            
+            verifyButton.addEventListener('click', function() {
+                const password = passwordInput.value;
+                if (!password) {
+                    alert('Please enter a password');
+                    return;
+                }
+                
+                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                const user = users.find(u => u.username === username);
+                
+                if (user && user.password === password) {
+                    // Remove from active users
+                    removeActiveUser(username);
+                    
+                    // Remove the modal
+                    document.body.removeChild(verificationModal);
+                    
+                    // Show success message using toast
+                    const successToast = createToast(`${username} has been deactivated successfully`, 'success');
+                    document.body.appendChild(successToast);
+                    setTimeout(() => {
+                        successToast.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(successToast);
+                        }, 500);
+                    }, 3000);
+                    
+                    // Update active users count
+                    updateActiveUsersCount();
+                    
+                    // Refresh active users modal
+                    openActiveUsersModal();
+                } else {
+                    // Show error message
+                    const errorMsg = document.createElement('p');
+                    errorMsg.textContent = 'Invalid password. Please try again.';
+                    errorMsg.style.color = '#ff3333';
+                    errorMsg.style.margin = '0 0 15px 0';
+                    errorMsg.style.fontSize = '14px';
+                    
+                    // Remove any existing error message
+                    const existingError = modalContent.querySelector('.error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add class for easy removal
+                    errorMsg.classList.add('error-message');
+                    
+                    // Insert before buttons
+                    buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
+                    
+                    // Clear password field
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    // Add shake animation
+                    modalContent.style.animation = 'none';
+                    setTimeout(() => {
+                        modalContent.style.animation = 'shake 0.5s';
+                    }, 10);
+                }
+            });
+            
+            // Add keypress handler for Enter key
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyButton.click();
+                }
+            });
+            
+            // Add a close button in top right
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.background = 'none';
+            closeButton.style.border = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.color = '#aaa';
+            closeButton.style.transition = 'color 0.2s';
+            
+            closeButton.addEventListener('mouseover', function() {
+                this.style.color = '#ff9562';
+            });
+            
+            closeButton.addEventListener('mouseout', function() {
+                this.style.color = '#aaa';
+            });
+            
+            closeButton.addEventListener('click', function() {
+                document.body.removeChild(verificationModal);
+            });
+            
+            // Assemble the modal
+            buttonsDiv.appendChild(cancelButton);
+            buttonsDiv.appendChild(verifyButton);
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(title);
+            modalContent.appendChild(text);
+            modalContent.appendChild(passwordInput);
+            modalContent.appendChild(buttonsDiv);
+            
+            verificationModal.appendChild(modalContent);
+            document.body.appendChild(verificationModal);
+            
+            // Focus the password field
+            setTimeout(() => {
+                passwordInput.focus();
+            }, 100);
+        }
+        
+        // Create a toast notification
+        function createToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.right = '20px';
+            toast.style.padding = '15px 20px';
+            toast.style.borderRadius = '10px';
+            toast.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '10px';
+            toast.style.zIndex = '2001';
+            toast.style.transition = 'opacity 0.5s ease';
+            
+            // Set color based on type
+            if (type === 'success') {
+                toast.style.backgroundColor = '#4caf50';
+                toast.style.color = 'white';
+                toast.innerHTML = '<i class="fas fa-check-circle"></i> ';
+            } else if (type === 'error') {
+                toast.style.backgroundColor = '#f44336';
+                toast.style.color = 'white';
+                toast.innerHTML = '<i class="fas fa-exclamation-circle"></i> ';
+            } else {
+                toast.style.backgroundColor = '#2196f3';
+                toast.style.color = 'white';
+                toast.innerHTML = '<i class="fas fa-info-circle"></i> ';
+            }
+            
+            toast.innerHTML += message;
+            
+            return toast;
+        }
+        
+        // Force out a user (admin/manager only)
+        function forceOutUser(username) {
+            // Create verification modal
+            const verificationModal = document.createElement('div');
+            verificationModal.id = 'auth-check-modal';
+            verificationModal.style.position = 'fixed';
+            verificationModal.style.top = '0';
+            verificationModal.style.left = '0';
+            verificationModal.style.width = '100%';
+            verificationModal.style.height = '100%';
+            verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            verificationModal.style.backdropFilter = 'blur(5px)';
+            verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
+            verificationModal.style.display = 'flex';
+            verificationModal.style.justifyContent = 'center';
+            verificationModal.style.alignItems = 'center';
+            verificationModal.style.zIndex = '2000';
+            
+            // Function to close the modal - defined once and reused
+            const closeModal = () => {
+                if (document.body.contains(verificationModal)) {
+                    document.body.removeChild(verificationModal);
+                }
+            };
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.borderRadius = '20px';
+            modalContent.style.padding = '30px';
+            modalContent.style.width = '400px';
+            modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.animation = 'modalFadeIn 0.3s ease';
+            modalContent.style.position = 'relative';
+            
+            // Add a colored top border - red for force out
+            modalContent.style.borderTop = '6px solid #f44336';
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Authentication Check';
+            title.style.marginTop = '0';
+            title.style.color = '#f44336';
+            title.style.fontSize = '22px';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '15px';
+            
+            const currentUser = localStorage.getItem('currentUser') || localStorage.getItem('username') || 'Guest';
+            const currentRole = getCurrentUserRole();
+            
+            // Check permissions (but still allow the user to attempt)
+            const isAdmin = currentRole === 'admin';
+            const isManager = currentRole === 'manager';
+            const hasPermission = isAdmin || isManager;
+            
+            const text = document.createElement('p');
+            
+            if (hasPermission) {
+                text.innerHTML = `Select an admin or manager account to force out <span style="color: #f44336; font-weight: 600;">${username}</span>:`;
+            } else {
+                text.innerHTML = `<span style="color: #f44336;">Permission Check:</span> You must be an admin or manager to force out <span style="color: #f44336; font-weight: 600;">${username}</span>.<br>Select an admin or manager account and provide their password:`;
+            }
+            
+            text.style.marginBottom = '20px';
+            text.style.color = '#666';
+            
+            // Add dropdown for admin/manager selection
+            const adminManagerSelect = document.createElement('select');
+            adminManagerSelect.style.width = '100%';
+            adminManagerSelect.style.padding = '12px 15px';
+            adminManagerSelect.style.margin = '0 0 15px 0';
+            adminManagerSelect.style.border = '1px solid #ddd';
+            adminManagerSelect.style.borderRadius = '10px';
+            adminManagerSelect.style.fontSize = '16px';
+            adminManagerSelect.style.appearance = 'none';
+            adminManagerSelect.style.WebkitAppearance = 'none';
+            adminManagerSelect.style.background = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>\') no-repeat';
+            adminManagerSelect.style.backgroundPosition = 'right 15px center';
+            adminManagerSelect.style.backgroundColor = 'white';
+            adminManagerSelect.style.cursor = 'pointer';
+            adminManagerSelect.style.transition = 'all 0.2s ease';
+            
+            // Get all admins and managers
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const adminsAndManagers = users.filter(user => user.role === 'admin' || user.role === 'manager');
+            
+            // Populate the dropdown
+            if (adminsAndManagers.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'No admins or managers found';
+                option.disabled = true;
+                adminManagerSelect.appendChild(option);
+            } else {
+                adminsAndManagers.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.username;
+                    option.textContent = `${user.name || user.username} (${user.role})`;
+                    adminManagerSelect.appendChild(option);
+                });
+                
+                // Try to preselect current user if they are admin/manager
+                const currentUserOption = Array.from(adminManagerSelect.options).find(option => option.value === currentUser);
+                if (currentUserOption) {
+                    currentUserOption.selected = true;
+                }
+            }
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'password';
+            passwordInput.placeholder = 'Enter password for selected account';
+            passwordInput.style.width = '100%';
+            passwordInput.style.padding = '12px 15px';
+            passwordInput.style.margin = '10px 0 20px';
+            passwordInput.style.border = '1px solid #ddd';
+            passwordInput.style.borderRadius = '10px';
+            passwordInput.style.fontSize = '16px';
+            passwordInput.style.boxSizing = 'border-box';
+            
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.display = 'flex';
+            buttonsDiv.style.justifyContent = 'space-between';
+            buttonsDiv.style.gap = '15px';
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.style.flex = '1';
+            cancelButton.style.padding = '12px 0';
+            cancelButton.style.border = 'none';
+            cancelButton.style.borderRadius = '10px';
+            cancelButton.style.fontWeight = '600';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.style.transition = 'all 0.2s ease';
+            cancelButton.style.backgroundColor = '#f0f0f0';
+            cancelButton.style.color = '#666';
+            
+            const forceOutButton = document.createElement('button');
+            forceOutButton.textContent = 'Force Out';
+            forceOutButton.style.flex = '1';
+            forceOutButton.style.padding = '12px 0';
+            forceOutButton.style.border = 'none';
+            forceOutButton.style.borderRadius = '10px';
+            forceOutButton.style.fontWeight = '600';
+            forceOutButton.style.cursor = 'pointer';
+            forceOutButton.style.transition = 'all 0.2s ease';
+            forceOutButton.style.backgroundColor = '#f44336';
+            forceOutButton.style.color = 'white';
+            
+            // Add hover effects
+            cancelButton.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#e0e0e0';
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            cancelButton.addEventListener('mouseout', function() {
+                this.style.backgroundColor = '#f0f0f0';
+                this.style.transform = 'translateY(0)';
+            });
+            
+            forceOutButton.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(244, 67, 54, 0.3)';
+            });
+            
+            forceOutButton.addEventListener('mouseout', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
+            
+            // Add event listeners - using the shared closeModal function
+            cancelButton.addEventListener('click', closeModal);
+            
+            forceOutButton.addEventListener('click', function() {
+                const selectedAdminUsername = adminManagerSelect.value;
+                const password = passwordInput.value;
+                
+                if (!selectedAdminUsername) {
+                    alert('Please select an admin or manager account');
+                    return;
+                }
+                
+                if (!password) {
+                    alert('Please enter a password');
+                    return;
+                }
+                
+                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                const selectedAdminUser = users.find(u => u.username === selectedAdminUsername);
+                
+                if (selectedAdminUser && selectedAdminUser.password === password) {
+                    // Password is correct, now check role permissions
+                    if (selectedAdminUser.role === 'admin' || 
+                        (selectedAdminUser.role === 'manager' && checkUserRoleToForceOut(username))) {
+                        // Remove from active users
+                        removeActiveUser(username);
+                        
+                        // Close the modal using the shared function
+                        closeModal();
+                        
+                        // Show success message
+                        const successToast = createToast(`${username} has been forced out by ${selectedAdminUsername}`, 'success');
+                        document.body.appendChild(successToast);
+                        setTimeout(() => {
+                            successToast.style.opacity = '0';
+                            setTimeout(() => {
+                                document.body.removeChild(successToast);
+                            }, 500);
+                        }, 3000);
+                        
+                        // Refresh active users modal if it's open
+                        const activeUsersModal = document.getElementById('active-users-modal');
+                        if (activeUsersModal && activeUsersModal.style.display === 'flex') {
+                            openActiveUsersModal();
+                        }
+                    } else {
+                        // Correct password but no permission
+                        const errorMsg = document.createElement('p');
+                        if (selectedAdminUser.role === 'manager') {
+                            errorMsg.textContent = 'As a manager, you can only force out employees and other managers, not admins.';
+                        } else {
+                            errorMsg.textContent = 'The selected account does not have permission to force out users. Only admins and managers can do this.';
+                        }
+                        
+                        errorMsg.style.color = '#ff3333';
+                        errorMsg.style.margin = '0 0 15px 0';
+                        errorMsg.style.fontSize = '14px';
+                        
+                        // Remove any existing error message
+                        const existingError = modalContent.querySelector('.error-message');
+                        if (existingError) {
+                            existingError.remove();
+                        }
+                        
+                        // Add class for easy removal
+                        errorMsg.classList.add('error-message');
+                        
+                        // Insert before buttons
+                        buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
+                        
+                        // Add shake animation
+                        modalContent.style.animation = 'none';
+                        setTimeout(() => {
+                            modalContent.style.animation = 'shake 0.5s';
+                        }, 10);
+                    }
+                } else {
+                    // Incorrect password
+                    const errorMsg = document.createElement('p');
+                    errorMsg.textContent = 'Invalid password for selected account. Please try again.';
+                    errorMsg.style.color = '#ff3333';
+                    errorMsg.style.margin = '0 0 15px 0';
+                    errorMsg.style.fontSize = '14px';
+                    
+                    // Remove any existing error message
+                    const existingError = modalContent.querySelector('.error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add class for easy removal
+                    errorMsg.classList.add('error-message');
+                    
+                    // Insert before buttons
+                    buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
+                    
+                    // Clear password field
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    
+                    // Add shake animation
+                    modalContent.style.animation = 'none';
+                    setTimeout(() => {
+                        modalContent.style.animation = 'shake 0.5s';
+                    }, 10);
+                }
+            });
+            
+            // Add keypress handler for Enter key
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent default form submission
+                    forceOutButton.click();
+                }
+            });
+            
+            // Add a close button in top right with improved handling
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+            closeButton.id = 'auth-close-btn';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.background = 'none';
+            closeButton.style.border = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.color = '#aaa';
+            closeButton.style.transition = 'color 0.2s';
+            closeButton.style.zIndex = '10'; // Ensure it's above other elements
+            
+            closeButton.addEventListener('mouseover', function() {
+                this.style.color = '#f44336';
+            });
+            
+            closeButton.addEventListener('mouseout', function() {
+                this.style.color = '#aaa';
+            });
+            
+            // Use the shared closeModal function for consistency
+            closeButton.addEventListener('click', closeModal);
+            
+            // Add an extra clickable overlay - clicking outside the modal also closes it
+            verificationModal.addEventListener('click', function(e) {
+                if (e.target === verificationModal) {
+                    closeModal();
+                }
+            });
+            
+            // Assemble the modal
+            buttonsDiv.appendChild(cancelButton);
+            buttonsDiv.appendChild(forceOutButton);
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(title);
+            modalContent.appendChild(text);
+            modalContent.appendChild(adminManagerSelect);
+            modalContent.appendChild(passwordInput);
+            modalContent.appendChild(buttonsDiv);
+            
+            verificationModal.appendChild(modalContent);
+            
+            // Remove any existing modal before adding a new one
+            const existingModal = document.getElementById('auth-check-modal');
+            if (existingModal) {
+                document.body.removeChild(existingModal);
+            }
+            
+            document.body.appendChild(verificationModal);
+            
+            // Focus the password field
+            setTimeout(() => {
+                passwordInput.focus();
+            }, 100);
+        }
+        
+        // Helper function to check if a manager can force out another user
+        function checkUserRoleToForceOut(username) {
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const targetUser = users.find(u => u.username === username);
+            
+            // Managers can force out other managers and employees, but not admins
+            return targetUser && targetUser.role !== 'admin';
+        }
+        
+        // Get time active in human-readable format
+        function getTimeActive(startTime) {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000); // seconds
+            
+            if (diff < 60) {
+                return `${diff} sec`;
+            } else if (diff < 3600) {
+                return `${Math.floor(diff / 60)} min`;
+            } else {
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+        }
+        
+        // Get current user role
+        function getCurrentUserRole() {
+            const currentUser = localStorage.getItem('currentUser');
+            
+            if (!currentUser) return 'guest';
+            
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === currentUser);
+            
+            return user ? user.role : 'guest';
+        }
+        
+        // Close the Force Out modal
+        function closeForceOutModal() {
+            document.getElementById('forceout-modal').style.display = 'none';
+        }
+        
+        // Confirm Force Out action with password verification
+        function confirmForceOut() {
+            const userSelect = document.getElementById('forceout-user-select');
+            const password = document.getElementById('forceout-password').value;
+            const errorElement = document.getElementById('forceout-error');
+            
+            // Validate inputs
+            if (!userSelect.value) {
+                errorElement.textContent = 'Please select a user to force out.';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (!password) {
+                errorElement.textContent = 'Please enter your password to continue.';
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            // Get current user
+            const currentUser = localStorage.getItem('username') || localStorage.getItem('currentUser');
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === currentUser);
+            
+            // Verify password
+            if (user && user.password === password) {
+                // Password is correct, proceed with force out
+                const targetUsername = userSelect.value;
+                
+                // Check if we have permission (double-check for security)
+                const currentUserRole = user.role;
+                const targetUser = users.find(u => u.username === targetUsername);
+                
+                if (!targetUser) {
+                    errorElement.textContent = 'User not found.';
+                    errorElement.style.display = 'block';
+                    return;
+                }
+                
+                // Verify permissions again
+                if (currentUserRole === 'admin' || 
+                    (currentUserRole === 'manager' && targetUser.role !== 'admin')) {
+                    // Remove from active users
+                    removeActiveUser(targetUsername);
+                    
+                    // Close the modal
+                    closeForceOutModal();
+                    
+                    // Show success toast
+                    const successToast = createToast(`${targetUsername} has been forced out by ${currentUser}`, 'success');
+                    document.body.appendChild(successToast);
+                    setTimeout(() => {
+                        successToast.style.opacity = '0';
+                        setTimeout(() => {
+                            document.body.removeChild(successToast);
+                        }, 500);
+                    }, 3000);
+                    
+                    // Refresh active users modal
+                    openActiveUsersModal();
+                } else {
+                    errorElement.textContent = 'You do not have permission to force out this user.';
+                    errorElement.style.display = 'block';
+                }
+            } else {
+                // Incorrect password
+                errorElement.textContent = 'Invalid password. Please try again.';
+                errorElement.style.display = 'block';
+                document.getElementById('forceout-password').value = '';
+                
+                // Add shake animation to modal
+                const modalContent = document.querySelector('.forceout-content');
+                modalContent.style.animation = 'none';
+                setTimeout(() => {
+                    modalContent.style.animation = 'shake 0.5s';
+                }, 10);
+            }
+        }
+        
+        // Helper function to remove a user from active users
+        function removeActiveUser(username) {
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            const updatedActiveUsers = activeUsers.filter(user => user.username !== username);
+            localStorage.setItem('activeUsers', JSON.stringify(updatedActiveUsers));
+            
+            // Update count
+            updateActiveUsersCount();
+            
+            // Return true if user was removed, false otherwise
+            return activeUsers.length !== updatedActiveUsers.length;
+        }
+        
+        // Add shake animation for error feedback if it doesn't exist yet
+        if (!document.querySelector('style[data-shake-animation]')) {
+            const shakeStyle = document.createElement('style');
+            shakeStyle.setAttribute('data-shake-animation', 'true');
+            shakeStyle.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+            `;
+            document.head.appendChild(shakeStyle);
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup event listener for the Activate button in dashboard
+            const viewActiveUsersBtn = document.getElementById('view-active-users-btn');
+            if (viewActiveUsersBtn) {
+                viewActiveUsersBtn.addEventListener('click', function() {
+                    // Directly open the Active Users Modal
+                    openActiveUsersModal();
+                });
+            }
+
+            // Close active users modal when clicking the close button
+            const activeUsersCloseBtn = document.getElementById('active-users-close-btn');
+            if (activeUsersCloseBtn) {
+                activeUsersCloseBtn.addEventListener('click', closeActiveUsersModal);
+            }
+        });
+
+        // Function to open active users modal - This is the exact same function from ActiveUsers.html
+        function openActiveUsersModal() {
+            const modal = document.getElementById('active-users-modal');
+            const activeUserList = document.getElementById('active-user-list');
+            
+            // Clear previous list
+            activeUserList.innerHTML = '';
+            
+            // Get active users
+            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+            
+            if (activeUsers.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'No active users at the moment.';
+                emptyMessage.style.textAlign = 'center';
+                emptyMessage.style.padding = '20px';
+                emptyMessage.style.color = '#666';
+                activeUserList.appendChild(emptyMessage);
+            } else {
+                // Create user items
+                activeUsers.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'active-user-item';
+                    userItem.setAttribute('data-username', user.username);
+                    
+                    const startTime = new Date(user.startTime);
+                    const timeActive = getTimeActive(startTime);
+                    
+                    userItem.innerHTML = `
+                        <div class="active-user-name">${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span></div>
+                        <div class="active-user-buttons">
+                            <button class="unactive-btn">Unactive</button>
+                            <button class="forceout-btn">Force Out</button>
+                        </div>
+                    `;
+                    
+                    activeUserList.appendChild(userItem);
+                });
+            }
+            
+            // Show the modal
+            modal.style.display = 'flex';
+            
+            // Set up event delegation for active user list buttons
+            activeUserList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('unactive-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    deactivateUser(username);
+                } else if (e.target.classList.contains('forceout-btn')) {
+                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
+                    forceOutUser(username);
+                }
+            });
+        }
+
+        // Function to close active users modal
+        function closeActiveUsersModal() {
+            document.getElementById('active-users-modal').style.display = 'none';
+        }
+
+        // Calculate time active format
+        function getTimeActive(startTime) {
+            const now = new Date();
+            const diff = Math.floor((now - startTime) / 1000); // seconds
+            
+            if (diff < 60) {
+                return `${diff} sec`;
+            } else if (diff < 3600) {
+                return `${Math.floor(diff / 60)} min`;
+            } else {
+                const hours = Math.floor(diff / 3600);
+                const minutes = Math.floor((diff % 3600) / 60);
+                return `${hours}h ${minutes}m`;
+            }
+        }
+    </script>
 </body>
 </html>

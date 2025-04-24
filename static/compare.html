@@ -1,0 +1,288 @@
+<!-- Add the standard sidebar CSS -->
+<style>
+    :root {
+        --main-color: #ff9562;
+        --gradient-start: #ff7f42;
+        --gradient-end: #ff9562;
+        --sidebar-bg: #272430; /* Updated to the requested color */
+        --card-bg: rgba(255, 255, 255, 0.85);
+        --card-hover-bg: rgba(255, 255, 255, 0.95);
+        --text-primary: #333;
+        --text-secondary: #666;
+        --text-light: #f8f9fa;
+        --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+        --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        --border-radius: 16px;
+    }
+
+    /* Sidebar styles with enhanced design */
+    .sidebar {
+        width: 280px;
+        background: #272430; /* Direct hexcode to ensure it's applied */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        min-height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        transition: var(--transition);
+        z-index: 100;
+        box-shadow: var(--shadow-md);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-header {
+        padding: 35px 25px 15px;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        background: transparent;
+        box-shadow: none;
+        position: relative;
+    }
+
+    /* Add a subtle gradient overlay to the header */
+    .sidebar-header:after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 15%;
+        width: 70%;
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .sidebar-brand a {
+        text-decoration: none;
+        border-bottom: none;
+        box-shadow: none;
+        outline: none;
+    }
+
+    .app-title {
+        color: var(--main-color);
+        font-size: 42px; /* Slightly bigger */
+        font-weight: 800;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
+        text-shadow: none; /* Removed the white glow effect */
+        letter-spacing: 1px;
+        margin: 0;
+        transition: transform 0.3s ease;
+        text-align: center;
+        background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 18px;
+    }
+    
+    .app-title:hover {
+        transform: scale(1.05);
+        text-shadow: none; /* Removed the white glow effect on hover */
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0 15px;
+        margin-top: 30px;
+    }
+
+    .sidebar-menu li {
+        margin-bottom: 10px; /* Slightly more spacing */
+        border-radius: 12px;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .sidebar-menu li a {
+        display: flex;
+        align-items: center;
+        padding: 16px 20px; /* Slightly taller */
+        color: rgba(255, 255, 255, 0.8); /* Brighter text */
+        text-decoration: none;
+        font-size: 16px;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: var(--transition);
+        position: relative;
+        z-index: 1;
+    }
+
+    .sidebar-menu li a i {
+        min-width: 24px;
+        margin-right: 15px;
+        font-size: 18px;
+        transition: transform 0.3s ease; /* Animate the icon */
+    }
+
+    .sidebar-menu li a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        opacity: 0.8;
+        z-index: -1;
+        transition: width 0.3s ease;
+        border-radius: 12px;
+    }
+
+    /* Enhanced hover and active states */
+    .sidebar-menu li:hover a::before,
+    .sidebar-menu li.active a::before {
+        width: 100%;
+    }
+
+    .sidebar-menu li:hover a,
+    .sidebar-menu li.active a {
+        color: white;
+        transform: translateX(5px);
+    }
+    
+    .sidebar-menu li:hover a i,
+    .sidebar-menu li.active a i {
+        transform: scale(1.2); /* Scale up icon on hover */
+    }
+
+    /* Add subtle indicators for menu items */
+    .sidebar-menu li:not(.active)::after {
+        content: '';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-menu li:not(.active):hover::after {
+        opacity: 1;
+    }
+
+    /* Responsive styles */
+    @media screen and (max-width: 1200px) {
+        .sidebar {
+            width: 240px;
+        }
+    }
+
+    @media screen and (max-width: 992px) {
+        .sidebar {
+            width: 80px;
+            overflow: hidden;
+        }
+            
+        .sidebar-header h2,
+        .sidebar-menu li a span {
+            display: none;
+        }
+            
+        .sidebar-menu li a {
+            justify-content: center;
+            padding: 15px 0;
+        }
+            
+        .sidebar-menu li a i {
+            margin-right: 0;
+            font-size: 20px;
+        }
+    }
+</style>
+
+<!-- Replace/update the sidebar HTML structure -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <a href="dashboard.html" title="Go to Dashboard">
+                <h1 class="app-title">MonuMe</h1>
+            </a>
+        </div>
+    </div>
+    <ul class="sidebar-menu">
+        <li>
+            <a href="dashboard.html">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="management.html">
+                <i class="fas fa-tasks"></i>
+                <span>Management</span>
+            </a>
+        </li>
+        <li>
+            <a href="tracking.html">
+                <i class="fas fa-chart-line"></i>
+                <span>Performance</span>
+            </a>
+        </li>
+        <li>
+            <a href="analytics.html">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="compare.html">
+                <i class="fas fa-balance-scale"></i>
+                <span>Compare</span>
+            </a>
+        </li>
+        <li>
+            <a href="morning_notes.html">
+                <i class="fas fa-coffee"></i>
+                <span>Morning Notes</span>
+            </a>
+        </li>
+        <li>
+            <a href="endofday.html">
+                <i class="fas fa-moon"></i>
+                <span>End of Day</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Add the sidebar JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight the current page in the sidebar
+        const currentPage = window.location.pathname.split('/').pop();
+        
+        // If it's the root, consider it as dashboard.html
+        const activePage = currentPage === '' || currentPage === 'index.html' ? 'dashboard.html' : currentPage;
+        
+        // Find the corresponding link and make it active
+        const menuItems = document.querySelectorAll('.sidebar-menu li');
+        menuItems.forEach(item => {
+            const link = item.querySelector('a');
+            if (link && link.getAttribute('href') === activePage) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    });
+</script>
+
+<!-- Rest of the HTML content remains the same -->

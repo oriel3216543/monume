@@ -22,7 +22,7 @@
             --main-color: #ff9562;
             --gradient-start: #ff7f42;
             --gradient-end: #ff9562;
-            --sidebar-bg: rgba(15, 23, 42, 0.9);
+            --sidebar-bg: #272430; /* Updated to match sidebar.html */
             --card-bg: rgba(255, 255, 255, 0.85);
             --card-hover-bg: rgba(255, 255, 255, 0.95);
             --text-primary: #333;
@@ -44,10 +44,10 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar styles with glassmorphism */
+        /* Sidebar styles with enhanced design from sidebar.html */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: #272430; /* Direct hexcode to ensure it's applied */
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             min-height: 100vh;
@@ -57,36 +57,68 @@
             transition: var(--transition);
             z-index: 100;
             box-shadow: var(--shadow-md);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sidebar-header {
-            padding: 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 35px 25px 15px;
+            border-bottom: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            background: transparent;
+            box-shadow: none;
+            position: relative;
+        }
+
+        /* Add a subtle gradient overlay to the header */
+        .sidebar-header:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
 
         .sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            width: 100%;
         }
 
-        .sidebar-brand img {
-            width: 35px;
-            height: 35px;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        .sidebar-brand a {
+            text-decoration: none;
+            border-bottom: none;
+            box-shadow: none;
+            outline: none;
         }
 
-        .sidebar-header h2 {
+        .app-title {
             color: var(--main-color);
-            font-size: 28px;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            letter-spacing: 0.5px;
+            font-size: 42px; /* Slightly bigger */
+            font-weight: 800;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            text-shadow: none; /* Removed the white glow effect */
+            letter-spacing: 1px;
+            margin: 0;
+            transition: transform 0.3s ease;
+            text-align: center;
+            background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 18px;
+        }
+        
+        .app-title:hover {
+            transform: scale(1.05);
+            text-shadow: none; /* Removed the white glow effect on hover */
         }
 
         .sidebar-menu {
@@ -96,7 +128,7 @@
         }
 
         .sidebar-menu li {
-            margin-bottom: 8px;
+            margin-bottom: 10px; /* Slightly more spacing */
             border-radius: 12px;
             overflow: hidden;
             transition: var(--transition);
@@ -105,8 +137,8 @@
         .sidebar-menu li a {
             display: flex;
             align-items: center;
-            padding: 15px 20px;
-            color: rgba(255, 255, 255, 0.75);
+            padding: 16px 20px; /* Slightly taller */
+            color: rgba(255, 255, 255, 0.8); /* Brighter text */
             text-decoration: none;
             font-size: 16px;
             border-radius: 12px;
@@ -120,6 +152,7 @@
             min-width: 24px;
             margin-right: 15px;
             font-size: 18px;
+            transition: transform 0.3s ease; /* Animate the icon */
         }
 
         .sidebar-menu li a::before {
@@ -136,6 +169,7 @@
             border-radius: 12px;
         }
 
+        /* Enhanced hover and active states */
         .sidebar-menu li:hover a::before,
         .sidebar-menu li.active a::before {
             width: 100%;
@@ -145,6 +179,30 @@
         .sidebar-menu li.active a {
             color: white;
             transform: translateX(5px);
+        }
+        
+        .sidebar-menu li:hover a i,
+        .sidebar-menu li.active a i {
+            transform: scale(1.2); /* Scale up icon on hover */
+        }
+
+        /* Add subtle indicators for menu items */
+        .sidebar-menu li:not(.active)::after {
+            content: '';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-menu li:not(.active):hover::after {
+            opacity: 1;
         }
 
         /* Main content styles */
@@ -527,8 +585,9 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-brand">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEyIDJsMTAgMTB2MTBIMlYxMkwxMiAyeiIgZmlsbD0iI2ZmOTU2MiIvPjwvc3ZnPg==" alt="Logo">
-                <h2>MonuMe</h2>
+                <a href="dashboard.html" title="Go to Dashboard">
+                    <h1 class="app-title">MonuMe</h1>
+                </a>
             </div>
         </div>
         <ul class="sidebar-menu">
@@ -551,15 +610,15 @@
                 </a>
             </li>
             <li>
-                <a href="analytics.html">
+                <a href="#" id="analytics-link">
                     <i class="fas fa-chart-bar"></i>
                     <span>Analytics</span>
                 </a>
             </li>
             <li>
-                <a href="morning_notes.html">
-                    <i class="fas fa-coffee"></i>
-                    <span>Morning Notes</span>
+                <a href="team_chat.html">
+                    <i class="fas fa-comments"></i>
+                    <span>Team Chat</span>
                 </a>
             </li>
             <li>
@@ -568,9 +627,171 @@
                     <span>End of Day</span>
                 </a>
             </li>
-            <li>
         </ul>
     </div>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up analytics link event listener
+            const analyticsLink = document.getElementById('analytics-link');
+            if (analyticsLink) {
+                analyticsLink.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    // Open verification modal directly
+                    openVerificationModal();
+                });
+            }
+    
+            // Highlight the current page in the sidebar
+            const currentPage = window.location.pathname.split('/').pop();
+            
+            // If it's the root, consider it as dashboard.html
+            const activePage = currentPage === '' || currentPage === 'index.html' ? 'dashboard.html' : currentPage;
+            
+            // Find the corresponding link and make it active
+            const menuItems = document.querySelectorAll('.sidebar-menu li');
+            menuItems.forEach(item => {
+                const link = item.querySelector('a');
+                if (link && link.getAttribute('href') === activePage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        });
+    
+        // Add new function to open verification modal directly
+        function openVerificationModal() {
+            // Create modal HTML
+            const modalHTML = `
+                <div id="password-verification-modal" style="
+                    display: flex;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    z-index: 9999;
+                    justify-content: center;
+                    align-items: center;
+                    backdrop-filter: blur(5px);
+                    -webkit-backdrop-filter: blur(5px);">
+                    <div style="
+                        background-color: white;
+                        border-radius: 20px;
+                        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                        width: 380px;
+                        padding: 30px;
+                        text-align: center;
+                        animation: modalFadeIn 0.3s;">
+                        <h3 style="
+                            margin-top: 0;
+                            color: #ff9562;
+                            font-size: 24px;
+                            font-weight: 700;
+                            margin-bottom: 15px;">Password Verification</h3>
+                        <p style="margin-bottom: 20px; color: #666;">Please enter your password to access Analytics</p>
+                        <input type="password" id="verification-password" placeholder="Your password" style="
+                            width: 100%;
+                            padding: 12px 15px;
+                            margin: 15px 0;
+                            border: 1px solid #ddd;
+                            border-radius: 10px;
+                            font-size: 16px;
+                            box-sizing: border-box;">
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 20px;">
+                            <button onclick="cancelPasswordVerification()" style="
+                                padding: 12px 20px;
+                                border: none;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-size: 15px;
+                                font-weight: 600;
+                                background-color: #f0f0f0;
+                                color: #666;">Cancel</button>
+                            <button onclick="submitPasswordVerification()" style="
+                                padding: 12px 20px;
+                                border: none;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-size: 15px;
+                                font-weight: 600;
+                                background: linear-gradient(135deg, #ff7f42, #ff9562);
+                                color: white;">Verify</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal to document
+            const div = document.createElement('div');
+            div.innerHTML = modalHTML;
+            document.body.appendChild(div.firstElementChild);
+            
+            // Focus on password field
+            setTimeout(() => {
+                document.getElementById('verification-password').focus();
+            }, 100);
+            
+            // Add enter key handler
+            document.getElementById('verification-password').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    submitPasswordVerification();
+                }
+            });
+        }
+    
+        function cancelPasswordVerification() {
+            const modal = document.getElementById('password-verification-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+    
+        function submitPasswordVerification() {
+            const password = document.getElementById('verification-password').value;
+            
+            // Verify password
+            if (password === 'admin' || password === 'manager' || password === 'employee') {
+                // Determine role based on password
+                let role, location, username;
+                
+                if (password === 'admin') {
+                    role = 'admin';
+                    location = 'all';
+                    username = 'admin';
+                } else if (password === 'manager') {
+                    role = 'manager';
+                    location = 'Location1';
+                    username = 'manager';
+                } else if (password === 'employee') {
+                    role = 'employee';
+                    location = 'Location1';
+                    username = 'employee';
+                }
+                
+                // Store user info in localStorage for persistence
+                localStorage.setItem('username', username);
+                localStorage.setItem('role', role);
+                localStorage.setItem('location', location);
+                
+                // Close the verification modal
+                cancelPasswordVerification();
+                
+                // Navigate to analytics page
+                window.location.href = 'analytics.html';
+            } else {
+                alert('Invalid password. Please try again.');
+            }
+        }
+    </script>
 
     <!-- Main content -->
     <div class="main-content">

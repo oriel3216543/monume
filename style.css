@@ -706,11 +706,22 @@ body {
     border-radius: 6px;
     padding: 10px;
     margin-bottom: 10px;
+    width: 180px; /* Making it less wide */
+    display: inline-block; /* Allow multiple boxes to be displayed in a row */
+    vertical-align: top;
+    margin-right: 10px;
+    min-height: 200px; /* Make it more vertical */
+    overflow-y: auto; /* Add scrolling for overflow content */
 }
+
 .history-box h3 {
     margin: 0 0 5px;
     color: #ff9562;
+    text-align: center;
+    border-bottom: 1px solid #ff9562;
+    padding-bottom: 5px;
 }
+
 .history-box p {
     margin: 3px 0;
     font-size: 0.9rem;

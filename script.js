@@ -475,8 +475,10 @@ function displayByQuestion(history) {
         const box = document.createElement("div");
         box.classList.add("history-box");
         box.innerHTML = `<h3>${q.replace('_', ' ').toUpperCase()}</h3>`;
+        
+        // Only display the username and value, without showing the preview question
         history.forEach(record => {
-            box.innerHTML += `<p>${record.username} (${record.date}): ${record[q]}</p>`;
+            box.innerHTML += `<p>${record.username}: ${record[q]}</p>`;
         });
         container.appendChild(box);
     });
