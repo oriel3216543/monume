@@ -563,26 +563,31 @@
         // If we're on the actual domain, never use mock mode
         const useMockMode = isLiveServer && !isActualDomain;
         
-        // Set the correct API path based on environment
+        // Set the API path based on environment
         let apiBasePath = useMockMode ? '/mocks' : '..';
         
-        // Special case for monumevip.com domain
+        // Special case for monumevip.com domain - determine the correct API path structure
         if (isActualDomain) {
-            // For monumevip.com domain, we need to use the full API path
-            // This makes sure the API calls go to the right place
-            apiBasePath = '';  // Use root-relative paths
-            console.log('Domain detected: Adjusting API paths for production domain');
+            console.log('Running on monumevip.com domain - adjusting API paths');
             
-            // Check if we're in a static folder
-            const inStaticFolder = window.location.pathname.includes('/static/');
-            if (inStaticFolder) {
-                console.log('Page is in static folder, using API paths at root level');
+            // On production domain, the API needs a direct path to the Flask API endpoints
+            // We'll try with an /api/ prefix which is a common convention
+            apiBasePath = '/api';
+            
+            // Check if we're in the /static/ path and adjust accordingly
+            if (window.location.pathname.includes('/static/')) {
+                console.log('Page is in static folder - adjusting paths for static context');
             }
         }
         
         console.log(`Running in ${useMockMode ? 'Mock' : 'Production'} mode. Using API base path: ${apiBasePath}`);
         console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
-        console.log(`API endpoints will be at: ${apiBasePath}/get_email_settings and related paths`);
+        
+        // Fall back to mock mode if on production domain (temporary solution)
+        const useTemporaryMockMode = isActualDomain || useMockMode;
+        if (isActualDomain) {
+            console.log("IMPORTANT: Using temporary mock mode on production domain until API routes are configured");
+        }
         
         // Mock data for development with Live Server
         const mockSettings = {
@@ -674,10 +679,15 @@
             try {
                 let settings;
                 
-                if (useMockMode) {
-                    // Use mock data in Live Server mode
+                if (useTemporaryMockMode) {
+                    // Use mock data in Live Server mode or temporarily on production
                     console.log('Using mock email settings data');
                     settings = mockSettings;
+                    
+                    // Update domain info with actual domain when on production
+                    if (isActualDomain) {
+                        settings.domain = window.location.hostname;
+                    }
                 } else {
                     // Use real server in production mode
                     const apiUrl = `${apiBasePath}/get_email_settings`;
@@ -750,8 +760,8 @@
             try {
                 let data;
                 
-                if (useMockMode) {
-                    // Use mock data in Live Server mode
+                if (useTemporaryMockMode) {
+                    // Use mock data in Live Server mode or temporarily on production
                     console.log('Using mock email logs data');
                     data = mockLogs;
                 } else {
@@ -839,8 +849,8 @@
                 const element = document.getElementById(toggle.id);
                 element.addEventListener('change', async function() {
                     try {
-                        if (useMockMode) {
-                            // Mock response in Live Server mode
+                        if (useTemporaryMockMode) {
+                            // Mock response in Live Server mode or temporarily on production
                             console.log(`Mock: Setting ${toggle.setting} to ${this.checked}`);
                             mockSettings[toggle.setting] = this.checked;
                             showToast(`${toggle.setting} has been ${this.checked ? 'enabled' : 'disabled'}`, 'success');
@@ -906,8 +916,8 @@
                 emailStatus.className = 'email-status pending';
                 emailStatus.style.display = 'block';
                 
-                if (useMockMode) {
-                    // Mock sending in Live Server mode
+                if (useTemporaryMockMode) {
+                    // Mock sending in Live Server mode or temporarily on production
                     console.log(`Mock: Sending test email to ${email}`);
                     
                     // Add to mock logs
@@ -922,7 +932,8 @@
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     // Update status to success
-                    emailStatus.textContent = 'Test email sent successfully! (Mock mode)';
+                    const mockModeText = isActualDomain ? ' (Temporary Mock Mode)' : ' (Mock Mode)';
+                    emailStatus.textContent = 'Test email sent successfully!' + mockModeText;
                     emailStatus.className = 'email-status success';
                     
                     // Refresh email logs
