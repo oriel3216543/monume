@@ -550,6 +550,41 @@
     <div id="toast" class="toast"></div>
 
     <script>
+        // Detect whether we're running in Live Server or real server environment
+        const isLiveServer = window.location.port === '5500';
+        const apiBasePath = isLiveServer ? '/mocks' : '..';
+        console.log(`Running in ${isLiveServer ? 'Live Server' : 'Production'} mode. Using API base path: ${apiBasePath}`);
+        
+        // Mock data for development with Live Server
+        const mockSettings = {
+            auto_email_enabled: true,
+            daily_email_enabled: false,
+            weekly_email_enabled: true
+        };
+        
+        const mockLogs = {
+            logs: [
+                {
+                    timestamp: new Date().toISOString(),
+                    recipient: 'monumequeens@gmail.com',
+                    type: 'Test Email',
+                    status: 'success'
+                },
+                {
+                    timestamp: new Date(Date.now() - 3600000).toISOString(),
+                    recipient: 'user@example.com',
+                    type: 'Weekly Digest',
+                    status: 'success'
+                },
+                {
+                    timestamp: new Date(Date.now() - 7200000).toISOString(),
+                    recipient: 'failed@example.com',
+                    type: 'Performance Summary',
+                    status: 'failed'
+                }
+            ]
+        };
+        
         // Generate particles for background effect
         document.addEventListener('DOMContentLoaded', function() {
             const particles = document.getElementById('particles');
@@ -604,44 +639,46 @@
             loadEmailLogs();
         });
         
-        // Load email settings from the server
+        // Load email settings from the server or use mock data in dev mode
         async function loadEmailSettings() {
             try {
-                const response = await fetch('/get_email_settings', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                }
-                
-                // Check if response is empty
-                const text = await response.text();
-                if (!text || text.trim() === '') {
-                    showToast('Server returned empty response', 'error');
-                    return;
-                }
-                
-                // Try to parse response as JSON
                 let settings;
-                try {
-                    settings = JSON.parse(text);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', e, 'Raw text:', text);
-                    showToast('Invalid server response format', 'error');
+                
+                if (isLiveServer) {
+                    // Use mock data in Live Server mode
+                    console.log('Using mock email settings data');
+                    settings = mockSettings;
+                } else {
+                    // Use real server in production mode
+                    const response = await fetch(`${apiBasePath}/get_email_settings`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
                     
-                    // Set default values if can't get from server
-                    document.getElementById('autoEmailEnabled').checked = true;
-                    document.getElementById('dailyEmailEnabled').checked = false;
-                    document.getElementById('weeklyEmailEnabled').checked = true;
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
                     
-                    // Add event listeners for toggle switches
-                    setupToggleListeners();
-                    return;
+                    // Check if response is empty
+                    const text = await response.text();
+                    if (!text || text.trim() === '') {
+                        showToast('Server returned empty response', 'error');
+                        return;
+                    }
+                    
+                    // Try to parse response as JSON
+                    try {
+                        settings = JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e, 'Raw text:', text);
+                        showToast('Invalid server response format', 'error');
+                        
+                        // Set default values if can't get from server
+                        settings = mockSettings;
+                    }
                 }
                 
                 // Update toggle switches
@@ -666,39 +703,47 @@
             }
         }
         
-        // Load email logs from the server
+        // Load email logs from the server or use mock data in dev mode
         async function loadEmailLogs() {
             try {
-                const response = await fetch('/get_email_logs', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                }
-                
-                // Check if response is empty
-                const text = await response.text();
-                if (!text || text.trim() === '') {
-                    // Show "No logs available" message
-                    const logsContainer = document.getElementById('email-logs');
-                    logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">No email logs found</td></tr>';
-                    return;
-                }
-                
-                // Try to parse data
                 let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', e, 'Raw text:', text);
-                    const logsContainer = document.getElementById('email-logs');
-                    logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">Error parsing logs data</td></tr>';
-                    return;
+                
+                if (isLiveServer) {
+                    // Use mock data in Live Server mode
+                    console.log('Using mock email logs data');
+                    data = mockLogs;
+                } else {
+                    // Use real server in production mode
+                    const response = await fetch(`${apiBasePath}/get_email_logs`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    // Check if response is empty
+                    const text = await response.text();
+                    if (!text || text.trim() === '') {
+                        // Show "No logs available" message
+                        const logsContainer = document.getElementById('email-logs');
+                        logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">No email logs found</td></tr>';
+                        return;
+                    }
+                    
+                    // Try to parse data
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e, 'Raw text:', text);
+                        const logsContainer = document.getElementById('email-logs');
+                        logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">Error parsing logs data</td></tr>';
+                        return;
+                    }
                 }
                 
                 const logs = data.logs || [];
@@ -749,7 +794,16 @@
                 const element = document.getElementById(toggle.id);
                 element.addEventListener('change', async function() {
                     try {
-                        const response = await fetch('/update_email_setting', {
+                        if (isLiveServer) {
+                            // Mock response in Live Server mode
+                            console.log(`Mock: Setting ${toggle.setting} to ${this.checked}`);
+                            mockSettings[toggle.setting] = this.checked;
+                            showToast(`${toggle.setting} has been ${this.checked ? 'enabled' : 'disabled'}`, 'success');
+                            return;
+                        }
+                        
+                        // Real server request in production mode
+                        const response = await fetch(`${apiBasePath}/update_email_setting`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -804,7 +858,32 @@
                 emailStatus.className = 'email-status pending';
                 emailStatus.style.display = 'block';
                 
-                const response = await fetch('/send_test_email', {
+                if (isLiveServer) {
+                    // Mock sending in Live Server mode
+                    console.log(`Mock: Sending test email to ${email}`);
+                    
+                    // Add to mock logs
+                    mockLogs.logs.unshift({
+                        timestamp: new Date().toISOString(),
+                        recipient: email,
+                        type: 'Test Email',
+                        status: 'success'
+                    });
+                    
+                    // Simulate delay
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Update status to success
+                    emailStatus.textContent = 'Test email sent successfully! (Mock mode)';
+                    emailStatus.className = 'email-status success';
+                    
+                    // Refresh email logs
+                    setTimeout(loadEmailLogs, 500);
+                    return;
+                }
+                
+                // Real server request in production mode
+                const response = await fetch(`${apiBasePath}/send_test_email`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
