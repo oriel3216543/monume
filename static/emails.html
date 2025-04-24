@@ -566,15 +566,23 @@
         // Set the correct API path based on environment
         let apiBasePath = useMockMode ? '/mocks' : '..';
         
-        // Special case for monumevip.com domain - the static files are in /static/ folder
+        // Special case for monumevip.com domain
         if (isActualDomain) {
-            // For monumevip.com domain, we need to adjust the path
+            // For monumevip.com domain, we need to use the full API path
+            // This makes sure the API calls go to the right place
             apiBasePath = '';  // Use root-relative paths
             console.log('Domain detected: Adjusting API paths for production domain');
+            
+            // Check if we're in a static folder
+            const inStaticFolder = window.location.pathname.includes('/static/');
+            if (inStaticFolder) {
+                console.log('Page is in static folder, using API paths at root level');
+            }
         }
         
         console.log(`Running in ${useMockMode ? 'Mock' : 'Production'} mode. Using API base path: ${apiBasePath}`);
         console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
+        console.log(`API endpoints will be at: ${apiBasePath}/get_email_settings and related paths`);
         
         // Mock data for development with Live Server
         const mockSettings = {
@@ -672,7 +680,10 @@
                     settings = mockSettings;
                 } else {
                     // Use real server in production mode
-                    const response = await fetch(`${apiBasePath}/get_email_settings`, {
+                    const apiUrl = `${apiBasePath}/get_email_settings`;
+                    console.log(`Fetching email settings from: ${apiUrl}`);
+                    
+                    const response = await fetch(apiUrl, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -745,7 +756,10 @@
                     data = mockLogs;
                 } else {
                     // Use real server in production mode
-                    const response = await fetch(`${apiBasePath}/get_email_logs`, {
+                    const apiUrl = `${apiBasePath}/get_email_logs`;
+                    console.log(`Fetching email logs from: ${apiUrl}`);
+                    
+                    const response = await fetch(apiUrl, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -834,7 +848,10 @@
                         }
                         
                         // Real server request in production mode
-                        const response = await fetch(`${apiBasePath}/update_email_setting`, {
+                        const apiUrl = `${apiBasePath}/update_email_setting`;
+                        console.log(`Updating email setting at: ${apiUrl}`);
+                        
+                        const response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -914,7 +931,10 @@
                 }
                 
                 // Real server request in production mode
-                const response = await fetch(`${apiBasePath}/send_test_email`, {
+                const apiUrl = `${apiBasePath}/send_test_email`;
+                console.log(`Sending test email via: ${apiUrl}`);
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
