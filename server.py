@@ -1569,7 +1569,7 @@ def ensure_email_config_exists():
             config['EMAIL'] = {
                 'smtp_server': 'smtp.gmail.com',
                 'smtp_port': '587',
-                'sender_email': 'monume.tracker@gmail.com',
+                'sender_email': 'monumequeens@gmail.com',
                 'sender_name': 'MonuMe Tracker',
                 'password': '',
                 'use_tls': 'true',

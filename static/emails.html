@@ -210,99 +210,6 @@
             transform: translateX(26px);
         }
 
-        /* Template Preview Section */
-        .email-template-preview {
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        .template-header {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            padding: 20px;
-            font-size: 18px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .template-body {
-            padding: 25px;
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        .template-variables {
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: 8px;
-            margin-top: 20px;
-            padding: 15px;
-        }
-
-        .variable-list {
-            list-style-type: none;
-            padding: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
-
-        .variable-list li {
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
-            padding: 8px 12px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        /* PDF Preview Section */
-        .pdf-template-preview {
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 30px;
-            overflow: hidden;
-        }
-
-        .pdf-preview-header {
-            background: #f0f0f0;
-            color: var(--text-primary);
-            padding: 15px;
-            font-weight: 600;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .pdf-preview-image {
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
-            padding: 20px;
-            transition: max-height 0.3s ease;
-            cursor: zoom-in;
-        }
-
-        .pdf-preview-image.zoomed {
-            max-height: 80vh;
-            cursor: zoom-out;
-        }
-
-        .pdf-preview-info {
-            background: #f9f9f9;
-            border-top: 1px solid #eee;
-            color: #777;
-            font-size: 13px;
-            padding: 10px;
-            text-align: center;
-        }
-
         /* Test Email Section */
         .email-test-section {
             background: rgba(255, 255, 255, 0.5);
@@ -537,10 +444,6 @@
                 max-width: 100%;
                 margin-bottom: 15px;
             }
-            
-            .variable-list {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -568,7 +471,7 @@
                     <div>
                         <div class="settings-label">Performance Summary Emails</div>
                         <div class="settings-description">
-                            Send automatic performance summary emails with PDF attachments when users submit tracking data.
+                            Send automatic performance summary emails when users submit tracking data.
                         </div>
                     </div>
                     <div class="settings-control">
@@ -608,56 +511,6 @@
                         </label>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Email Template Preview -->
-            <h2 class="section-header">Email Template Preview</h2>
-            <div class="email-template-preview">
-                <div class="template-header">Performance Summary from MonuMe Tracker</div>
-                <div class="template-body">
-                    <p>Hello {{user_name}},</p>
-                    <p>Thank you for submitting your tracking data on {{date}}. Here's a summary of your performance:</p>
-                    <ul>
-                        <li><strong>Opal Demos:</strong> {{opal_demos}}</li>
-                        <li><strong>Opal Sales:</strong> {{opal_sales}}</li>
-                        <li><strong>Scan Demos:</strong> {{scan_demos}}</li>
-                        <li><strong>Scan Sold:</strong> {{scan_sold}}</li>
-                        <li><strong>Net Sales:</strong> ${{net_sales}}</li>
-                        <li><strong>Hours Worked:</strong> {{hours_worked}}</li>
-                        <li><strong>Success Rate:</strong> {{success_rate}}%</li>
-                        <li><strong>Sales per Hour:</strong> ${{sales_per_hour}}</li>
-                    </ul>
-                    <p>A detailed PDF report is attached to this email.</p>
-                    <p>Best regards,<br>MonuMe Tracker Team</p>
-                    
-                    <div class="template-variables">
-                        <p><strong>Available Variables:</strong></p>
-                        <ul class="variable-list">
-                            <li>{{user_name}}</li>
-                            <li>{{date}}</li>
-                            <li>{{opal_demos}}</li>
-                            <li>{{opal_sales}}</li>
-                            <li>{{scan_demos}}</li>
-                            <li>{{scan_sold}}</li>
-                            <li>{{net_sales}}</li>
-                            <li>{{hours_worked}}</li>
-                            <li>{{success_rate}}</li>
-                            <li>{{sales_per_hour}}</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- PDF Template Preview -->
-            <h2 class="section-header">PDF Report Template</h2>
-            <div class="pdf-template-preview">
-                <div class="pdf-preview-header">Performance Summary PDF Preview</div>
-                <img src="/static/images/pdf_placeholder.png" 
-                     alt="PDF Template Preview" 
-                     class="pdf-preview-image" 
-                     data-fallback="/static/images/pdf_placeholder.png"
-                     title="Click to zoom">
-                <div class="pdf-preview-info">Click on the image to zoom in/out</div>
             </div>
             
             <!-- Test Email Section -->
@@ -749,9 +602,6 @@
             // Load email settings and logs
             loadEmailSettings();
             loadEmailLogs();
-            
-            // Set up PDF preview
-            setupPdfPreview();
         });
         
         // Load email settings from the server
@@ -924,24 +774,6 @@
                     }
                 });
             });
-        }
-        
-        // Handle PDF preview setup
-        function setupPdfPreview() {
-            const previewImage = document.querySelector('.pdf-preview-image');
-            if (previewImage) {
-                previewImage.onerror = function() {
-                    const fallbackUrl = this.getAttribute('data-fallback');
-                    if (fallbackUrl && this.src !== fallbackUrl) {
-                        this.src = fallbackUrl;
-                    }
-                };
-                
-                // Toggle zoom on click
-                previewImage.addEventListener('click', function() {
-                    this.classList.toggle('zoomed');
-                });
-            }
         }
         
         // Send test email
