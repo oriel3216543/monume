@@ -467,6 +467,13 @@
             
             <!-- Email Triggers Section -->
             <div class="settings-group">
+                <div class="domain-info-container" style="display: none; margin-bottom: 15px; background-color: rgba(255, 149, 98, 0.1); border-radius: 8px; padding: 12px; border: 1px solid rgba(255, 149, 98, 0.3);">
+                    <p style="margin: 0; font-weight: 500;">
+                        <i class="fas fa-globe" style="color: var(--main-color); margin-right: 8px;"></i>
+                        Using domain: <span id="domain-info" style="font-weight: 600; color: var(--main-color);"></span>
+                    </p>
+                </div>
+                
                 <div class="settings-row">
                     <div>
                         <div class="settings-label">Performance Summary Emails</div>
@@ -550,16 +557,22 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // Detect whether we're running in Live Server or real server environment
+        // Detect whether we're running in Live Server, real server, or the actual domain
         const isLiveServer = window.location.port === '5500';
-        const apiBasePath = isLiveServer ? '/mocks' : '..';
-        console.log(`Running in ${isLiveServer ? 'Live Server' : 'Production'} mode. Using API base path: ${apiBasePath}`);
+        const isActualDomain = window.location.hostname.includes('monumevip.com');
+        // If we're on the actual domain, never use mock mode
+        const useMockMode = isLiveServer && !isActualDomain;
+        const apiBasePath = useMockMode ? '/mocks' : '..';
+        
+        console.log(`Running in ${useMockMode ? 'Mock' : 'Production'} mode. Using API base path: ${apiBasePath}`);
+        console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
         
         // Mock data for development with Live Server
         const mockSettings = {
             auto_email_enabled: true,
             daily_email_enabled: false,
-            weekly_email_enabled: true
+            weekly_email_enabled: true,
+            domain: 'monumevip.com'
         };
         
         const mockLogs = {
@@ -644,7 +657,7 @@
             try {
                 let settings;
                 
-                if (isLiveServer) {
+                if (useMockMode) {
                     // Use mock data in Live Server mode
                     console.log('Using mock email settings data');
                     settings = mockSettings;
@@ -686,6 +699,15 @@
                 document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled === true;
                 document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled === true;
                 
+                // If we have a domain, show it in the UI
+                if (settings.domain) {
+                    const domainInfoElement = document.getElementById('domain-info');
+                    if (domainInfoElement) {
+                        domainInfoElement.textContent = settings.domain;
+                        domainInfoElement.closest('.domain-info-container').style.display = 'block';
+                    }
+                }
+                
                 // Add event listeners for toggle switches
                 setupToggleListeners();
                 
@@ -708,7 +730,7 @@
             try {
                 let data;
                 
-                if (isLiveServer) {
+                if (useMockMode) {
                     // Use mock data in Live Server mode
                     console.log('Using mock email logs data');
                     data = mockLogs;
@@ -794,7 +816,7 @@
                 const element = document.getElementById(toggle.id);
                 element.addEventListener('change', async function() {
                     try {
-                        if (isLiveServer) {
+                        if (useMockMode) {
                             // Mock response in Live Server mode
                             console.log(`Mock: Setting ${toggle.setting} to ${this.checked}`);
                             mockSettings[toggle.setting] = this.checked;
@@ -858,7 +880,7 @@
                 emailStatus.className = 'email-status pending';
                 emailStatus.style.display = 'block';
                 
-                if (isLiveServer) {
+                if (useMockMode) {
                     // Mock sending in Live Server mode
                     console.log(`Mock: Sending test email to ${email}`);
                     

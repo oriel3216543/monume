@@ -179,8 +179,25 @@ def send_email(recipient_email, subject, html_content, pdf_path=None, email_type
         # Create message container
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = f"{config.get('sender_name', 'MonuMe Tracker')} <{config.get('sender_email', 'monume.tracker@gmail.com')}>"
+        
+        # Use domain information if available for sender email
+        domain = config.get('domain', '')
+        sender_email = config.get('sender_email', 'monume.tracker@gmail.com')
+        sender_name = config.get('sender_name', 'MonuMe Tracker')
+        
+        # If domain is set, check if sender_email should use it
+        if domain and '@' in sender_email:
+            # If sender email is not already using the domain, set a custom header
+            if not sender_email.endswith('@' + domain):
+                msg['Reply-To'] = f"info@{domain}"
+                logger.info(f"Using custom domain {domain} for Reply-To header")
+        
+        msg['From'] = f"{sender_name} <{sender_email}>"
         msg['To'] = recipient_email
+        
+        # Add custom headers for domain
+        if domain:
+            msg['X-MonuMe-Domain'] = domain
         
         # Attach HTML content
         msg.attach(MIMEText(html_content, 'html'))
@@ -195,7 +212,6 @@ def send_email(recipient_email, subject, html_content, pdf_path=None, email_type
         # Create secure connection with server and send email
         smtp_server = config.get('smtp_server', 'smtp.gmail.com')
         smtp_port = int(config.get('smtp_port', 587))
-        sender_email = config.get('sender_email', 'monume.tracker@gmail.com')
         password = config.get('password', '')
         
         context = ssl.create_default_context()
