@@ -557,13 +557,12 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // Detect whether we're running in Live Server, real server, or the actual domain
-        const isLiveServer = window.location.port === '5500';
-        const isActualDomain = window.location.hostname.includes('monumevip.com');
-        // If we're on the actual domain, never use mock mode
-        const useMockMode = false; // Disable mock mode
-        const apiBasePath = `${window.location.protocol}//${window.location.host}`; // Ensure protocol and host are dynamically set
-
+        // Restrict page to your production domain and force production API
+        if (!window.location.hostname.includes('monumevip.com')) {
+            window.location.href = 'https://www.monumevip.com/static/emails.html';
+            return;
+        }
+        const apiBasePath = 'https://www.monumevip.com';
         console.log(`Running in Production mode. Using API base path: ${apiBasePath}`);
 
         // Improved error handling for API calls
