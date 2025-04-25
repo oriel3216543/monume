@@ -618,6 +618,97 @@
             }
         }
         
+        // Send test email - Making this a window function so it's globally accessible
+        window.sendTestEmail = async function() {
+            const emailInput = document.getElementById('test-email');
+            const emailStatus = document.getElementById('email-status');
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                emailStatus.textContent = 'Please enter an email address';
+                emailStatus.className = 'email-status error';
+                emailStatus.style.display = 'block';
+                return;
+            }
+            
+            // Email validation regex
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                emailStatus.textContent = 'Please enter a valid email address';
+                emailStatus.className = 'email-status error';
+                emailStatus.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Update status to pending
+                emailStatus.textContent = 'Sending test email...';
+                emailStatus.className = 'email-status pending';
+                emailStatus.style.display = 'block';
+                
+                const apiUrl = `${apiBasePath}/send_test_email`;
+                console.log(`Sending test email via: ${apiUrl}`);
+                
+                // For development mode, simulate without making the actual API call
+                if (isDevelopment) {
+                    console.log(`Development mode: Simulating test email to ${email}`);
+                    
+                    // Simulate delay
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Show simulated success
+                    emailStatus.textContent = `Test email would be sent to ${email} (simulated in development mode)`;
+                    emailStatus.className = 'email-status success';
+                    
+                    // Add a mock log entry
+                    const logsContainer = document.getElementById('email-logs');
+                    if (logsContainer.querySelector('td[colspan="4"]')) {
+                        logsContainer.innerHTML = '';
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date().toLocaleString()}</td>
+                        <td>${email}</td>
+                        <td>Test Email (Simulated)</td>
+                        <td class="log-status-success">success</td>
+                    `;
+                    logsContainer.insertBefore(row, logsContainer.firstChild);
+                    
+                    return;
+                }
+                
+                // Real API call for production
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                // Update status to success
+                emailStatus.textContent = result.message || 'Test email sent successfully!';
+                emailStatus.className = 'email-status success';
+                
+                // Refresh email logs
+                setTimeout(loadEmailLogs, 1000);
+                
+            } catch (error) {
+                console.error('Failed to send test email:', error);
+                emailStatus.textContent = `Failed to send test email: ${error.message}`;
+                emailStatus.className = 'email-status error';
+            }
+        }
+        
         // Display environment-specific banner
         function setupEnvironmentBanner() {
             const banner = document.getElementById('environment-banner');
@@ -928,97 +1019,6 @@
                     }
                 });
             });
-        }
-        
-        // Send test email
-        async function sendTestEmail() {
-            const emailInput = document.getElementById('test-email');
-            const emailStatus = document.getElementById('email-status');
-            const email = emailInput.value.trim();
-            
-            if (!email) {
-                emailStatus.textContent = 'Please enter an email address';
-                emailStatus.className = 'email-status error';
-                emailStatus.style.display = 'block';
-                return;
-            }
-            
-            // Email validation regex
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                emailStatus.textContent = 'Please enter a valid email address';
-                emailStatus.className = 'email-status error';
-                emailStatus.style.display = 'block';
-                return;
-            }
-            
-            try {
-                // Update status to pending
-                emailStatus.textContent = 'Sending test email...';
-                emailStatus.className = 'email-status pending';
-                emailStatus.style.display = 'block';
-                
-                const apiUrl = `${apiBasePath}/send_test_email`;
-                console.log(`Sending test email via: ${apiUrl}`);
-                
-                // For development mode, simulate without making the actual API call
-                if (isDevelopment) {
-                    console.log(`Development mode: Simulating test email to ${email}`);
-                    
-                    // Simulate delay
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // Show simulated success
-                    emailStatus.textContent = `Test email would be sent to ${email} (simulated in development mode)`;
-                    emailStatus.className = 'email-status success';
-                    
-                    // Add a mock log entry
-                    const logsContainer = document.getElementById('email-logs');
-                    if (logsContainer.querySelector('td[colspan="4"]')) {
-                        logsContainer.innerHTML = '';
-                    }
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${new Date().toLocaleString()}</td>
-                        <td>${email}</td>
-                        <td>Test Email (Simulated)</td>
-                        <td class="log-status-success">success</td>
-                    `;
-                    logsContainer.insertBefore(row, logsContainer.firstChild);
-                    
-                    return;
-                }
-                
-                // Real API call for production
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ email })
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Server returned ${response.status}: ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                
-                // Update status to success
-                emailStatus.textContent = result.message || 'Test email sent successfully!';
-                emailStatus.className = 'email-status success';
-                
-                // Refresh email logs
-                setTimeout(loadEmailLogs, 1000);
-                
-            } catch (error) {
-                console.error('Failed to send test email:', error);
-                emailStatus.textContent = `Failed to send test email: ${error.message}`;
-                emailStatus.className = 'email-status error';
-            }
         }
         
         // Show toast notification
