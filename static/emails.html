@@ -562,11 +562,24 @@
         const isActualDomain = window.location.hostname.includes('monumevip.com');
         // If we're on the actual domain, never use mock mode
         const useMockMode = false; // Disable mock mode
-        const apiBasePath = window.location.origin; // Use dynamic host for API calls
+        const apiBasePath = `${window.location.protocol}//${window.location.host}`; // Ensure protocol and host are dynamically set
 
         console.log(`Running in Production mode. Using API base path: ${apiBasePath}`);
-        console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
-        
+
+        // Improved error handling for API calls
+        async function fetchWithErrorHandling(url, options) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${url}:`, error);
+                throw error;
+            }
+        }
+
         // Force real API calls, disable mock mode
         const useTemporaryMockMode = false;
         
@@ -658,163 +671,53 @@
         // Load email settings from the server or use mock data in dev mode
         async function loadEmailSettings() {
             try {
-                let settings;
-                
-                if (useTemporaryMockMode) {
-                    // Use mock data in Live Server mode or temporarily on production
-                    console.log('Using mock email settings data');
-                    settings = mockSettings;
-                    
-                    // Update domain info with actual domain when on production
-                    if (isActualDomain) {
-                        settings.domain = window.location.hostname;
-                    }
-                } else {
-                    // Use real server in production mode
-                    const apiUrl = `${apiBasePath}/get_email_settings`;
-                    console.log(`Fetching email settings from: ${apiUrl}`);
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    // Check if response is empty
-                    const text = await response.text();
-                    if (!text || text.trim() === '') {
-                        showToast('Server returned empty response', 'error');
-                        return;
-                    }
-                    
-                    // Try to parse response as JSON
-                    try {
-                        settings = JSON.parse(text);
-                    } catch (e) {
-                        console.error('Failed to parse JSON:', e, 'Raw text:', text);
-                        showToast('Invalid server response format', 'error');
-                        
-                        // Set default values if can't get from server
-                        settings = mockSettings;
-                    }
-                }
-                
-                // Update toggle switches
-                document.getElementById('autoEmailEnabled').checked = settings.auto_email_enabled === true;
-                document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled === true;
-                document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled === true;
-                
-                // If we have a domain, show it in the UI
+                const apiUrl = `${apiBasePath}/get_email_settings`;
+                console.log(`Fetching email settings from: ${apiUrl}`);
+                const settings = await fetchWithErrorHandling(apiUrl, { method: 'GET' });
+
+                // Update UI with settings
+                document.getElementById('autoEmailEnabled').checked = settings.auto_email_enabled;
+                document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled;
+                document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled;
+
                 if (settings.domain) {
                     const domainInfoElement = document.getElementById('domain-info');
-                    if (domainInfoElement) {
-                        domainInfoElement.textContent = settings.domain;
-                        domainInfoElement.closest('.domain-info-container').style.display = 'block';
-                    }
+                    domainInfoElement.textContent = settings.domain;
+                    domainInfoElement.closest('.domain-info-container').style.display = 'block';
                 }
-                
-                // Add event listeners for toggle switches
-                setupToggleListeners();
-                
             } catch (error) {
-                console.error('Failed to load email settings:', error);
                 showToast('Failed to load email settings: ' + error.message, 'error');
-                
-                // Set default values if can't get from server
-                document.getElementById('autoEmailEnabled').checked = true;
-                document.getElementById('dailyEmailEnabled').checked = false;
-                document.getElementById('weeklyEmailEnabled').checked = true;
-                
-                // Add event listeners for toggle switches
-                setupToggleListeners();
             }
         }
         
         // Load email logs from the server or use mock data in dev mode
         async function loadEmailLogs() {
             try {
-                let data;
-                
-                if (useTemporaryMockMode) {
-                    // Use mock data in Live Server mode or temporarily on production
-                    console.log('Using mock email logs data');
-                    data = mockLogs;
-                } else {
-                    // Use real server in production mode
-                    const apiUrl = `${apiBasePath}/get_email_logs`;
-                    console.log(`Fetching email logs from: ${apiUrl}`);
-                    
-                    const response = await fetch(apiUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    // Check if response is empty
-                    const text = await response.text();
-                    if (!text || text.trim() === '') {
-                        // Show "No logs available" message
-                        const logsContainer = document.getElementById('email-logs');
-                        logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">No email logs found</td></tr>';
-                        return;
-                    }
-                    
-                    // Try to parse data
-                    try {
-                        data = JSON.parse(text);
-                    } catch (e) {
-                        console.error('Failed to parse JSON:', e, 'Raw text:', text);
-                        const logsContainer = document.getElementById('email-logs');
-                        logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">Error parsing logs data</td></tr>';
-                        return;
-                    }
-                }
-                
-                const logs = data.logs || [];
-                
-                // Clear logs container
+                const apiUrl = `${apiBasePath}/get_email_logs`;
+                console.log(`Fetching email logs from: ${apiUrl}`);
+                const data = await fetchWithErrorHandling(apiUrl, { method: 'GET' });
+
                 const logsContainer = document.getElementById('email-logs');
                 logsContainer.innerHTML = '';
-                
-                if (logs.length === 0) {
+
+                if (data.logs.length === 0) {
                     logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">No email logs found</td></tr>';
                     return;
                 }
-                
-                // Add logs to table
-                logs.forEach(log => {
+
+                data.logs.forEach(log => {
                     const row = document.createElement('tr');
-                    
-                    // Format timestamp
-                    const timestamp = new Date(log.timestamp);
-                    const formattedDate = timestamp.toLocaleString();
-                    
+                    const timestamp = new Date(log.timestamp).toLocaleString();
                     row.innerHTML = `
-                        <td>${formattedDate}</td>
+                        <td>${timestamp}</td>
                         <td>${log.recipient}</td>
                         <td>${log.type}</td>
                         <td class="${log.status === 'success' ? 'log-status-success' : 'log-status-failed'}">${log.status}</td>
                     `;
-                    
                     logsContainer.appendChild(row);
                 });
-                
             } catch (error) {
-                console.error('Failed to load email logs:', error);
-                const logsContainer = document.getElementById('email-logs');
-                logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">Server not available</td></tr>';
+                showToast('Failed to load email logs: ' + error.message, 'error');
             }
         }
         
