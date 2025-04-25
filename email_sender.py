@@ -23,8 +23,8 @@ logger = logging.getLogger('email_sender')
 DEFAULT_CONFIG = {
     'smtp_server': 'smtp.gmail.com',
     'smtp_port': 587,
-    'sender_email': 'monume.tracker@gmail.com',
-    'sender_name': 'MonuMe Tracker',
+    'sender_email': 'monumequeens@gmail.com',
+    'sender_name': 'MonuMe performance',
     'use_tls': True,
     'auto_email_enabled': True,
     'daily_email_enabled': False,
