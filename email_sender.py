@@ -75,7 +75,7 @@ def save_email_config(settings):
 def log_email_activity(recipient, email_type, status, error_message=None):
     """Log email activity to database"""
     try:
-        conn = sqlite3.connect('monume_tracker.db')
+        conn = sqlite3.connect('monume.db')
         cursor = conn.cursor()
         
         # Create table if not exists
@@ -111,48 +111,20 @@ def log_email_activity(recipient, email_type, status, error_message=None):
         return False
 
 def get_email_logs(limit=20):
-    """Get recent email logs from database"""
+    """Get recent email logs from the database."""
     try:
-        conn = sqlite3.connect('monume_tracker.db')
-        cursor = conn.cursor()
-        
-        # Create table if not exists
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS email_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                recipient TEXT,
-                type TEXT,
-                status TEXT,
-                error_message TEXT
-            )
-        ''')
-        
-        # Get logs ordered by timestamp (most recent first)
-        cursor.execute('''
-            SELECT timestamp, recipient, type, status, error_message
-            FROM email_logs
-            ORDER BY timestamp DESC
-            LIMIT ?
-        ''', (limit,))
-        
-        logs = cursor.fetchall()
+        db_path = os.path.join(os.path.dirname(__file__), 'monume.db')
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.execute(
+            "SELECT timestamp, recipient, type, status FROM email_logs ORDER BY timestamp DESC LIMIT ?",
+            (limit,)
+        )
+        rows = cursor.fetchall()
         conn.close()
-        
-        # Format logs as list of dictionaries
-        formatted_logs = []
-        for log in logs:
-            formatted_logs.append({
-                'timestamp': log[0],
-                'recipient': log[1],
-                'type': log[2],
-                'status': log[3],
-                'error_message': log[4]
-            })
-        
-        return formatted_logs
+        return [dict(row) for row in rows]
     except Exception as e:
-        logger.error(f"Failed to get email logs: {str(e)}")
+        logger.error(f"Failed to get email logs: {e}")
         return []
 
 def send_email(recipient_email, subject, html_content, pdf_path=None, email_type="system"):

@@ -562,15 +562,15 @@
         const isActualDomain = window.location.hostname.includes('monumevip.com');
         // If we're on the actual domain, never use mock mode
         const useMockMode = false; // Disable mock mode
-        let apiBasePath = 'https://www.monumevip.com'; // Force production API path
+        const apiBasePath = window.location.origin; // Use dynamic host for API calls
 
         console.log(`Running in Production mode. Using API base path: ${apiBasePath}`);
         console.log(`Domain detection: ${isActualDomain ? 'Running on monumevip.com domain' : 'Not on monumevip.com domain'}`);
         
-        // Disable temporary mock mode completely
+        // Force real API calls, disable mock mode
         const useTemporaryMockMode = false;
         
-        // Mock data for development with Live Server (not used in production)
+        // Mock data for development with Live Server
         const mockSettings = {
             auto_email_enabled: true,
             daily_email_enabled: false,
@@ -660,38 +660,49 @@
             try {
                 let settings;
                 
-                // Always use real server in production mode
-                const apiUrl = `${apiBasePath}/get_email_settings`;
-                console.log(`Fetching email settings from: ${apiUrl}`);
-                
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                }
-                
-                // Check if response is empty
-                const text = await response.text();
-                if (!text || text.trim() === '') {
-                    showToast('Server returned empty response', 'error');
-                    return;
-                }
-                
-                // Try to parse response as JSON
-                try {
-                    settings = JSON.parse(text);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', e, 'Raw text:', text);
-                    showToast('Invalid server response format', 'error');
-                    
-                    // Set default values if can't get from server
+                if (useTemporaryMockMode) {
+                    // Use mock data in Live Server mode or temporarily on production
+                    console.log('Using mock email settings data');
                     settings = mockSettings;
+                    
+                    // Update domain info with actual domain when on production
+                    if (isActualDomain) {
+                        settings.domain = window.location.hostname;
+                    }
+                } else {
+                    // Use real server in production mode
+                    const apiUrl = `${apiBasePath}/get_email_settings`;
+                    console.log(`Fetching email settings from: ${apiUrl}`);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    // Check if response is empty
+                    const text = await response.text();
+                    if (!text || text.trim() === '') {
+                        showToast('Server returned empty response', 'error');
+                        return;
+                    }
+                    
+                    // Try to parse response as JSON
+                    try {
+                        settings = JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e, 'Raw text:', text);
+                        showToast('Invalid server response format', 'error');
+                        
+                        // Set default values if can't get from server
+                        settings = mockSettings;
+                    }
                 }
                 
                 // Update toggle switches
@@ -728,40 +739,47 @@
         // Load email logs from the server or use mock data in dev mode
         async function loadEmailLogs() {
             try {
-                // Always use real server in production mode
-                const apiUrl = `${apiBasePath}/get_email_logs`;
-                console.log(`Fetching email logs from: ${apiUrl}`);
-                
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                }
-                
-                // Check if response is empty
-                const text = await response.text();
-                if (!text || text.trim() === '') {
-                    // Show "No logs available" message
-                    const logsContainer = document.getElementById('email-logs');
-                    logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">No email logs found</td></tr>';
-                    return;
-                }
-                
-                // Try to parse data
                 let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', e, 'Raw text:', text);
-                    const logsContainer = document.getElementById('email-logs');
-                    logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">Error parsing logs data</td></tr>';
-                    return;
+                
+                if (useTemporaryMockMode) {
+                    // Use mock data in Live Server mode or temporarily on production
+                    console.log('Using mock email logs data');
+                    data = mockLogs;
+                } else {
+                    // Use real server in production mode
+                    const apiUrl = `${apiBasePath}/get_email_logs`;
+                    console.log(`Fetching email logs from: ${apiUrl}`);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    // Check if response is empty
+                    const text = await response.text();
+                    if (!text || text.trim() === '') {
+                        // Show "No logs available" message
+                        const logsContainer = document.getElementById('email-logs');
+                        logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">No email logs found</td></tr>';
+                        return;
+                    }
+                    
+                    // Try to parse data
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e, 'Raw text:', text);
+                        const logsContainer = document.getElementById('email-logs');
+                        logsContainer.innerHTML = '<tr><td colspan="4" style="text-align: center;">Error parsing logs data</td></tr>';
+                        return;
+                    }
                 }
                 
                 const logs = data.logs || [];
@@ -812,7 +830,15 @@
                 const element = document.getElementById(toggle.id);
                 element.addEventListener('change', async function() {
                     try {
-                        // Always use real server in production mode
+                        if (useTemporaryMockMode) {
+                            // Mock response in Live Server mode or temporarily on production
+                            console.log(`Mock: Setting ${toggle.setting} to ${this.checked}`);
+                            mockSettings[toggle.setting] = this.checked;
+                            showToast(`${toggle.setting} has been ${this.checked ? 'enabled' : 'disabled'}`, 'success');
+                            return;
+                        }
+                        
+                        // Real server request in production mode
                         const apiUrl = `${apiBasePath}/update_email_setting`;
                         console.log(`Updating email setting at: ${apiUrl}`);
                         
@@ -871,7 +897,31 @@
                 emailStatus.className = 'email-status pending';
                 emailStatus.style.display = 'block';
                 
-                // Always use real server in production mode
+                if (useTemporaryMockMode) {
+                    // Mock sending in Live Server mode or temporarily on production
+                    console.log(`Mock: Sending test email to ${email}`);
+                    
+                    // Add to mock logs
+                    mockLogs.logs.unshift({
+                        timestamp: new Date().toISOString(),
+                        recipient: email,
+                        type: 'Test Email',
+                        status: 'success'
+                    });
+                    
+                    // Simulate delay
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Update status to success
+                    emailStatus.textContent = 'Test email sent successfully!';
+                    emailStatus.className = 'email-status success';
+                    
+                    // Refresh email logs
+                    setTimeout(loadEmailLogs, 500);
+                    return;
+                }
+                
+                // Real server request in production mode
                 const apiUrl = `${apiBasePath}/send_test_email`;
                 console.log(`Sending test email via: ${apiUrl}`);
                 
@@ -884,7 +934,7 @@
                 });
                 
                 if (!response.ok) {
-                    const data = await response.json().catch(() => ({}));
+                    const data = await response.json();
                     throw new Error(data.error || `Server returned ${response.status}`);
                 }
                 
