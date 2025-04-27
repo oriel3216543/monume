@@ -1721,7 +1721,7 @@
             transform: translateY(-2px);
         }
 
-        /* Password Verification Modal */
+        /* Password Verification Modal - EXACT COPY FROM ActiveUsers.html */
         .password-modal {
             display: none;
             position: fixed;
@@ -2019,7 +2019,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Force Out Modal Styles */
+        /* Force Out Modal - EXACT COPY FROM ActiveUsers.html */
         .forceout-modal {
             display: none;
             position: fixed;
@@ -2113,7 +2113,7 @@
 
         .forceout-buttons button {
             flex: 1;
-            padding: 14px 0;
+            padding: 12px 0;
             border: none;
             border-radius: 10px;
             font-weight: 600;
@@ -2171,19 +2171,48 @@
     <script>
         // Secondary authentication check (when DOM is loaded)
         document.addEventListener('DOMContentLoaded', function() {
-            const username = localStorage.getItem("username");
-            const isLoggedIn = localStorage.getItem("isLoggedIn");
-            
-            if (!username || !isLoggedIn) {
-                console.log("Authentication check failed during DOM load, redirecting to login page");
-                window.location.href = "../index.html";
-                return;
+            // Set up event listeners for the links and buttons
+            setupEventListeners();
+            // Load dashboard data
+            loadDashboardData();
+            // Create particles
+            createParticles();
+            // Check for incomplete morning notes
+            checkMorningNotes();
+            // Set up logo change functionality if the button exists
+            if (document.getElementById('change-logo-btn')) {
+                setupLogoChange();
+            } else {
+                console.warn('Logo button not found, skipping setup');
+            }
+            // Check for a custom logo in local storage
+            const customLogo = localStorage.getItem('customLogo');
+            const sidebarLogo = document.getElementById('sidebar-logo');
+            if (customLogo && sidebarLogo) {
+                sidebarLogo.src = customLogo;
             }
             
-            console.log("User authenticated:", username);
+            // Set up Active Users functionality
+            setupActiveUsersButtons();
+            // Initialize users database if needed
+            initializeUsersDatabase();
+            // Update active users count
+            updateActiveUsersCount();
             
-            // Rest of your initialization code
-            // ...
+            // Check if we should open the management auth modal from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('openManagementAuth') === 'true') {
+                // Remove the parameter from URL to prevent reopening on refresh
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+                
+                // Open the management auth modal
+                setTimeout(() => {
+                    if (typeof openAuthModal === 'function') {
+                        openAuthModal();
+                    }
+                }, 500); // Slight delay to ensure everything is loaded
+            }
         });
     </script>
 
@@ -2226,6 +2255,7 @@
                     <button id="start-session-btn" class="action-button start-btn">
                         <i class="fas fa-play"></i> Start
                     </button>
+                    <button id="view-active-users```html
                     <button id="view-active-users-btn" class="action-button view-btn">
                         <i class="fas fa-eye"></i> Activate
                     </button>
@@ -2257,7 +2287,7 @@
         <!-- Dashboard sections container with split layout -->
         <div class="dashboard-split-container">
             <!-- Left side placeholder for future content -->
-            <div class="dashboard-split-section left-section">
+            <div class="dashboardsplit-section left-section">
                 <div class="placeholder-content">
                     <i class="fas fa-columns"></i>
                     <p>Future content area</p>
@@ -2327,8 +2357,14 @@
     <div id="password-verification-modal" class="verification-modal">
         <div class="verification-modal-content">
             <h3>Password Verification</h3>
-            <p>Please enter your password to continue, <span id="verification-username">user</span></p>
-            <input type="password" id="verification-password" placeholder="Your password">
+            <p>Please select a user and enter password to continue</p>
+            
+            <!-- Added dropdown for user selection -->
+            <select id="verification-username-select" style="width: 100%; padding: 12px 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background-color: white;">
+                <!-- Options will be dynamically populated with JavaScript -->
+            </select>
+            
+            <input type="password" id="verification-password" placeholder="Enter password">
             <div class="verification-buttons">
                 <button onclick="cancelPasswordVerification()">Cancel</button>
                 <button onclick="submitPasswordVerification()">Verify</button>
@@ -2510,6 +2546,21 @@
             initializeUsersDatabase();
             // Update active users count
             updateActiveUsersCount();
+            
+            // Check if we should open the management auth modal from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('openManagementAuth') === 'true') {
+                // Remove the parameter from URL to prevent reopening on refresh
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+                
+                // Open the management auth modal
+                setTimeout(() => {
+                    if (typeof openAuthModal === 'function') {
+                        openAuthModal();
+                    }
+                }, 500); // Slight delay to ensure everything is loaded
+            }
         });
 
         // Function to set up all event listeners for the dashboard
@@ -2670,30 +2721,9 @@
                 alert('Logo updated successfully!');
             }
         }
-    </script>
-    <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="notification_system.js"></script>
 
-    <!-- Add the user authentication modal before closing body tag -->
-    <div id="user-auth-modal" class="user-auth-modal">
-        <div class="modal-content">
-            <h3>User Authentication</h3>
-            <p id="auth-user-text">Enter password for <strong id="selected-username">Username</strong></p>
-            <input type="password" id="auth-password" class="auth-input" placeholder="Enter password">
-            <div class="auth-buttons">
-                <button id="cancel-auth" class="cancel-btn">Cancel</button>
-                <button id="confirm-auth" class="confirm-btn">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Custom script to initialize team chat -->
-    <script src="js/dashboard-chat.js"></script>
-    <script src="js/active-users-dashboard.js"></script>
-    <script>
+        // Set up Team MonuMe card functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Set up Team MonuMe card functionality
             const startSessionBtn = document.getElementById('start-session-btn');
             const viewActiveUsersBtn = document.getElementById('view-active-users-btn');
             
@@ -2744,6 +2774,9 @@
                 ];
                 localStorage.setItem('monumeUsers', JSON.stringify(defaultUsers));
             }
+            
+            // Set up password verification dropdown
+            setupVerificationDropdown();
             
             // Handle start session button
             if (startSessionBtn) {
@@ -2804,6 +2837,85 @@
             // Update count every 30 seconds
             setInterval(updateActiveUsersCount, 30000);
         });
+        
+        // Function to populate the username select dropdown
+        function setupVerificationDropdown() {
+            const dropdown = document.getElementById('verification-username-select');
+            if (!dropdown) return;
+            
+            // Get all users from localStorage
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            
+            // Clear existing options
+            dropdown.innerHTML = '';
+            
+            // Add placeholder option
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = '-- Select a user --';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            dropdown.appendChild(placeholder);
+            
+            // Add user options
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                option.textContent = user.name || user.username;
+                dropdown.appendChild(option);
+            });
+        }
+        
+        // Function to cancel password verification
+        function cancelPasswordVerification() {
+            // Hide the modal
+            document.getElementById('password-verification-modal').style.display = 'none';
+        }
+        
+        // Function to submit password verification
+        function submitPasswordVerification() {
+            const usernameSelect = document.getElementById('verification-username-select');
+            const passwordInput = document.getElementById('verification-password');
+            
+            const username = usernameSelect.value;
+            const password = passwordInput.value;
+            
+            if (!username) {
+                alert('Please select a user');
+                return;
+            }
+            
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+            
+            // Verify the password against stored users
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === username);
+            
+            if (user && user.password === password) {
+                // Authentication successful - do whatever you need to do
+                cancelPasswordVerification(); // Close the modal
+                
+                // Proceed with the relevant action (this would be context-dependent)
+                console.log('Authentication successful for:', username);
+                
+                // For example, set as current user
+                localStorage.setItem('currentUser', username);
+                
+                // You might redirect to another page or trigger a specific action
+                alert('Authentication successful!');
+                
+                // Refresh the page to show updated state
+                // window.location.reload();
+            } else {
+                // Authentication failed
+                alert('Invalid password. Please try again.');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
         
         // Update active users count
         function updateActiveUsersCount() {
@@ -2900,848 +3012,33 @@
                 document.getElementById('user-password').focus();
             }
         }
-        
-        // Open active users modal
-        function openActiveUsersModal() {
-            const modal = document.getElementById('active-users-modal');
-            const activeUserList = document.getElementById('active-user-list');
-            
-            // Clear previous list
-            activeUserList.innerHTML = '';
-            
-            // Get active users
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
-            
-            if (activeUsers.length === 0) {
-                const emptyMessage = document.createElement('p');
-                emptyMessage.textContent = 'No active users at the moment.';
-                emptyMessage.style.textAlign = 'center';
-                emptyMessage.style.padding = '20px';
-                emptyMessage.style.color = '#666';
-                activeUserList.appendChild(emptyMessage);
-            } else {
-                // Create user items
-                activeUsers.forEach(user => {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'active-user-item';
-                    userItem.setAttribute('data-username', user.username);
-                    
-                    const startTime = new Date(user.startTime);
-                    const timeActive = getTimeActive(startTime);
-                    
-                    userItem.innerHTML = `
-                        <div class="active-user-name">${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span></div>
-                        <div class="active-user-buttons">
-                            <button class="unactive-btn">Unactive</button>
-                            <button class="forceout-btn">Force Out</button>
-                        </div>
-                    `;
-                    
-                    activeUserList.appendChild(userItem);
-                });
-            }
-            
-            // Show the modal with a fade-in effect
-            modal.style.display = 'flex';
-            
-            // Set up event delegation for active user list buttons
-            document.getElementById('active-user-list').addEventListener('click', function(e) {
-                if (e.target.classList.contains('unactive-btn')) {
-                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
-                    deactivateUser(username);
-                } else if (e.target.classList.contains('forceout-btn')) {
-                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
-                    forceOutUser(username);
-                }
-            });
-        }
-        
-        // Close active users modal
-        function closeActiveUsersModal() {
-            const modal = document.getElementById('active-users-modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-        
-        // Get time active in human-readable format
-        function getTimeActive(startTime) {
-            const now = new Date();
-            const diff = Math.floor((now - startTime) / 1000); // seconds
-            
-            if (diff < 60) {
-                return `${diff} sec`;
-            } else if (diff < 3600) {
-                return `${Math.floor(diff / 60)} min`;
-            } else {
-                const hours = Math.floor(diff / 3600);
-                const minutes = Math.floor((diff % 3600) / 60);
-                return `${hours}h ${minutes}m`;
-            }
-        }
-        
-        // Get current user role
-        function getCurrentUserRole() {
-            const currentUser = localStorage.getItem('currentUser');
-            
-            if (!currentUser) return 'guest';
-            
-            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-            const user = users.find(u => u.username === currentUser);
-            
-            return user ? user.role : 'guest';
-        }
-        
-        // Deactivate a user
-        function deactivateUser(username) {
-            // Create a styled modal for password verification
-            const verificationModal = document.createElement('div');
-            verificationModal.style.position = 'fixed';
-            verificationModal.style.top = '0';
-            verificationModal.style.left = '0';
-            verificationModal.style.width = '100%';
-            verificationModal.style.height = '100%';
-            verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            verificationModal.style.backdropFilter = 'blur(5px)';
-            verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
-            verificationModal.style.display = 'flex';
-            verificationModal.style.justifyContent = 'center';
-            verificationModal.style.alignItems = 'center';
-            verificationModal.style.zIndex = '2000';
-            
-            const modalContent = document.createElement('div');
-            modalContent.style.backgroundColor = 'white';
-            modalContent.style.borderRadius = '20px';
-            modalContent.style.padding = '30px';
-            modalContent.style.width = '350px';
-            modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
-            modalContent.style.textAlign = 'center';
-            modalContent.style.animation = 'modalFadeIn 0.3s ease';
-            modalContent.style.position = 'relative';
-            
-            // Add a colored top border
-            modalContent.style.borderTop = '6px solid #ff9562';
-            
-            const title = document.createElement('h3');
-            title.textContent = 'Password Verification';
-            title.style.marginTop = '0';
-            title.style.color = '#ff9562';
-            title.style.fontSize = '22px';
-            title.style.fontWeight = '700';
-            title.style.marginBottom = '15px';
-            
-            const text = document.createElement('p');
-            text.innerHTML = `Please enter <span style="color: #ff9562; font-weight: 600;">${username}</span>'s password to deactivate:`;
-            text.style.marginBottom = '20px';
-            text.style.color = '#666';
-            
-            const passwordInput = document.createElement('input');
-            passwordInput.type = 'password';
-            passwordInput.placeholder = 'Enter password';
-            passwordInput.style.width = '100%';
-            passwordInput.style.padding = '12px 15px';
-            passwordInput.style.margin = '10px 0 20px';
-            passwordInput.style.border = '1px solid #ddd';
-            passwordInput.style.borderRadius = '10px';
-            passwordInput.style.fontSize = '16px';
-            passwordInput.style.boxSizing = 'border-box';
-            
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.display = 'flex';
-            buttonsDiv.style.justifyContent = 'space-between';
-            buttonsDiv.style.gap = '15px';
-            
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
-            cancelButton.style.flex = '1';
-            cancelButton.style.padding = '12px 0';
-            cancelButton.style.border = 'none';
-            cancelButton.style.borderRadius = '10px';
-            cancelButton.style.fontWeight = '600';
-            cancelButton.style.cursor = 'pointer';
-            cancelButton.style.transition = 'all 0.2s ease';
-            cancelButton.style.backgroundColor = '#f0f0f0';
-            cancelButton.style.color = '#666';
-            
-            const verifyButton = document.createElement('button');
-            verifyButton.textContent = 'Verify';
-            verifyButton.style.flex = '1';
-            verifyButton.style.padding = '12px 0';
-            verifyButton.style.border = 'none';
-            verifyButton.style.borderRadius = '10px';
-            verifyButton.style.fontWeight = '600';
-            verifyButton.style.cursor = 'pointer';
-            verifyButton.style.transition = 'all 0.2s ease';
-            verifyButton.style.background = 'linear-gradient(135deg, #ff7f42, #ff9562)';
-            verifyButton.style.color = 'white';
-            
-            // Add hover effects
-            cancelButton.addEventListener('mouseover', function() {
-                this.style.backgroundColor = '#e0e0e0';
-                this.style.transform = 'translateY(-2px)';
-            });
-            
-            cancelButton.addEventListener('mouseout', function() {
-                this.style.backgroundColor = '#f0f0f0';
-                this.style.transform = 'translateY(0)';
-            });
-            
-            verifyButton.addEventListener('mouseover', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 5px 15px rgba(255, 127, 66, 0.3)';
-            });
-            
-            verifyButton.addEventListener('mouseout', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'none';
-            });
-            
-            // Add event listeners
-            cancelButton.addEventListener('click', function() {
-                document.body.removeChild(verificationModal);
-            });
-            
-            verifyButton.addEventListener('click', function() {
-                const password = passwordInput.value;
-                if (!password) {
-                    alert('Please enter a password');
-                    return;
-                }
-                
-                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-                const user = users.find(u => u.username === username);
-                
-                if (user && user.password === password) {
-                    // Remove from active users
-                    removeActiveUser(username);
-                    
-                    // Remove the modal
-                    document.body.removeChild(verificationModal);
-                    
-                    // Show success message using toast
-                    const successToast = createToast(`${username} has been deactivated successfully`, 'success');
-                    document.body.appendChild(successToast);
-                    setTimeout(() => {
-                        successToast.style.opacity = '0';
-                        setTimeout(() => {
-                            document.body.removeChild(successToast);
-                        }, 500);
-                    }, 3000);
-                    
-                    // Update active users count
-                    updateActiveUsersCount();
-                    
-                    // Refresh active users modal
-                    openActiveUsersModal();
-                } else {
-                    // Show error message
-                    const errorMsg = document.createElement('p');
-                    errorMsg.textContent = 'Invalid password. Please try again.';
-                    errorMsg.style.color = '#ff3333';
-                    errorMsg.style.margin = '0 0 15px 0';
-                    errorMsg.style.fontSize = '14px';
-                    
-                    // Remove any existing error message
-                    const existingError = modalContent.querySelector('.error-message');
-                    if (existingError) {
-                        existingError.remove();
-                    }
-                    
-                    // Add class for easy removal
-                    errorMsg.classList.add('error-message');
-                    
-                    // Insert before buttons
-                    buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
-                    
-                    // Clear password field
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                    
-                    // Add shake animation
-                    modalContent.style.animation = 'none';
-                    setTimeout(() => {
-                        modalContent.style.animation = 'shake 0.5s';
-                    }, 10);
-                }
-            });
-            
-            // Add keypress handler for Enter key
-            passwordInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    verifyButton.click();
-                }
-            });
-            
-            // Add a close button in top right
-            const closeButton = document.createElement('button');
-            closeButton.innerHTML = '&times;';
-            closeButton.style.position = 'absolute';
-            closeButton.style.top = '10px';
-            closeButton.style.right = '15px';
-            closeButton.style.background = 'none';
-            closeButton.style.border = 'none';
-            closeButton.style.fontSize = '24px';
-            closeButton.style.cursor = 'pointer';
-            closeButton.style.color = '#aaa';
-            closeButton.style.transition = 'color 0.2s';
-            
-            closeButton.addEventListener('mouseover', function() {
-                this.style.color = '#ff9562';
-            });
-            
-            closeButton.addEventListener('mouseout', function() {
-                this.style.color = '#aaa';
-            });
-            
-            closeButton.addEventListener('click', function() {
-                document.body.removeChild(verificationModal);
-            });
-            
-            // Assemble the modal
-            buttonsDiv.appendChild(cancelButton);
-            buttonsDiv.appendChild(verifyButton);
-            
-            modalContent.appendChild(closeButton);
-            modalContent.appendChild(title);
-            modalContent.appendChild(text);
-            modalContent.appendChild(passwordInput);
-            modalContent.appendChild(buttonsDiv);
-            
-            verificationModal.appendChild(modalContent);
-            document.body.appendChild(verificationModal);
-            
-            // Focus the password field
-            setTimeout(() => {
-                passwordInput.focus();
-            }, 100);
-        }
-        
-        // Create a toast notification
-        function createToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.right = '20px';
-            toast.style.padding = '15px 20px';
-            toast.style.borderRadius = '10px';
-            toast.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
-            toast.style.display = 'flex';
-            toast.style.alignItems = 'center';
-            toast.style.gap = '10px';
-            toast.style.zIndex = '2001';
-            toast.style.transition = 'opacity 0.5s ease';
-            
-            // Set color based on type
-            if (type === 'success') {
-                toast.style.backgroundColor = '#4caf50';
-                toast.style.color = 'white';
-                toast.innerHTML = '<i class="fas fa-check-circle"></i> ';
-            } else if (type === 'error') {
-                toast.style.backgroundColor = '#f44336';
-                toast.style.color = 'white';
-                toast.innerHTML = '<i class="fas fa-exclamation-circle"></i> ';
-            } else {
-                toast.style.backgroundColor = '#2196f3';
-                toast.style.color = 'white';
-                toast.innerHTML = '<i class="fas fa-info-circle"></i> ';
-            }
-            
-            toast.innerHTML += message;
-            
-            return toast;
-        }
-        
-        // Force out a user (admin/manager only)
-        function forceOutUser(username) {
-            // Create verification modal
-            const verificationModal = document.createElement('div');
-            verificationModal.id = 'auth-check-modal';
-            verificationModal.style.position = 'fixed';
-            verificationModal.style.top = '0';
-            verificationModal.style.left = '0';
-            verificationModal.style.width = '100%';
-            verificationModal.style.height = '100%';
-            verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            verificationModal.style.backdropFilter = 'blur(5px)';
-            verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
-            verificationModal.style.display = 'flex';
-            verificationModal.style.justifyContent = 'center';
-            verificationModal.style.alignItems = 'center';
-            verificationModal.style.zIndex = '2000';
-            
-            // Function to close the modal - defined once and reused
-            const closeModal = () => {
-                if (document.body.contains(verificationModal)) {
-                    document.body.removeChild(verificationModal);
-                }
-            };
-            
-            const modalContent = document.createElement('div');
-            modalContent.style.backgroundColor = 'white';
-            modalContent.style.borderRadius = '20px';
-            modalContent.style.padding = '30px';
-            modalContent.style.width = '400px';
-            modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
-            modalContent.style.textAlign = 'center';
-            modalContent.style.animation = 'modalFadeIn 0.3s ease';
-            modalContent.style.position = 'relative';
-            
-            // Add a colored top border - red for force out
-            modalContent.style.borderTop = '6px solid #f44336';
-            
-            const title = document.createElement('h3');
-            title.textContent = 'Authentication Check';
-            title.style.marginTop = '0';
-            title.style.color = '#f44336';
-            title.style.fontSize = '22px';
-            title.style.fontWeight = '700';
-            title.style.marginBottom = '15px';
-            
-            const currentUser = localStorage.getItem('currentUser') || localStorage.getItem('username') || 'Guest';
-            const currentRole = getCurrentUserRole();
-            
-            // Check permissions (but still allow the user to attempt)
-            const isAdmin = currentRole === 'admin';
-            const isManager = currentRole === 'manager';
-            const hasPermission = isAdmin || isManager;
-            
-            const text = document.createElement('p');
-            
-            if (hasPermission) {
-                text.innerHTML = `Select an admin or manager account to force out <span style="color: #f44336; font-weight: 600;">${username}</span>:`;
-            } else {
-                text.innerHTML = `<span style="color: #f44336;">Permission Check:</span> You must be an admin or manager to force out <span style="color: #f44336; font-weight: 600;">${username}</span>.<br>Select an admin or manager account and provide their password:`;
-            }
-            
-            text.style.marginBottom = '20px';
-            text.style.color = '#666';
-            
-            // Add dropdown for admin/manager selection
-            const adminManagerSelect = document.createElement('select');
-            adminManagerSelect.style.width = '100%';
-            adminManagerSelect.style.padding = '12px 15px';
-            adminManagerSelect.style.margin = '0 0 15px 0';
-            adminManagerSelect.style.border = '1px solid #ddd';
-            adminManagerSelect.style.borderRadius = '10px';
-            adminManagerSelect.style.fontSize = '16px';
-            adminManagerSelect.style.appearance = 'none';
-            adminManagerSelect.style.WebkitAppearance = 'none';
-            adminManagerSelect.style.background = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>\') no-repeat';
-            adminManagerSelect.style.backgroundPosition = 'right 15px center';
-            adminManagerSelect.style.backgroundColor = 'white';
-            adminManagerSelect.style.cursor = 'pointer';
-            adminManagerSelect.style.transition = 'all 0.2s ease';
-            
-            // Get all admins and managers
-            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-            const adminsAndManagers = users.filter(user => user.role === 'admin' || user.role === 'manager');
-            
-            // Populate the dropdown
-            if (adminsAndManagers.length === 0) {
-                const option = document.createElement('option');
-                option.textContent = 'No admins or managers found';
-                option.disabled = true;
-                adminManagerSelect.appendChild(option);
-            } else {
-                adminsAndManagers.forEach(user => {
-                    const option = document.createElement('option');
-                    option.value = user.username;
-                    option.textContent = `${user.name || user.username} (${user.role})`;
-                    adminManagerSelect.appendChild(option);
-                });
-                
-                // Try to preselect current user if they are admin/manager
-                const currentUserOption = Array.from(adminManagerSelect.options).find(option => option.value === currentUser);
-                if (currentUserOption) {
-                    currentUserOption.selected = true;
-                }
-            }
-            
-            const passwordInput = document.createElement('input');
-            passwordInput.type = 'password';
-            passwordInput.placeholder = 'Enter password for selected account';
-            passwordInput.style.width = '100%';
-            passwordInput.style.padding = '12px 15px';
-            passwordInput.style.margin = '10px 0 20px';
-            passwordInput.style.border = '1px solid #ddd';
-            passwordInput.style.borderRadius = '10px';
-            passwordInput.style.fontSize = '16px';
-            passwordInput.style.boxSizing = 'border-box';
-            
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.display = 'flex';
-            buttonsDiv.style.justifyContent = 'space-between';
-            buttonsDiv.style.gap = '15px';
-            
-            const cancelButton = document.createElement('button');
-            cancelButton.textContent = 'Cancel';
-            cancelButton.style.flex = '1';
-            cancelButton.style.padding = '12px 0';
-            cancelButton.style.border = 'none';
-            cancelButton.style.borderRadius = '10px';
-            cancelButton.style.fontWeight = '600';
-            cancelButton.style.cursor = 'pointer';
-            cancelButton.style.transition = 'all 0.2s ease';
-            cancelButton.style.backgroundColor = '#f0f0f0';
-            cancelButton.style.color = '#666';
-            
-            const forceOutButton = document.createElement('button');
-            forceOutButton.textContent = 'Force Out';
-            forceOutButton.style.flex = '1';
-            forceOutButton.style.padding = '12px 0';
-            forceOutButton.style.border = 'none';
-            forceOutButton.style.borderRadius = '10px';
-            forceOutButton.style.fontWeight = '600';
-            forceOutButton.style.cursor = 'pointer';
-            forceOutButton.style.transition = 'all 0.2s ease';
-            forceOutButton.style.backgroundColor = '#f44336';
-            forceOutButton.style.color = 'white';
-            
-            // Add hover effects
-            cancelButton.addEventListener('mouseover', function() {
-                this.style.backgroundColor = '#e0e0e0';
-                this.style.transform = 'translateY(-2px)';
-            });
-            
-            cancelButton.addEventListener('mouseout', function() {
-                this.style.backgroundColor = '#f0f0f0';
-                this.style.transform = 'translateY(0)';
-            });
-            
-            forceOutButton.addEventListener('mouseover', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 5px 15px rgba(244, 67, 54, 0.3)';
-            });
-            
-            forceOutButton.addEventListener('mouseout', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'none';
-            });
-            
-            // Add event listeners - using the shared closeModal function
-            cancelButton.addEventListener('click', closeModal);
-            
-            forceOutButton.addEventListener('click', function() {
-                const selectedAdminUsername = adminManagerSelect.value;
-                const password = passwordInput.value;
-                
-                if (!selectedAdminUsername) {
-                    alert('Please select an admin or manager account');
-                    return;
-                }
-                
-                if (!password) {
-                    alert('Please enter a password');
-                    return;
-                }
-                
-                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-                const selectedAdminUser = users.find(u => u.username === selectedAdminUsername);
-                
-                if (selectedAdminUser && selectedAdminUser.password === password) {
-                    // Password is correct, now check role permissions
-                    if (selectedAdminUser.role === 'admin' || 
-                        (selectedAdminUser.role === 'manager' && checkUserRoleToForceOut(username))) {
-                        // Remove from active users
-                        removeActiveUser(username);
-                        
-                        // Close the modal using the shared function
-                        closeModal();
-                        
-                        // Show success message
-                        const successToast = createToast(`${username} has been forced out by ${selectedAdminUsername}`, 'success');
-                        document.body.appendChild(successToast);
-                        setTimeout(() => {
-                            successToast.style.opacity = '0';
-                            setTimeout(() => {
-                                document.body.removeChild(successToast);
-                            }, 500);
-                        }, 3000);
-                        
-                        // Refresh active users modal if it's open
-                        const activeUsersModal = document.getElementById('active-users-modal');
-                        if (activeUsersModal && activeUsersModal.style.display === 'flex') {
-                            openActiveUsersModal();
-                        }
-                    } else {
-                        // Correct password but no permission
-                        const errorMsg = document.createElement('p');
-                        if (selectedAdminUser.role === 'manager') {
-                            errorMsg.textContent = 'As a manager, you can only force out employees and other managers, not admins.';
-                        } else {
-                            errorMsg.textContent = 'The selected account does not have permission to force out users. Only admins and managers can do this.';
-                        }
-                        
-                        errorMsg.style.color = '#ff3333';
-                        errorMsg.style.margin = '0 0 15px 0';
-                        errorMsg.style.fontSize = '14px';
-                        
-                        // Remove any existing error message
-                        const existingError = modalContent.querySelector('.error-message');
-                        if (existingError) {
-                            existingError.remove();
-                        }
-                        
-                        // Add class for easy removal
-                        errorMsg.classList.add('error-message');
-                        
-                        // Insert before buttons
-                        buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
-                        
-                        // Add shake animation
-                        modalContent.style.animation = 'none';
-                        setTimeout(() => {
-                            modalContent.style.animation = 'shake 0.5s';
-                        }, 10);
-                    }
-                } else {
-                    // Incorrect password
-                    const errorMsg = document.createElement('p');
-                    errorMsg.textContent = 'Invalid password for selected account. Please try again.';
-                    errorMsg.style.color = '#ff3333';
-                    errorMsg.style.margin = '0 0 15px 0';
-                    errorMsg.style.fontSize = '14px';
-                    
-                    // Remove any existing error message
-                    const existingError = modalContent.querySelector('.error-message');
-                    if (existingError) {
-                        existingError.remove();
-                    }
-                    
-                    // Add class for easy removal
-                    errorMsg.classList.add('error-message');
-                    
-                    // Insert before buttons
-                    buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
-                    
-                    // Clear password field
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                    
-                    // Add shake animation
-                    modalContent.style.animation = 'none';
-                    setTimeout(() => {
-                        modalContent.style.animation = 'shake 0.5s';
-                    }, 10);
-                }
-            });
-            
-            // Add keypress handler for Enter key
-            passwordInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent default form submission
-                    forceOutButton.click();
-                }
-            });
-            
-            // Add a close button in top right with improved handling
-            const closeButton = document.createElement('button');
-            closeButton.innerHTML = '&times;';
-            closeButton.id = 'auth-close-btn';
-            closeButton.style.position = 'absolute';
-            closeButton.style.top = '10px';
-            closeButton.style.right = '15px';
-            closeButton.style.background = 'none';
-            closeButton.style.border = 'none';
-            closeButton.style.fontSize = '24px';
-            closeButton.style.cursor = 'pointer';
-            closeButton.style.color = '#aaa';
-            closeButton.style.transition = 'color 0.2s';
-            closeButton.style.zIndex = '10'; // Ensure it's above other elements
-            
-            closeButton.addEventListener('mouseover', function() {
-                this.style.color = '#f44336';
-            });
-            
-            closeButton.addEventListener('mouseout', function() {
-                this.style.color = '#aaa';
-            });
-            
-            // Use the shared closeModal function for consistency
-            closeButton.addEventListener('click', closeModal);
-            
-            // Add an extra clickable overlay - clicking outside the modal also closes it
-            verificationModal.addEventListener('click', function(e) {
-                if (e.target === verificationModal) {
-                    closeModal();
-                }
-            });
-            
-            // Assemble the modal
-            buttonsDiv.appendChild(cancelButton);
-            buttonsDiv.appendChild(forceOutButton);
-            
-            modalContent.appendChild(closeButton);
-            modalContent.appendChild(title);
-            modalContent.appendChild(text);
-            modalContent.appendChild(adminManagerSelect);
-            modalContent.appendChild(passwordInput);
-            modalContent.appendChild(buttonsDiv);
-            
-            verificationModal.appendChild(modalContent);
-            
-            // Remove any existing modal before adding a new one
-            const existingModal = document.getElementById('auth-check-modal');
-            if (existingModal) {
-                document.body.removeChild(existingModal);
-            }
-            
-            document.body.appendChild(verificationModal);
-            
-            // Focus the password field
-            setTimeout(() => {
-                passwordInput.focus();
-            }, 100);
-        }
-        
-        // Helper function to check if a manager can force out another user
-        function checkUserRoleToForceOut(username) {
-            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-            const targetUser = users.find(u => u.username === username);
-            
-            // Managers can force out other managers and employees, but not admins
-            return targetUser && targetUser.role !== 'admin';
-        }
-        
-        // Get time active in human-readable format
-        function getTimeActive(startTime) {
-            const now = new Date();
-            const diff = Math.floor((now - startTime) / 1000); // seconds
-            
-            if (diff < 60) {
-                return `${diff} sec`;
-            } else if (diff < 3600) {
-                return `${Math.floor(diff / 60)} min`;
-            } else {
-                const hours = Math.floor(diff / 3600);
-                const minutes = Math.floor((diff % 3600) / 60);
-                return `${hours}h ${minutes}m`;
-            }
-        }
-        
-        // Get current user role
-        function getCurrentUserRole() {
-            const currentUser = localStorage.getItem('currentUser');
-            
-            if (!currentUser) return 'guest';
-            
-            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-            const user = users.find(u => u.username === currentUser);
-            
-            return user ? user.role : 'guest';
-        }
-        
-        // Close the Force Out modal
-        function closeForceOutModal() {
-            document.getElementById('forceout-modal').style.display = 'none';
-        }
-        
-        // Confirm Force Out action with password verification
-        function confirmForceOut() {
-            const userSelect = document.getElementById('forceout-user-select');
-            const password = document.getElementById('forceout-password').value;
-            const errorElement = document.getElementById('forceout-error');
-            
-            // Validate inputs
-            if (!userSelect.value) {
-                errorElement.textContent = 'Please select a user to force out.';
-                errorElement.style.display = 'block';
-                return;
-            }
-            
-            if (!password) {
-                errorElement.textContent = 'Please enter your password to continue.';
-                errorElement.style.display = 'block';
-                return;
-            }
-            
-            // Get current user
-            const currentUser = localStorage.getItem('username') || localStorage.getItem('currentUser');
-            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-            const user = users.find(u => u.username === currentUser);
-            
-            // Verify password
-            if (user && user.password === password) {
-                // Password is correct, proceed with force out
-                const targetUsername = userSelect.value;
-                
-                // Check if we have permission (double-check for security)
-                const currentUserRole = user.role;
-                const targetUser = users.find(u => u.username === targetUsername);
-                
-                if (!targetUser) {
-                    errorElement.textContent = 'User not found.';
-                    errorElement.style.display = 'block';
-                    return;
-                }
-                
-                // Verify permissions again
-                if (currentUserRole === 'admin' || 
-                    (currentUserRole === 'manager' && targetUser.role !== 'admin')) {
-                    // Remove from active users
-                    removeActiveUser(targetUsername);
-                    
-                    // Close the modal
-                    closeForceOutModal();
-                    
-                    // Show success toast
-                    const successToast = createToast(`${targetUsername} has been forced out by ${currentUser}`, 'success');
-                    document.body.appendChild(successToast);
-                    setTimeout(() => {
-                        successToast.style.opacity = '0';
-                        setTimeout(() => {
-                            document.body.removeChild(successToast);
-                        }, 500);
-                    }, 3000);
-                    
-                    // Refresh active users modal
-                    openActiveUsersModal();
-                } else {
-                    errorElement.textContent = 'You do not have permission to force out this user.';
-                    errorElement.style.display = 'block';
-                }
-            } else {
-                // Incorrect password
-                errorElement.textContent = 'Invalid password. Please try again.';
-                errorElement.style.display = 'block';
-                document.getElementById('forceout-password').value = '';
-                
-                // Add shake animation to modal
-                const modalContent = document.querySelector('.forceout-content');
-                modalContent.style.animation = 'none';
-                setTimeout(() => {
-                    modalContent.style.animation = 'shake 0.5s';
-                }, 10);
-            }
-        }
-        
-        // Helper function to remove a user from active users
-        function removeActiveUser(username) {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
-            const updatedActiveUsers = activeUsers.filter(user => user.username !== username);
-            localStorage.setItem('activeUsers', JSON.stringify(updatedActiveUsers));
-            
-            // Update count
-            updateActiveUsersCount();
-            
-            // Return true if user was removed, false otherwise
-            return activeUsers.length !== updatedActiveUsers.length;
-        }
-        
-        // Add shake animation for error feedback if it doesn't exist yet
-        if (!document.querySelector('style[data-shake-animation]')) {
-            const shakeStyle = document.createElement('style');
-            shakeStyle.setAttribute('data-shake-animation', 'true');
-            shakeStyle.textContent = `
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                    20%, 40%, 60%, 80% { transform: translateX(5px); }
-                }
-            `;
-            document.head.appendChild(shakeStyle);
-        }
     </script>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="notification_system.js"></script>
+
+    <!-- Add the user authentication modal before closing body tag -->
+    <div id="user-auth-modal" class="user-auth-modal">
+        <div class="modal-content">
+            <h3>User Authentication</h3>
+            <p id="auth-user-text">Select admin or manager account</p>
+            
+            <!-- Replace static username with dropdown -->
+            <select id="admin-username-select" style="width: 100%; padding: 12px 15px; margin: 15px 0; border: 1px solid #e0e0e0; border-radius: 12px; font-size: 16px; background-color: #f9f9f9;">
+                <!-- Options will be dynamically populated with JavaScript -->
+            </select>
+            
+            <input type="password" id="auth-password" class="auth-input" placeholder="Enter password">
+            <div class="auth-buttons">
+                <button id="cancel-auth" class="cancel-btn">Cancel</button>
+                <button id="confirm-auth" class="confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom script to initialize team chat -->
+    <script src="js/dashboard-chat.js"></script>
+    <script src="js/active-users-dashboard.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Setup event listener for the Activate button in dashboard
@@ -3758,7 +3055,187 @@
             if (activeUsersCloseBtn) {
                 activeUsersCloseBtn.addEventListener('click', closeActiveUsersModal);
             }
+            
+            // Initialize management authentication modal when it exists
+            setupManagementAuth();
         });
+        
+        // Function to set up management authentication
+        function setupManagementAuth() {
+            const authModal = document.getElementById('user-auth-modal');
+            const adminSelect = document.getElementById('admin-username-select');
+            const authPassword = document.getElementById('auth-password');
+            const cancelBtn = document.getElementById('cancel-auth');
+            const confirmBtn = document.getElementById('confirm-auth');
+            
+            if (!authModal || !adminSelect) return;
+            
+            // Populate the admin dropdown with managers and admins only
+            populateAdminDropdown();
+            
+            // Handle cancel button click
+            cancelBtn.addEventListener('click', function() {
+                closeAuthModal();
+            });
+            
+            // Handle confirm button click
+            confirmBtn.addEventListener('click', function() {
+                verifyManagementAuth();
+            });
+            
+            // Add keyboard event listener for Enter key
+            authPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyManagementAuth();
+                }
+            });
+        }
+        
+        // Function to populate the admin/manager dropdown
+        function populateAdminDropdown() {
+            const adminSelect = document.getElementById('admin-username-select');
+            if (!adminSelect) return;
+            
+            // Clear existing options
+            adminSelect.innerHTML = '';
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '-- Select admin or manager --';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            adminSelect.appendChild(defaultOption);
+            
+            // Get all users from localStorage
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            
+            // Filter to include only admins and managers
+            const adminsAndManagers = users.filter(user => 
+                user.role === 'admin' || user.role === 'manager'
+            );
+            
+            // Add each admin and manager to the dropdown
+            adminsAndManagers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                // Show role in the option text
+                option.textContent = `${user.name || user.username} (${user.role})`;
+                adminSelect.appendChild(option);
+            });
+        }
+        
+        // Function to open the authentication modal
+        function openAuthModal() {
+            // Reset form fields
+            const adminSelect = document.getElementById('admin-username-select');
+            const authPassword = document.getElementById('auth-password');
+            
+            if (adminSelect) adminSelect.selectedIndex = 0;
+            if (authPassword) authPassword.value = '';
+            
+            // Populate dropdown each time to ensure it's up to date
+            populateAdminDropdown();
+            
+            // Show the modal
+            const authModal = document.getElementById('user-auth-modal');
+            if (authModal) {
+                authModal.style.display = 'flex';
+                // Focus on the dropdown
+                setTimeout(() => {
+                    if (adminSelect) adminSelect.focus();
+                }, 100);
+            }
+        }
+        
+        // Function to close the authentication modal
+        function closeAuthModal() {
+            const authModal = document.getElementById('user-auth-modal');
+            if (authModal) {
+                authModal.style.display = 'none';
+            }
+        }
+        
+        // Function to verify management authentication
+        function verifyManagementAuth() {
+            const username = document.getElementById('admin-username-select').value;
+            const password = document.getElementById('auth-password').value;
+            
+            if (!username) {
+                alert('Please select an admin or manager account');
+                return;
+            }
+            
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+            
+            // Verify the password against stored users
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === username);
+            
+            if (user && user.password === password) {
+                // Authentication successful
+                closeAuthModal();
+                
+                // Set as current management user
+                localStorage.setItem('currentManager', username);
+                
+                // Proceed with management function (redirect to management page)
+                window.location.href = 'management.html';
+            } else {
+                // Authentication failed
+                alert('Invalid password. Please try again.');
+                document.getElementById('auth-password').value = '';
+                document.getElementById('auth-password').focus();
+            }
+        }
+
+        // Function to initialize sample users if none exist (moved to make sure it runs first)
+        function initializeUsersDatabase() {
+            if (!localStorage.getItem('monumeUsers')) {
+                const defaultUsers = [
+                    { 
+                        id: 1,
+                        username: "Admin", 
+                        password: "admin123", 
+                        role: "admin",
+                        name: "Admin User",
+                        email: "admin@example.com",
+                        location: "Main Office" 
+                    },
+                    { 
+                        id: 2,
+                        username: "Manager", 
+                        password: "manager123", 
+                        role: "manager",
+                        name: "John Manager",
+                        email: "manager@example.com",
+                        location: "West Branch" 
+                    },
+                    { 
+                        id: 3,
+                        username: "Staff1", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Jane Employee",
+                        email: "employee@example.com",
+                        location: "East Branch" 
+                    },
+                    { 
+                        id: 4,
+                        username: "Staff2", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Bob Worker",
+                        email: "bob@example.com",
+                        location: "North Branch" 
+                    }
+                ];
+                localStorage.setItem('monumeUsers', JSON.stringify(defaultUsers));
+            }
+        }
 
         // Function to open active users modal - This is the exact same function from ActiveUsers.html
         function openActiveUsersModal() {
@@ -3802,17 +3279,6 @@
             
             // Show the modal
             modal.style.display = 'flex';
-            
-            // Set up event delegation for active user list buttons
-            activeUserList.addEventListener('click', function(e) {
-                if (e.target.classList.contains('unactive-btn')) {
-                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
-                    deactivateUser(username);
-                } else if (e.target.classList.contains('forceout-btn')) {
-                    const username = e.target.closest('.active-user-item').getAttribute('data-username');
-                    forceOutUser(username);
-                }
-            });
         }
 
         // Function to close active users modal
@@ -3820,7 +3286,7 @@
             document.getElementById('active-users-modal').style.display = 'none';
         }
 
-        // Calculate time active format
+        // Get time active in human-readable format
         function getTimeActive(startTime) {
             const now = new Date();
             const diff = Math.floor((now - startTime) / 1000); // seconds

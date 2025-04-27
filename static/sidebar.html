@@ -47,219 +47,317 @@
     </ul>
 </div>
 
+<!-- New Management Access Modal with dark theme and improved UX -->
+<div id="new-management-auth-modal" class="new-auth-modal">
+    <div class="new-auth-container">
+        <div class="new-auth-header">
+            <h2>Management Access</h2>
+            <button class="new-auth-close">&times;</button>
+        </div>
+        <div class="new-auth-body">
+            <div class="new-auth-image-section">
+                <div class="user-icon-container">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+            </div>
+            <div class="new-auth-form-section">
+                <p class="new-auth-instruction">Please select any user account to continue</p>
+                
+                <div class="new-auth-field">
+                    <label for="new-admin-select">Account</label>
+                    <select id="new-admin-select" class="new-auth-select">
+                        <option value="" disabled selected>Choose an account</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                
+                <div class="new-auth-field">
+                    <label for="new-auth-password">Password</label>
+                    <div class="password-input-container">
+                        <input type="password" id="new-auth-password" class="new-auth-input" placeholder="Enter your password">
+                        <button type="button" class="toggle-password-btn">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="new-auth-buttons">
+                    <button id="new-auth-cancel" class="new-auth-btn cancel">Cancel</button>
+                    <button id="new-auth-confirm" class="new-auth-btn confirm">Authenticate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-    :root {
-        --main-color: #ff9562;
-        --gradient-start: #ff7f42;
-        --gradient-end: #ff9562;
-        --sidebar-bg: #272430;
-        --card-bg: rgba(255, 255, 255, 0.85);
-        --card-hover-bg: rgba(255, 255, 255, 0.95);
-        --text-primary: #333;
-        --text-secondary: #666;
-        --text-light: #f8f9fa;
-        --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
-        --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
-        --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
-        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        --border-radius: 16px;
-    }
-
-    /* Global font styles */
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Poppins', sans-serif;
-    }
-
-    /* Sidebar styles with enhanced design */
-    .sidebar {
-        width: 280px;
-        background: #272430;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        min-height: 100vh;
+    /* Modern Auth Modal Styles */
+    .new-auth-modal {
+        display: none;
         position: fixed;
+        z-index: 10000;
         left: 0;
         top: 0;
-        transition: var(--transition);
-        z-index: 100;
-        box-shadow: var(--shadow-md);
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .sidebar-header {
-        padding: 35px 25px 15px;
-        border-bottom: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 30px;
-        background: transparent;
-        box-shadow: none;
-        position: relative;
-    }
-
-    /* Add a subtle gradient overlay to the header */
-    .sidebar-header:after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 15%;
-        width: 70%;
-        height: 1px;
-        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-    }
-
-    .sidebar-brand {
-        display: flex;
-        align-items: center;
-        justify-content: center;
         width: 100%;
-    }
-
-    .sidebar-brand a {
-        text-decoration: none;
-        border-bottom: none;
-        box-shadow: none;
-        outline: none;
-    }
-
-    .app-title {
-        color: var(--main-color);
-        font-size: 42px;
-        font-weight: 800;
-        font-family: 'Poppins', 'Segoe UI', sans-serif;
-        text-shadow: none;
-        letter-spacing: 1px;
-        margin: 0;
-        transition: transform 0.3s ease;
-        text-align: center;
-        background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 18px;
-    }
-    
-    .app-title:hover {
-        transform: scale(1.05);
-        text-shadow: none;
-    }
-
-    .sidebar-menu {
-        list-style: none;
-        padding: 0 15px;
-        margin-top: 30px;
-    }
-
-    .sidebar-menu li {
-        margin-bottom: 10px;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: var(--transition);
-    }
-
-    .sidebar-menu li a {
-        display: flex;
-        align-items: center;
-        padding: 16px 20px;
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        font-size: 16px;
-        border-radius: 12px;
-        font-weight: 500;
-        transition: var(--transition);
-        position: relative;
-        z-index: 1;
-    }
-
-    .sidebar-menu li a i {
-        min-width: 24px;
-        margin-right: 15px;
-        font-size: 18px;
-        transition: transform 0.3s ease;
-    }
-
-    .sidebar-menu li a::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 0;
         height: 100%;
-        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-        opacity: 0.8;
-        z-index: -1;
-        transition: width 0.3s ease;
-        border-radius: 12px;
+        background-color: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
     }
 
-    /* Enhanced hover and active states */
-    .sidebar-menu li:hover a::before,
-    .sidebar-menu li.active a::before {
-        width: 100%;
+    .new-auth-container {
+        background-color: #1E1E2E;
+        width: 800px;
+        max-width: 90%;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: authSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .sidebar-menu li:hover a,
-    .sidebar-menu li.active a {
+    @keyframes authSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .new-auth-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .new-auth-header h2 {
+        color: #ff9562;
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #ff9562, #ff7f42);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .new-auth-close {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 28px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .new-auth-close:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+        transform: rotate(90deg);
+    }
+
+    .new-auth-body {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .new-auth-image-section {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(255, 127, 66, 0.15), rgba(255, 149, 98, 0.05));
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .user-icon-container {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff7f42, #ff9562);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 35px rgba(255, 127, 66, 0.3);
+    }
+
+    .user-icon-container i {
+        font-size: 70px;
         color: white;
-        transform: translateX(5px);
-    }
-    
-    .sidebar-menu li:hover a i,
-    .sidebar-menu li.active a i {
-        transform: scale(1.2);
     }
 
-    /* Add subtle indicators for menu items */
-    .sidebar-menu li:not(.active)::after {
-        content: '';
+    .new-auth-form-section {
+        flex: 1.5;
+        padding: 40px;
+    }
+
+    .new-auth-instruction {
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 30px;
+        font-size: 15px;
+    }
+
+    .new-auth-field {
+        margin-bottom: 25px;
+    }
+
+    .new-auth-field label {
+        display: block;
+        margin-bottom: 10px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .new-auth-select,
+    .new-auth-input {
+        width: 100%;
+        padding: 15px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: white;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .new-auth-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 16px;
+    }
+
+    .new-auth-select option {
+        background-color: #1E1E2E;
+        color: white;
+    }
+
+    .new-auth-select:focus,
+    .new-auth-input:focus {
+        outline: none;
+        border-color: #ff9562;
+        box-shadow: 0 0 0 2px rgba(255, 149, 98, 0.25);
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .password-input-container {
+        position: relative;
+    }
+
+    .toggle-password-btn {
         position: absolute;
-        right: 20px;
+        right: 12px;
         top: 50%;
         transform: translateY(-50%);
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .sidebar-menu li:not(.active):hover::after {
-        opacity: 1;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 5px;
+        transition: all 0.2s ease;
     }
 
-    /* Responsive styles */
-    @media screen and (max-width: 1200px) {
-        .sidebar {
-            width: 240px;
-        }
+    .toggle-password-btn:hover {
+        color: rgba(255, 255, 255, 0.9);
     }
 
-    @media screen and (max-width: 992px) {
-        .sidebar {
-            width: 80px;
-            overflow: hidden;
+    .new-auth-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 35px;
+    }
+
+    .new-auth-btn {
+        padding: 13px 25px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .new-auth-btn.cancel {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .new-auth-btn.cancel:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .new-auth-btn.confirm {
+        background: linear-gradient(135deg, #ff7f42, #ff9562);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .new-auth-btn.confirm::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.6s ease;
+    }
+
+    .new-auth-btn.confirm:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(255, 127, 66, 0.3);
+    }
+
+    .new-auth-btn.confirm:hover::before {
+        left: 100%;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .new-auth-body {
+            flex-direction: column;
         }
-            
-        .sidebar-header h2,
-        .sidebar-menu li a span {
-            display: none;
+        
+        .new-auth-image-section {
+            padding: 30px;
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
-            
-        .sidebar-menu li a {
-            justify-content: center;
-            padding: 15px 0;
+        
+        .user-icon-container {
+            width: 100px;
+            height: 100px;
         }
-            
-        .sidebar-menu li a i {
-            margin-right: 0;
-            font-size: 20px;
+        
+        .user-icon-container i {
+            font-size: 50px;
+        }
+        
+        .new-auth-form-section {
+            padding: 30px;
         }
     }
 </style>
@@ -279,6 +377,54 @@
             });
         }
 
+        // Add event listener for Management link
+        const managementLink = document.querySelector('.sidebar-menu a[href="management.html"]');
+        if (managementLink) {
+            managementLink.addEventListener('click', function(event) {
+                event.preventDefault();
+                // Open the management auth modal from sidebar
+                openNewAuthModal();
+            });
+        }
+
+        // Setup new modal event listeners
+        const newAuthModal = document.getElementById('new-management-auth-modal');
+        const newAuthCloseBtn = document.querySelector('.new-auth-close');
+        const newAuthCancelBtn = document.getElementById('new-auth-cancel');
+        const newAuthConfirmBtn = document.getElementById('new-auth-confirm');
+        const newAuthPassword = document.getElementById('new-auth-password');
+        const togglePasswordBtn = document.querySelector('.toggle-password-btn');
+        
+        if (newAuthCloseBtn) {
+            newAuthCloseBtn.addEventListener('click', closeNewAuthModal);
+        }
+        
+        if (newAuthCancelBtn) {
+            newAuthCancelBtn.addEventListener('click', closeNewAuthModal);
+        }
+        
+        if (newAuthConfirmBtn) {
+            newAuthConfirmBtn.addEventListener('click', verifyNewManagementAuth);
+        }
+        
+        if (newAuthPassword) {
+            newAuthPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyNewManagementAuth();
+                }
+            });
+        }
+        
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', togglePasswordVisibility);
+        }
+        
+        // Initialize users database
+        initializeUsers();
+        
+        // Populate admin dropdown with the new function
+        populateNewAdminDropdown();
+
         // Highlight the current page in the sidebar
         const currentPage = window.location.pathname.split('/').pop();
         
@@ -297,99 +443,168 @@
         });
     });
 
-    // Function to open verification modal
-    function openVerificationModal() {
-        // Create modal HTML
-        const modalHTML = `
-            <div id="password-verification-modal" style="
-                display: flex;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.7);
-                z-index: 9999;
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(5px);
-                -webkit-backdrop-filter: blur(5px);">
-                <div style="
-                    background-color: white;
-                    border-radius: 20px;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-                    width: 380px;
-                    padding: 30px;
-                    text-align: center;
-                    animation: modalFadeIn 0.3s;">
-                    <h3 style="
-                        margin-top: 0;
-                        color: #ff9562;
-                        font-size: 24px;
-                        font-weight: 700;
-                        margin-bottom: 15px;">Password Verification</h3>
-                    <p style="margin-bottom: 20px; color: #666;">Please enter your password to access Analytics</p>
-                    <input type="password" id="verification-password" placeholder="Your password" style="
-                        width: 100%;
-                        padding: 12px 15px;
-                        margin: 15px 0;
-                        border: 1px solid #ddd;
-                        border-radius: 10px;
-                        font-size: 16px;
-                        box-sizing: border-box;">
-                    <div style="
-                        display: flex;
-                        justify-content: space-between;
-                        margin-top: 20px;">
-                        <button onclick="cancelPasswordVerification()" style="
-                            padding: 12px 20px;
-                            border: none;
-                            border-radius: 10px;
-                            cursor: pointer;
-                            font-size: 15px;
-                            font-weight: 600;
-                            background-color: #f0f0f0;
-                            color: #666;
-                            flex: 1;
-                            margin-right: 10px;">Cancel</button>
-                        <button onclick="verifyPassword()" style="
-                            padding: 12px 20px;
-                            border: none;
-                            border-radius: 10px;
-                            cursor: pointer;
-                            font-size: 15px;
-                            font-weight: 600;
-                            background-color: #ff9562;
-                            color: white;
-                            flex: 1;
-                            margin-left: 10px;">Verify</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Add modal to body
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Focus on password input
-        setTimeout(() => {
-            document.getElementById('verification-password').focus();
-        }, 100);
-    }
-
-    function cancelPasswordVerification() {
-        const modal = document.getElementById('password-verification-modal');
-        if (modal) {
-            modal.remove();
+    // Initialize default users if none exist in localStorage
+    function initializeUsers() {
+        if (!localStorage.getItem('monumeUsers')) {
+            const defaultUsers = [
+                { 
+                    id: 1,
+                    username: "Admin", 
+                    password: "admin123", 
+                    role: "admin",
+                    name: "Admin User",
+                    email: "admin@example.com",
+                    location: "Main Office" 
+                },
+                { 
+                    id: 2,
+                    username: "Manager", 
+                    password: "manager123", 
+                    role: "manager",
+                    name: "John Manager",
+                    email: "manager@example.com",
+                    location: "West Branch" 
+                },
+                { 
+                    id: 3,
+                    username: "Staff1", 
+                    password: "staff123", 
+                    role: "employee",
+                    name: "Jane Employee",
+                    email: "employee@example.com",
+                    location: "East Branch" 
+                },
+                { 
+                    id: 4,
+                    username: "Staff2", 
+                    password: "staff123", 
+                    role: "employee",
+                    name: "Bob Worker",
+                    email: "bob@example.com",
+                    location: "North Branch" 
+                }
+            ];
+            localStorage.setItem('monumeUsers', JSON.stringify(defaultUsers));
         }
     }
 
-    function verifyPassword() {
-        const password = document.getElementById('verification-password').value;
-        if (password === '123456') { // Replace with actual password verification
-            window.location.href = 'analytics.html';
+    // Function to populate the admin dropdown in the new modal - modified to show all users
+    function populateNewAdminDropdown() {
+        const adminSelect = document.getElementById('new-admin-select');
+        if (!adminSelect) return;
+        
+        // Clear existing options
+        adminSelect.innerHTML = '';
+        
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Choose an account';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        adminSelect.appendChild(defaultOption);
+        
+        // Get all users from localStorage
+        const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+        
+        // No longer filter - show all users in the system
+        
+        // Add each user to the dropdown
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.username;
+            // Show role in the option text with better formatting
+            option.textContent = `${user.name || user.username} • ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}`;
+            adminSelect.appendChild(option);
+        });
+    }
+    
+    // Function to open the new authentication modal
+    function openNewAuthModal() {
+        // Reset form fields
+        const adminSelect = document.getElementById('new-admin-select');
+        const authPassword = document.getElementById('new-auth-password');
+        
+        if (adminSelect) adminSelect.selectedIndex = 0;
+        if (authPassword) authPassword.value = '';
+        
+        // Populate dropdown each time to ensure it's up to date
+        populateNewAdminDropdown();
+        
+        // Show the modal
+        const authModal = document.getElementById('new-management-auth-modal');
+        if (authModal) {
+            authModal.style.display = 'flex';
+            // Focus on the dropdown
+            setTimeout(() => {
+                if (adminSelect) adminSelect.focus();
+            }, 100);
+        }
+    }
+    
+    // Function to close the new authentication modal
+    function closeNewAuthModal() {
+        const authModal = document.getElementById('new-management-auth-modal');
+        if (authModal) {
+            authModal.style.display = 'none';
+        }
+    }
+    
+    // Function to toggle password visibility
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('new-auth-password');
+        const toggleBtn = document.querySelector('.toggle-password-btn i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.classList.remove('fa-eye');
+            toggleBtn.classList.add('fa-eye-slash');
         } else {
+            passwordInput.type = 'password';
+            toggleBtn.classList.remove('fa-eye-slash');
+            toggleBtn.classList.add('fa-eye');
+        }
+    }
+    
+    // Function to verify management authentication
+    function verifyNewManagementAuth() {
+        const username = document.getElementById('new-admin-select').value;
+        const password = document.getElementById('new-auth-password').value;
+        
+        if (!username) {
+            alert('Please select a user account');
+            return;
+        }
+        
+        if (!password) {
+            alert('Please enter a password');
+            return;
+        }
+        
+        // Verify the password against stored users
+        const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+        const user = users.find(u => u.username === username);
+        
+        if (user && user.password === password) {
+            // Authentication successful
+            closeNewAuthModal();
+            
+            // Set as current management user
+            localStorage.setItem('currentManager', username);
+            
+            // Set additional info to make sure management knows which user was authenticated
+            localStorage.setItem('currentManagerRole', user.role);
+            localStorage.setItem('currentManagerName', user.name || user.username);
+            
+            console.log('Authentication successful for:', username);
+            
+            // Proceed with management function (redirect to management page)
+            window.location.href = 'management.html';
+        } else {
+            // Authentication failed
             alert('Invalid password. Please try again.');
+            document.getElementById('new-auth-password').value = '';
+            document.getElementById('new-auth-password').focus();
         }
     }
 </script>

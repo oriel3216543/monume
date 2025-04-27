@@ -797,7 +797,7 @@
     <div class="main-content">
         <div class="page-header">
             <h1>Management Hub</h1>
-            <p>Access and manage your team resources in one central location</p>
+            <p id="welcomeMessage">Access and manage your team resources in one central location</p>
         </div>
         <div class="tile-container">
             <div class="tile" onclick="window.location.href='users.html'">
@@ -818,17 +818,20 @@
         </div>
     </div>
 
-    <!-- Verification Modal -->
+    <!-- Verification Modal with Dropdown -->
     <div class="modal-overlay" id="verificationModal">
         <div class="modal-container">
             <div class="modal-header">
                 <h2>Management Access Verification</h2>
             </div>
             <div class="modal-content">
-                <p>Please provide your credentials to access the Management area.</p>
+                <p>Please select a user account to access the Management area.</p>
                 <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
-                    <input type="text" id="username" class="form-input" placeholder="Enter your username">
+                    <label class="form-label" for="userDropdown">Select User</label>
+                    <select id="userDropdown" class="form-input">
+                        <option value="" disabled selected>-- Select a user --</option>
+                        <!-- Will be populated dynamically -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="password">Password</label>
@@ -892,13 +895,30 @@
                 navigateToEmailsPage();
             });
 
-            // Check for stored authentication status
-            const isAuthenticated = localStorage.getItem('managementAuthenticated') === 'true';
-            const userRole = localStorage.getItem('role');
+            // Check for authenticated user information from the sidebar.html authentication
+            const currentManager = localStorage.getItem('currentManager');
+            const currentManagerRole = localStorage.getItem('currentManagerRole');
+            const currentManagerName = localStorage.getItem('currentManagerName');
             
-            // If not authenticated or not an admin/manager, show the verification modal
-            if (!isAuthenticated || (userRole !== 'admin' && userRole !== 'manager')) {
-                showVerificationModal();
+            // Update welcome message if user is authenticated
+            if (currentManager && currentManagerRole) {
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                if (welcomeMessage) {
+                    let roleText = currentManagerRole.charAt(0).toUpperCase() + currentManagerRole.slice(1);
+                    welcomeMessage.innerHTML = `Welcome, <strong>${currentManagerName}</strong> (${roleText}). Manage your team resources in one central location.`;
+                }
+                
+                // Set managementAuthenticated to true so the verification modal won't show
+                localStorage.setItem('managementAuthenticated', 'true');
+            } else {
+                // Check for stored authentication status using the old method
+                const isAuthenticated = localStorage.getItem('managementAuthenticated') === 'true';
+                const userRole = localStorage.getItem('role');
+                
+                // If not authenticated, show the verification modal
+                if (!isAuthenticated) {
+                    showVerificationModal();
+                }
             }
         });
 
@@ -907,9 +927,12 @@
             const modal = document.getElementById('verificationModal');
             modal.classList.add('active');
             
-            // Focus the username field
+            // Populate user dropdown from localStorage
+            populateUserDropdown();
+            
+            // Focus the dropdown
             setTimeout(() => {
-                document.getElementById('username').focus();
+                document.getElementById('userDropdown').focus();
             }, 300);
             
             // Handle cancel button
@@ -930,16 +953,119 @@
             });
         }
         
+        // Function to populate user dropdown from localStorage
+        function populateUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            if (!dropdown) return;
+            
+            // Clear existing options
+            dropdown.innerHTML = '';
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '-- Select a user --';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            dropdown.appendChild(defaultOption);
+            
+            try {
+                // Get users from localStorage
+                const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                
+                // Initialize default users if none exist (fallback)
+                if (users.length === 0) {
+                    initializeDefaultUsers();
+                    // Try again to get users
+                    const newUsers = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+                    if (newUsers.length > 0) {
+                        addUsersToDropdown(newUsers, dropdown);
+                    } else {
+                        console.error("Could not load or initialize users");
+                    }
+                } else {
+                    // Add users to dropdown
+                    addUsersToDropdown(users, dropdown);
+                }
+            } catch (error) {
+                console.error("Error loading users:", error);
+                // Add a message option
+                const errorOption = document.createElement('option');
+                errorOption.value = '';
+                errorOption.textContent = 'Error loading users';
+                errorOption.disabled = true;
+                dropdown.appendChild(errorOption);
+            }
+        }
+        
+        // Helper function to add users to dropdown
+        function addUsersToDropdown(users, dropdown) {
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                // Format: Name (Role)
+                const displayName = user.name || user.username;
+                const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+                option.textContent = `${displayName} (${role})`;
+                dropdown.appendChild(option);
+            });
+        }
+        
+        // Initialize default users if none exist
+        function initializeDefaultUsers() {
+            if (!localStorage.getItem('monumeUsers')) {
+                const defaultUsers = [
+                    { 
+                        id: 1,
+                        username: "Admin", 
+                        password: "admin123", 
+                        role: "admin",
+                        name: "Admin User",
+                        email: "admin@example.com",
+                        location: "Main Office" 
+                    },
+                    { 
+                        id: 2,
+                        username: "Manager", 
+                        password: "manager123", 
+                        role: "manager",
+                        name: "John Manager",
+                        email: "manager@example.com",
+                        location: "West Branch" 
+                    },
+                    { 
+                        id: 3,
+                        username: "Staff1", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Jane Employee",
+                        email: "employee@example.com",
+                        location: "East Branch" 
+                    },
+                    { 
+                        id: 4,
+                        username: "Staff2", 
+                        password: "staff123", 
+                        role: "employee",
+                        name: "Bob Worker",
+                        email: "bob@example.com",
+                        location: "North Branch" 
+                    }
+                ];
+                localStorage.setItem('monumeUsers', JSON.stringify(defaultUsers));
+            }
+        }
+        
         // Verify user access
-        async function verifyAccess() {
-            const username = document.getElementById('username').value.trim();
+        function verifyAccess() {
+            const username = document.getElementById('userDropdown').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('error-message');
             const formContainer = document.querySelector('.modal-content');
             
             // Basic validation
-            if (!username || !password) {
-                errorMessage.textContent = 'Please enter both username and password.';
+            if (!username) {
+                errorMessage.textContent = 'Please select a user.';
                 errorMessage.classList.add('visible');
                 formContainer.classList.add('shake');
                 
@@ -951,40 +1077,49 @@
                 return;
             }
             
-            try {
-                // Verify credentials with server
-                const response = await fetch('/verify_password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    // Store authentication status and role
-                    localStorage.setItem('managementAuthenticated', 'true');
-                    localStorage.setItem('role', result.role);
-                    
-                    // Close modal and allow access
-                    document.getElementById('verificationModal').classList.remove('active');
-                } else {
-                    // Show error message
-                    errorMessage.textContent = result.error || 'Invalid username or password. Please try again.';
-                    errorMessage.classList.add('visible');
-                    formContainer.classList.add('shake');
-                    
-                    // Remove shake animation after it completes
-                    setTimeout(() => {
-                        formContainer.classList.remove('shake');
-                    }, 500);
-                }
-            } catch (error) {
-                console.error('Verification error:', error);
-                errorMessage.textContent = 'An error occurred during verification. Please try again.';
+            if (!password) {
+                errorMessage.textContent = 'Please enter a password.';
                 errorMessage.classList.add('visible');
+                formContainer.classList.add('shake');
+                
+                // Remove shake animation after it completes
+                setTimeout(() => {
+                    formContainer.classList.remove('shake');
+                }, 500);
+                
+                return;
+            }
+            
+            // Get users from localStorage
+            const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+            const user = users.find(u => u.username === username);
+            
+            if (user && user.password === password) {
+                // Authentication successful
+                document.getElementById('verificationModal').classList.remove('active');
+                
+                // Store authentication info
+                localStorage.setItem('managementAuthenticated', 'true');
+                localStorage.setItem('currentManager', username);
+                localStorage.setItem('currentManagerRole', user.role);
+                localStorage.setItem('currentManagerName', user.name || user.username);
+                
+                // Update welcome message
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                if (welcomeMessage) {
+                    let roleText = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+                    welcomeMessage.innerHTML = `Welcome, <strong>${user.name || user.username}</strong> (${roleText}). Manage your team resources in one central location.`;
+                }
+            } else {
+                // Authentication failed
+                errorMessage.textContent = 'Invalid password. Please try again.';
+                errorMessage.classList.add('visible');
+                formContainer.classList.add('shake');
+                
+                // Remove shake animation after it completes
+                setTimeout(() => {
+                    formContainer.classList.remove('shake');
+                }, 500);
             }
         }
         
