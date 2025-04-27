@@ -9,19 +9,19 @@
     </div>
     <ul class="sidebar-menu">
         <li>
-            <a href="dashboard.html">
+            <a href="#" class="smart-link" data-page="dashboard.html">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
         </li>
         <li>
-            <a href="management.html">
+            <a href="#" class="smart-link" data-page="management.html">
                 <i class="fas fa-tasks"></i>
                 <span>Management</span>
             </a>
         </li>
         <li>
-            <a href="tracking.html">
+            <a href="#" class="smart-link" data-page="tracking.html">
                 <i class="fas fa-chart-line"></i>
                 <span>Performance</span>
             </a>
@@ -33,13 +33,13 @@
             </a>
         </li>
         <li>
-            <a href="team_chat.html">
+            <a href="#" class="smart-link" data-page="team_chat.html">
                 <i class="fas fa-comments"></i>
                 <span>Team Chat</span>
             </a>
         </li>
         <li>
-            <a href="endofday.html">
+            <a href="#" class="smart-link" data-page="endofday.html">
                 <i class="fas fa-moon"></i>
                 <span>End of Day</span>
             </a>
@@ -377,15 +377,22 @@
             });
         }
 
-        // Add event listener for Management link
-        const managementLink = document.querySelector('.sidebar-menu a[href="management.html"]');
-        if (managementLink) {
-            managementLink.addEventListener('click', function(event) {
+        // Add event listeners for all smart links
+        const smartLinks = document.querySelectorAll('.smart-link');
+        smartLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
                 event.preventDefault();
-                // Open the management auth modal from sidebar
-                openNewAuthModal();
+                const page = this.getAttribute('data-page');
+                
+                // Special handling for management link - open auth modal
+                if (page === 'management.html') {
+                    openNewAuthModal();
+                } else {
+                    // For all other links, handle navigation with path correction
+                    navigateToPage(page);
+                }
             });
-        }
+        });
 
         // Setup new modal event listeners
         const newAuthModal = document.getElementById('new-management-auth-modal');
@@ -435,7 +442,9 @@
         const menuItems = document.querySelectorAll('.sidebar-menu li');
         menuItems.forEach(item => {
             const link = item.querySelector('a');
-            if (link && link.getAttribute('href') === activePage) {
+            const linkPage = link ? link.getAttribute('data-page') : null;
+            
+            if (linkPage === activePage) {
                 item.classList.add('active');
             } else {
                 item.classList.remove('active');
@@ -595,16 +604,39 @@
             // Set additional info to make sure management knows which user was authenticated
             localStorage.setItem('currentManagerRole', user.role);
             localStorage.setItem('currentManagerName', user.name || user.username);
+            localStorage.setItem('role', user.role); // For backward compatibility
             
             console.log('Authentication successful for:', username);
             
             // Proceed with management function (redirect to management page)
-            window.location.href = 'management.html';
+            // Handle both domain root and /static/ directory paths
+            const currentPath = window.location.pathname;
+            if (currentPath.includes('/static/')) {
+                // If we're in the static directory
+                window.location.href = "management.html";
+            } else {
+                // If we're at the root or elsewhere
+                window.location.href = "/static/management.html";
+            }
         } else {
             // Authentication failed
             alert('Invalid password. Please try again.');
             document.getElementById('new-auth-password').value = '';
             document.getElementById('new-auth-password').focus();
+        }
+    }
+
+    // Function to handle navigation from both domain root and static folder
+    function navigateToPage(pageName) {
+        const currentPath = window.location.pathname;
+        
+        // Check if we're in the static directory or at root
+        if (currentPath.includes('/static/')) {
+            // If we're in the static directory, just navigate to the page directly
+            window.location.href = pageName;
+        } else {
+            // If we're at the root or elsewhere, prepend /static/ to the path
+            window.location.href = "/static/" + pageName;
         }
     }
 </script>

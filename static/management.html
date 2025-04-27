@@ -791,6 +791,49 @@
                 alert('Invalid password. Please try again.');
             }
         }
+
+        // Navigation functions for different sections
+        function navigateToUsersPage() {
+            // Check if user is authenticated for management
+            const isAuthenticated = localStorage.getItem('managementAuthenticated') === 'true';
+            const userRole = localStorage.getItem('role');
+            
+            if (isAuthenticated && (userRole === 'admin' || userRole === 'manager')) {
+                // Direct navigation to users.html with path handling for both root and /static/ access
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/static/')) {
+                    // If we're in the static directory
+                    window.location.href = "users.html";
+                } else {
+                    // If we're at the root or elsewhere
+                    window.location.href = "/static/users.html";
+                }
+            } else {
+                // Show verification modal first
+                showVerificationModal();
+            }
+        }
+        
+        function navigateToLocationsPage() {
+            // Check if user is authenticated for management
+            const isAuthenticated = localStorage.getItem('managementAuthenticated') === 'true';
+            const userRole = localStorage.getItem('role');
+            
+            if (isAuthenticated && (userRole === 'admin' || userRole === 'manager')) {
+                // Direct navigation to locations.html with path handling for both root and /static/ access
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/static/')) {
+                    // If we're in the static directory
+                    window.location.href = "locations.html";
+                } else {
+                    // If we're at the root or elsewhere
+                    window.location.href = "/static/locations.html";
+                }
+            } else {
+                // Show verification modal first
+                showVerificationModal();
+            }
+        }
     </script>
 
     <!-- Main content -->
@@ -800,17 +843,17 @@
             <p id="welcomeMessage">Access and manage your team resources in one central location</p>
         </div>
         <div class="tile-container">
-            <div class="tile" onclick="window.location.href='users.html'">
+            <div class="tile" onclick="navigateToUsersPage()">
                 <div class="icon"><i class="fas fa-users"></i></div>
                 <h3>Users</h3>
                 <p>Manage team members, permissions, and account settings</p>
             </div>
-            <div class="tile" onclick="window.location.href='locations.html'">
+            <div class="tile" onclick="navigateToLocationsPage()">
                 <div class="icon"><i class="fas fa-map-marker-alt"></i></div>
                 <h3>Locations</h3>
                 <p>Oversee physical locations, assignments, and regional settings</p>
             </div>
-            <div class="tile" onclick="window.location.href='emails.html'" id="communicationsTile">
+            <div class="tile" onclick="navigateToEmailsPage()" id="communicationsTile">
                 <div class="icon"><i class="fas fa-envelope"></i></div>
                 <h3>Communications</h3>
                 <p>Configure email templates, notifications, and messaging systems</p>
@@ -1103,6 +1146,7 @@
                 localStorage.setItem('currentManager', username);
                 localStorage.setItem('currentManagerRole', user.role);
                 localStorage.setItem('currentManagerName', user.name || user.username);
+                localStorage.setItem('role', user.role); // For backward compatibility
                 
                 // Update welcome message
                 const welcomeMessage = document.getElementById('welcomeMessage');
@@ -1110,6 +1154,8 @@
                     let roleText = user.role.charAt(0).toUpperCase() + user.role.slice(1);
                     welcomeMessage.innerHTML = `Welcome, <strong>${user.name || user.username}</strong> (${roleText}). Manage your team resources in one central location.`;
                 }
+                
+                console.log('Authentication successful for user:', username);
             } else {
                 // Authentication failed
                 errorMessage.textContent = 'Invalid password. Please try again.';
@@ -1132,8 +1178,15 @@
             const userRole = localStorage.getItem('role');
             
             if (isAuthenticated && (userRole === 'admin' || userRole === 'manager')) {
-                // Direct navigation to emails.html if authenticated
-                window.location.href = "emails.html";
+                // Direct navigation to emails.html with path handling for both root and /static/ access
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/static/')) {
+                    // If we're in the static directory
+                    window.location.href = "emails.html";
+                } else {
+                    // If we're at the root or elsewhere
+                    window.location.href = "/static/emails.html";
+                }
             } else {
                 // Show verification modal first
                 showVerificationModal();
