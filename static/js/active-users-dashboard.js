@@ -849,7 +849,7 @@ function closeActiveUsersModal() {
     }
 }
 
-// Function to open active users modal - EXACTLY matches ActiveUsers.html
+// Function to open active users modal
 function openActiveUsersModal() {
     const modal = document.getElementById('active-users-modal');
     const activeUserList = document.getElementById('active-user-list');
@@ -891,9 +891,12 @@ function openActiveUsersModal() {
     
     // Show the modal
     modal.style.display = 'flex';
+    
+    // Add event listener for buttons in active user list
+    activeUserList.addEventListener('click', handleActiveUserButtonClick);
 }
 
-// Handle clicks on the active user buttons
+// Handle clicks on the active user buttons 
 function handleActiveUserButtonClick(e) {
     if (e.target.classList.contains('unactive-btn')) {
         const username = e.target.closest('.active-user-item').getAttribute('data-username');
@@ -942,3 +945,90 @@ document.head.insertAdjacentHTML('beforeend', `
         }
     </style>
 `);
+
+// Close Force Out Modal
+function closeForceOutModal() {
+    const modal = document.getElementById('forceout-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Confirm Force Out action
+function confirmForceOut() {
+    const forceoutUserSelect = document.getElementById('forceout-user-select');
+    const forceoutPassword = document.getElementById('forceout-password');
+    const forceoutError = document.getElementById('forceout-error');
+    
+    const username = forceoutUserSelect.value;
+    const password = forceoutPassword.value;
+    
+    if (!username) {
+        alert('Please select a user to force out');
+        return;
+    }
+    
+    if (!password) {
+        forceoutError.textContent = 'Please enter your password';
+        forceoutError.style.display = 'block';
+        return;
+    }
+    
+    // Verify password against current user
+    const currentUser = localStorage.getItem('currentUser') || localStorage.getItem('username');
+    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+    const user = users.find(u => u.username === currentUser);
+    
+    if (user && user.password === password) {
+        // Remove user from active users
+        removeActiveUser(username);
+        
+        // Close modal
+        closeForceOutModal();
+        
+        // Show success message
+        alert(`${username} has been forced out successfully`);
+        
+        // Refresh active users modal
+        openActiveUsersModal();
+    } else {
+        // Show error message
+        forceoutError.textContent = 'Invalid password. Please try again.';
+        forceoutError.style.display = 'block';
+        forceoutPassword.value = '';
+        forceoutPassword.focus();
+    }
+}
+
+// Function to open user selection modal
+function openUserSelectionModal() {
+    const modal = document.getElementById('user-selection-modal');
+    const userList = document.getElementById('user-list');
+    
+    if (!modal || !userList) {
+        console.error('User selection modal or user list not found in the DOM');
+        return;
+    }
+    
+    // Clear previous list
+    userList.innerHTML = '';
+    
+    // Get all users and active users
+    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+    const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+    const activeUsernames = activeUsers.map(user => user.username);
+    
+    // Create user items, excluding already active users
+    users.forEach(user => {
+        if (!activeUsernames.includes(user.username)) {
+            const userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            userItem.setAttribute('data-username', user.username);
+            userItem.textContent = user.name || user.username; // Show the full name if available
+            userList.appendChild(userItem);
+        }
+    });
+    
+    // Show the modal
+    modal.style.display = 'flex';
+}

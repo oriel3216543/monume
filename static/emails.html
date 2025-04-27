@@ -802,7 +802,7 @@
                     return;
                 }
                 
-                // For production, require proper authentication
+                // For production, only check if user is logged in but don't restrict by role
                 if (!response.ok) {
                     showToast('Please log in to access email settings', 'error');
                     setTimeout(() => {
@@ -811,20 +811,14 @@
                     return;
                 }
                 
-                const userData = await response.json();
-                if (userData && userData.role && ['admin', 'manager'].includes(userData.role)) {
-                    console.log('User is authenticated with role:', userData.role);
-                    // Load email settings and logs
-                    loadEmailSettings();
-                    loadEmailLogs();
-                    // Set up toggle listeners
-                    setupToggleListeners();
-                } else {
-                    showToast('You need manager permissions to access this page', 'error');
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 2000);
-                }
+                // User is authenticated, allow access to everyone
+                console.log('User is authenticated');
+                // Load email settings and logs
+                loadEmailSettings();
+                loadEmailLogs();
+                // Set up toggle listeners
+                setupToggleListeners();
+                
             } catch (error) {
                 console.error('Error checking authentication:', error);
                 

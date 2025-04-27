@@ -2503,7 +2503,8 @@
                     const menuItems = document.querySelectorAll('.sidebar-menu li');
                     menuItems.forEach(item => {
                         const link = item.querySelector('a');
-                        if (link && link.getAttribute('href') === activePage) {
+                        // Check both href and data-page attributes to find the active link
+                        if (link && (link.getAttribute('href') === activePage || link.getAttribute('data-page') === activePage)) {
                             item.classList.add('active');
                         } else {
                             item.classList.remove('active');
@@ -2514,6 +2515,25 @@
                     const morningNotesLinks = document.querySelectorAll('a[href="morning_notes.html"]');
                     morningNotesLinks.forEach(link => {
                         link.setAttribute('href', 'team_chat.html');
+                    });
+                    
+                    // Set up smart links event handlers - FIX FOR SIDEBAR NAVIGATION
+                    document.querySelectorAll('.smart-link').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const page = this.getAttribute('data-page');
+                            if (page) {
+                                // Handle both domain root and /static/ directory paths
+                                const currentPath = window.location.pathname;
+                                if (currentPath.includes('/static/')) {
+                                    // If we're in the static directory
+                                    window.location.href = page;
+                                } else {
+                                    // If we're at the root or elsewhere
+                                    window.location.href = "/static/" + page;
+                                }
+                            }
+                        });
                     });
                 }, 100);
             });
