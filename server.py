@@ -157,6 +157,34 @@ def get_email_settings_handler():
         logger.error(f"Error getting email settings: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route("/get_email_settings_data", methods=['GET'])
+def get_email_settings_data_handler():
+    """Handle JSON requests for email settings data"""
+    try:
+        # Default settings if email_sender module fails
+        default_settings = {
+            "auto_email_enabled": True,
+            "daily_email_enabled": False,
+            "weekly_email_enabled": True,
+            "domain": DOMAIN
+        }
+
+        try:
+            settings = email_sender.get_email_settings()
+        except Exception as e:
+            logger.error(f"Error from email_sender module: {e}")
+            return jsonify(default_settings), 200
+
+        return jsonify(settings), 200
+    except Exception as e:
+        logger.error(f"Error getting email settings data: {e}")
+        return jsonify({
+            "error": str(e),
+            "auto_email_enabled": True,
+            "daily_email_enabled": False,
+            "weekly_email_enabled": True
+        }), 500
+
 @app.route("/get_email_logs", methods=['GET'])
 def get_email_logs_handler():
     """Handle requests to get email logs for the email interface"""
@@ -768,7 +796,7 @@ def update_user():
         return jsonify({"error": f"Unexpected server error: {e}"}), 500
 
 # Modify get_users to be more explicit about user roles
-@app.route("/get_users", methods=["GET"])
+@app.route("/get_users", methods
 @manager_required
 def get_users():
     try:
