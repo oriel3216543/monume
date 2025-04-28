@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Settings - MonuMe Tracker</title>
+</head>
+<body>
+    <div id="emailSettingsData" style="display:none;">
+        <!-- This div will be populated with email settings data by the server -->
+    </div>
+
+    <script>
+        // This page serves as a bridge between the server's API and emails.html
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch email settings from the server
+            fetch('/get_email_settings_data', {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Store the settings in the HTML
+                document.getElementById('emailSettingsData').textContent = JSON.stringify(data);
+                
+                // Also expose the data through a global variable for easier access
+                window.emailSettings = data;
+                
+                // Send a message to the parent window if this is in an iframe
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'emailSettings',
+                        data: data
+                    }, '*');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching email settings:', error);
+                document.getElementById('emailSettingsData').textContent = JSON.stringify({
+                    error: error.message,
+                    // Fallback default settings
+                    auto_email_enabled: true,
+                    daily_email_enabled: false,
+                    weekly_email_enabled: true,
+                    domain: window.location.hostname
+                });
+            });
+        });
+    </script>
+</body>
+</html>
