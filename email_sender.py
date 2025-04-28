@@ -335,7 +335,21 @@ def get_email_settings():
         if 'password' in config:
             config['password'] = '********' if config['password'] else ''
         
-        return config
+        # Ensure we're returning JSON-compatible data
+        settings = {
+            "auto_email_enabled": config.get('auto_email_enabled', True),
+            "daily_email_enabled": config.get('daily_email_enabled', False),
+            "weekly_email_enabled": config.get('weekly_email_enabled', True),
+            "domain": config.get('domain', '')
+        }
+        
+        return settings
     except Exception as e:
         logger.error(f"Failed to get email settings: {str(e)}")
-        return DEFAULT_CONFIG
+        # Return default settings that will work with frontend
+        return {
+            "auto_email_enabled": True,
+            "daily_email_enabled": False,
+            "weekly_email_enabled": True,
+            "domain": ""
+        }
