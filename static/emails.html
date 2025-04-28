@@ -845,68 +845,19 @@
             try {
                 console.log("Loading email settings...");
                 
-                // First try using the new HTML-based approach
-                try {
-                    const settingsUrl = `${apiBasePath}/static/get_email_settings.html`;
-                    console.log(`Fetching email settings via HTML page: ${settingsUrl}`);
-                    
-                    // Create a hidden iframe to load the settings page
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = settingsUrl;
-                    document.body.appendChild(iframe);
-                    
-                    // Set up message listener for iframe communication
-                    const settingsPromise = new Promise((resolve, reject) => {
-                        // Set a timeout in case the iframe fails to load or message
-                        const timeoutId = setTimeout(() => {
-                            reject(new Error("Timeout waiting for settings from iframe"));
-                        }, 5000);
-                        
-                        window.addEventListener('message', function messageListener(event) {
-                            if (event.data && event.data.type === 'emailSettings') {
-                                clearTimeout(timeoutId);
-                                window.removeEventListener('message', messageListener);
-                                document.body.removeChild(iframe);
-                                resolve(event.data.data);
-                            }
-                        });
-                        
-                        // Also handle iframe load event as backup
-                        iframe.onload = function() {
-                            try {
-                                // Try to access iframe content directly if same origin
-                                const iframeSettings = iframe.contentWindow.emailSettings;
-                                if (iframeSettings) {
-                                    clearTimeout(timeoutId);
-                                    window.removeEventListener('message', messageListener);
-                                    document.body.removeChild(iframe);
-                                    resolve(iframeSettings);
-                                }
-                            } catch (err) {
-                                console.log("Cannot access iframe content directly, waiting for message");
-                                // Keep waiting for postMessage
-                            }
-                        };
-                    });
-                    
-                    const settings = await settingsPromise;
-                    
-                    // Update UI with settings
-                    document.getElementById('autoEmailEnabled').checked = settings.auto_email_enabled;
-                    document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled;
-                    document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled;
-                    return;
-                } catch (iframeError) {
-                    console.warn("Iframe method failed, falling back to direct API:", iframeError);
-                    // Fall back to direct API call
-                }
-                
-                // Direct API method as fallback
-                const apiUrl = `${apiBasePath}/get_email_settings_data`;
-                console.log(`Falling back to direct API: ${apiUrl}`);
+                // Direct API method - skip iframe approach that's failing
+                const apiUrl = `${apiBasePath}/get_email_settings`;
+                console.log(`Fetching email settings directly from: ${apiUrl}`);
 
-                const response = await fetch(apiUrl, fetchOptions);
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
                 if (!response.ok) {
                     throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 }

@@ -796,7 +796,7 @@ def update_user():
         return jsonify({"error": f"Unexpected server error: {e}"}), 500
 
 # Modify get_users to be more explicit about user roles
-@app.route("/get_users", methods
+@app.route("/get_users", methods=["GET"])
 @manager_required
 def get_users():
     try:
@@ -1363,6 +1363,50 @@ def ensure_email_config_exists():
     except Exception as e:
         logger.error(f"Error creating email config: {e}")
         return False
+
+@app.route("/update_email_setting", methods=["POST"])
+def update_email_setting_handler():
+    """Handle requests to update email settings"""
+    try:
+        data = request.json
+        
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        setting = data.get("setting")
+        value = data.get("value")
+        
+        if setting is None or value is None:
+            return jsonify({"error": "Setting name and value are required"}), 400
+            
+        # Only allow specific settings to be updated
+        allowed_settings = ['auto_email_enabled', 'daily_email_enabled', 'weekly_email_enabled', 'domain']
+        if setting not in allowed_settings:
+            return jsonify({"error": f"Cannot update setting: {setting}. Allowed settings: {', '.join(allowed_settings)}"}), 400
+
+        logger.info(f"Updating email setting: {setting} = {value}")
+        
+        # Update the setting
+        result = email_sender.update_email_setting(setting, value)
+        
+        if result.get('success'):
+            setting_name_readable = {
+                'auto_email_enabled': 'Performance summary emails',
+                'daily_email_enabled': 'Daily performance reports',
+                'weekly_email_enabled': 'Weekly performance digest',
+                'domain': 'Email domain'
+            }.get(setting, setting)
+            
+            value_readable = "enabled" if value else "disabled" 
+            if setting == "domain":
+                value_readable = value
+                
+            return jsonify({"message": f"{setting_name_readable} has been set to {value_readable}"}), 200
+        else:
+            return jsonify({"error": result.get('error', f"Failed to update {setting}")}), 500
+    except Exception as e:
+        logger.error(f"Error updating email setting: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     try:
