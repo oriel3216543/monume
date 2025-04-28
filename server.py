@@ -67,9 +67,8 @@ PORT = int(os.environ.get('PORT', 5000))
 # Get domain configuration
 DOMAIN = os.environ.get('DOMAIN', '0.0.0.0')  # Changed from localhost to 0.0.0.0 for production
 
-# Set production flag
-PRODUCTION = False  # Force development mode for local testing
-# PRODUCTION = os.environ.get('PRODUCTION', 'false').lower() == 'true'
+# Ensure the server runs in production mode
+PRODUCTION = os.environ.get('PRODUCTION', 'false').lower() == 'true'
 
 # SSL Certificate paths (for HTTPS)
 SSL_CERT = os.environ.get('SSL_CERT', '')
@@ -941,48 +940,29 @@ def sync_users_location():
 def get_email_settings():
     """Get email configuration settings from email_sender module"""
     try:
-        # Skip authentication check in development mode
-        if not PRODUCTION:
-            # Get settings from email_sender module
-            settings = email_sender.get_email_settings()
-            return jsonify(settings), 200
-            
-        # In production mode, require authentication
-        if 'user_id' not in session:
+        if PRODUCTION and 'user_id' not in session:
             logger.warning("Unauthorized attempt to access email settings")
             return jsonify({"error": "Authentication required"}), 403
-            
-        # Get settings from email_sender module
+
         settings = email_sender.get_email_settings()
         return jsonify(settings), 200
     except Exception as e:
         logger.error(f"Error getting email settings: {e}")
-        # More graceful error in development mode
-        if not PRODUCTION:
-            return jsonify({"error": f"Development mode: {str(e)}", "default_settings": email_sender.DEFAULT_CONFIG}), 200
         return jsonify({"error": str(e)}), 500
 
-@app.route("/update_email_setting", methods=["POST"])
-def update_email_setting():
-    """Update a specific email setting using email_sender module"""
+@app.route("/get_email_logs")
+def get_email_logs():
+    """Get recent email logs from email_sender module"""
     try:
-        data = request.json
-        if not data or 'setting' not in data or 'value' not in data:
-            return jsonify({"error": "Setting name and value are required"}), 400
-            
-        setting = data.get("setting")
-        value = data.get("value")
-        
-        # Update the setting
-        result = email_sender.update_email_setting(setting, value)
-        
-        if result.get('success'):
-            return jsonify({"message": "Setting updated successfully"}), 200
-        else:
-            return jsonify({"error": result.get('error', 'Unknown error')}), 500
+        if PRODUCTION and 'user_id' not in session:
+            logger.warning("Unauthorized attempt to access email logs")
+            return jsonify({"error": "Authentication required"}), 403
+
+        logs = email_sender.get_email_logs(20)
+        return jsonify({"logs": logs}), 200
     except Exception as e:
-        logger.error(f"Error updating email setting: {e}")
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error getting email logs: {e}")
+        return jsonify({"error": str(e), "logs": []}), 500
 
 @app.route("/send_test_email", methods=["POST"])
 def send_test_email():
@@ -990,13 +970,12 @@ def send_test_email():
     try:
         data = request.json
         email = data.get("email")
-        
+
         if not email:
             return jsonify({"error": "Email address is required"}), 400
-        
-        # Send test email using our module
+
         result = email_sender.send_test_email(email)
-        
+
         if result.get('success'):
             return jsonify({"message": "Test email sent successfully"}), 200
         else:
@@ -1004,36 +983,6 @@ def send_test_email():
     except Exception as e:
         logger.error(f"Error sending test email: {e}")
         return jsonify({"error": str(e)}), 500
-
-@app.route("/get_email_logs")
-def get_email_logs():
-    """Get recent email logs from email_sender module"""
-    try:
-        # Skip authentication check in development mode
-        if not PRODUCTION:
-            # Get logs from email_sender module (limit to 20)
-            logs = email_sender.get_email_logs(20)
-            
-            # If no logs found in development, return empty array
-            if not logs:
-                return jsonify({"logs": []}), 200
-                
-            return jsonify({"logs": logs}), 200
-            
-        # In production mode, require authentication
-        if 'user_id' not in session:
-            logger.warning("Unauthorized attempt to access email logs")
-            return jsonify({"error": "Authentication required"}), 403
-            
-        # Get logs from email_sender module (limit to 20)
-        logs = email_sender.get_email_logs(20)
-        return jsonify({"logs": logs}), 200
-    except Exception as e:
-        logger.error(f"Error getting email logs: {e}")
-        # More graceful error in development mode
-        if not PRODUCTION:
-            return jsonify({"error": f"Development mode: {str(e)}", "logs": []}), 200
-        return jsonify({"error": str(e), "logs": []}), 500
 
 # Generate PDF preview for templates
 @app.route('/generate_preview', methods=['POST'])
