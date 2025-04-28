@@ -61,8 +61,10 @@ def configure_production(args):
         os.environ['SSL_CERT'] = args.ssl_cert
     if args.ssl_key:
         os.environ['SSL_KEY'] = args.ssl_key
-    if args.production:
-        os.environ['PRODUCTION'] = 'true'
+    
+    # Always set PRODUCTION to true when deploying with this script
+    os.environ['PRODUCTION'] = 'true'
+    
     if args.secret_key:
         os.environ['SECRET_KEY'] = args.secret_key
     
