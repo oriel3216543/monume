@@ -466,8 +466,14 @@
         }
         
         function redirectToDashboard() {
-            // Use a more reliable and simpler redirect approach
-            window.location.href = "/static/dashboard.html";
+            // Check if we're running on the Flask server (port 5000)
+            if (window.location.port === "5000") {
+                // When running on Flask server, use absolute path
+                window.location.href = "/static/dashboard.html";
+            } else {
+                // For other environments (like direct file access), use relative path
+                window.location.href = "static/dashboard.html";
+            }
         }
         
         document.addEventListener('DOMContentLoaded', function() {
