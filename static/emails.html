@@ -648,67 +648,17 @@
                 const apiUrl = `${apiBasePath}/send_test_email`;
                 console.log(`Sending test email via: ${apiUrl}`);
                 
-                // For development mode, simulate without making the actual API call
-                if (isDevelopment) {
-                    console.log(`Development mode: Simulating test email to ${email}`);
-                    
-                    // Simulate delay
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    // Show simulated success
-                    emailStatus.textContent = `Test email would be sent to ${email} (simulated in development mode)`;
-                    emailStatus.className = 'email-status success';
-                    
-                    // Add a mock log entry
-                    const logsContainer = document.getElementById('email-logs');
-                    if (logsContainer.querySelector('td[colspan="4"]')) {
-                        logsContainer.innerHTML = '';
-                    }
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${new Date().toLocaleString()}</td>
-                        <td>${email}</td>
-                        <td>Test Email (Simulated)</td>
-                        <td class="log-status-success">success</td>
-                    `;
-                    logsContainer.insertBefore(row, logsContainer.firstChild);
-                    
-                    return;
-                }
-                
-                // Use localStorage authentication for simplicity - this ensures you don't get logged out
-                const currentUser = localStorage.getItem('username');
-                const userRole = localStorage.getItem('role');
-                
-                // If we have localStorage credentials, include them as headers
-                const headers = {
-                    'Content-Type': 'application/json'
-                };
-                
-                if (currentUser) {
-                    headers['X-Username'] = currentUser;
-                    if (userRole) {
-                        headers['X-Role'] = userRole;
-                    }
-                }
-                
-                // Real API call for production
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: headers,
-                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email })
                 });
-                
+
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Server returned ${response.status}: ${response.statusText}`);
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 }
-                
+
                 const result = await response.json();
-                
-                // Update status to success
                 emailStatus.textContent = result.message || 'Test email sent successfully!';
                 emailStatus.className = 'email-status success';
                 
@@ -895,46 +845,21 @@
             try {
                 const apiUrl = `${apiBasePath}/get_email_settings`;
                 console.log(`Fetching email settings from: ${apiUrl}`);
-                
-                let settings;
-                
-                try {
-                    settings = await fetchWithErrorHandling(apiUrl);
-                } catch (error) {
-                    console.warn('Email settings API error:', error.message);
-                    
-                    // Always provide mock settings regardless of environment when API fails
-                    console.log('Using mock settings due to API error');
-                    settings = {
-                        auto_email_enabled: true,
-                        daily_email_enabled: false,
-                        weekly_email_enabled: true,
-                        domain: isProduction ? hostname : 'development'
-                    };
-                    
-                    // Show non-blocking warning in UI
-                    showToast('Using offline settings - changes will not be saved', 'error');
+
+                const response = await fetch(apiUrl, fetchOptions);
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 }
+
+                const settings = await response.json();
 
                 // Update UI with settings
-                document.getElementById('autoEmailEnabled').checked = settings.auto_email_enabled === true || settings.auto_email_enabled === 'true';
-                document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled === true || settings.daily_email_enabled === 'true';
-                document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled === true || settings.weekly_email_enabled === 'true';
-
-                if (settings.domain) {
-                    const domainInfoElement = document.getElementById('domain-info');
-                    domainInfoElement.textContent = settings.domain;
-                    domainInfoElement.closest('.domain-info-container').style.display = 'block';
-                }
+                document.getElementById('autoEmailEnabled').checked = settings.auto_email_enabled;
+                document.getElementById('dailyEmailEnabled').checked = settings.daily_email_enabled;
+                document.getElementById('weeklyEmailEnabled').checked = settings.weekly_email_enabled;
             } catch (error) {
-                console.error('Fatal error in loadEmailSettings:', error);
-                
-                // Last resort fallback
-                document.getElementById('autoEmailEnabled').checked = true;
-                document.getElementById('dailyEmailEnabled').checked = false;
-                document.getElementById('weeklyEmailEnabled').checked = true;
-                
-                showToast('Failed to load email settings - using defaults', 'error');
+                console.error('Error fetching email settings:', error);
+                showToast('Failed to load email settings. Please try again later.', 'error');
             }
         }
         
@@ -943,43 +868,13 @@
             try {
                 const apiUrl = `${apiBasePath}/get_email_logs`;
                 console.log(`Fetching email logs from: ${apiUrl}`);
-                
-                let data;
-                
-                try {
-                    data = await fetchWithErrorHandling(apiUrl);
-                } catch (error) {
-                    console.warn('Email logs API error:', error.message);
-                    
-                    // Always provide mock logs regardless of environment when API fails
-                    console.log('Using mock logs due to API error');
-                    data = {
-                        logs: [
-                            {
-                                timestamp: new Date().toISOString(),
-                                recipient: 'monumequeens@gmail.com',
-                                type: 'Test Email (Mock)',
-                                status: 'success'
-                            },
-                            {
-                                timestamp: new Date(Date.now() - 3600000).toISOString(),
-                                recipient: 'user@example.com',
-                                type: 'Weekly Digest (Mock)',
-                                status: 'success'
-                            },
-                            {
-                                timestamp: new Date(Date.now() - 7200000).toISOString(),
-                                recipient: 'example@monumevip.com',
-                                type: 'Performance Summary (Mock)',
-                                status: 'success'
-                            }
-                        ]
-                    };
-                    
-                    // Show non-blocking warning in UI
-                    showToast('Using offline logs - cannot send real emails', 'error');
+
+                const response = await fetch(apiUrl, fetchOptions);
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
                 }
 
+                const data = await response.json();
                 const logsContainer = document.getElementById('email-logs');
                 logsContainer.innerHTML = '';
 
@@ -990,9 +885,8 @@
 
                 data.logs.forEach(log => {
                     const row = document.createElement('tr');
-                    const timestamp = new Date(log.timestamp).toLocaleString();
                     row.innerHTML = `
-                        <td>${timestamp}</td>
+                        <td>${new Date(log.timestamp).toLocaleString()}</td>
                         <td>${log.recipient}</td>
                         <td>${log.type}</td>
                         <td class="${log.status === 'success' ? 'log-status-success' : 'log-status-failed'}">${log.status}</td>
@@ -1000,12 +894,8 @@
                     logsContainer.appendChild(row);
                 });
             } catch (error) {
-                console.error('Fatal error in loadEmailLogs:', error);
-                // Fallback to empty logs if we still get an error
-                document.getElementById('email-logs').innerHTML = 
-                    '<tr><td colspan="4" style="text-align: center;">Unable to load logs - network error</td></tr>';
-                
-                showToast('Failed to load email logs - please check network connection', 'error');
+                console.error('Error fetching email logs:', error);
+                showToast('Failed to load email logs. Please try again later.', 'error');
             }
         }
         
