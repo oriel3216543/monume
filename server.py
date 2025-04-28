@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # Add additional imports
-import sys
-import os
-import logging
 import sqlite3
 import json
 import traceback
@@ -14,13 +11,16 @@ from flask import Flask, request, jsonify, send_from_directory, send_file, sessi
 import ssl
 # Add imports for email functionality
 import smtplib
+import configparser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-import configparser
 # Import our email sender module
 import email_sender
 import pdf_generator
+import sys
+import os
+import logging
 
 # Make waitress import conditional
 try:
@@ -129,10 +129,11 @@ mimetypes.add_type('text/css', '.css')
 # Ensure these email API endpoints are defined BEFORE the generic static file handlers
 # to prevent them from being caught by the "serve_static" function
 
-@app.route('/get_email_settings')
-def get_email_settings_api():
-    """Get email configuration settings from email_sender module"""
+@app.route("/get_email_settings", methods=['GET'])
+def get_email_settings_handler():
+    """Handle requests to get_email_settings - serves HTML or JSON based on Accept header"""
     try:
+        # Return JSON for API requests
         if PRODUCTION and 'user_id' not in session:
             logger.warning("Unauthorized attempt to access email settings")
             return jsonify({"error": "Authentication required"}), 403
@@ -156,59 +157,46 @@ def get_email_settings_api():
         logger.error(f"Error getting email settings: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/get_email_logs')
-def get_email_logs_api():
-    """Get recent email logs from email_sender module"""
+@app.route("/get_email_logs", methods=['GET'])
+def get_email_logs_handler():
+    """Handle requests to get email logs for the email interface"""
     try:
+        # Check authentication in production
         if PRODUCTION and 'user_id' not in session:
             logger.warning("Unauthorized attempt to access email logs")
             return jsonify({"error": "Authentication required"}), 403
 
-        # Default empty logs if email_sender module fails
-        default_logs = []
-
+        # Get email logs using the email_sender module
         try:
             logs = email_sender.get_email_logs(20)
+            return jsonify({"logs": logs}), 200
         except Exception as e:
             logger.error(f"Error from email_sender module: {e}")
-            # Return mock logs for better UI experience
-            default_logs = [
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "recipient": "example@monumevip.com",
-                    "type": "Test Email (Mock)",
-                    "status": "success"
-                }
-            ]
-            return jsonify({"logs": default_logs}), 200
-
-        return jsonify({"logs": logs}), 200
+            # Return empty logs for better UI experience
+            return jsonify({"logs": []}), 200
+            
     except Exception as e:
         logger.error(f"Error getting email logs: {e}")
         return jsonify({"error": str(e), "logs": []}), 500
 
-@app.route('/send_test_email', methods=["POST", "GET"])
-def send_test_email_api():
-    """Send a test email using email_sender module"""
+@app.route('/send_test_email', methods=["POST"])
+def send_test_email_handler():
+    """Handle requests to send a test email"""
     try:
-        # Handle both POST and GET for flexibility
-        if request.method == "POST":
-            data = request.json
-            email = data.get("email")
-        else:
-            email = request.args.get("email")
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
 
+        email = data.get("email")
         if not email:
             return jsonify({"error": "Email address is required"}), 400
 
-        try:
-            result = email_sender.send_test_email(email)
-        except Exception as e:
-            logger.error(f"Error from email_sender module: {e}")
-            return jsonify({"error": f"Failed to send test email: {str(e)}"}), 500
+        # Call the email_sender module to send a test email
+        logger.info(f"Sending test email to {email}")
+        result = email_sender.send_test_email(email)
 
         if result.get('success'):
-            return jsonify({"message": "Test email sent successfully"}), 200
+            return jsonify({"message": "Test email sent successfully!"}), 200
         else:
             return jsonify({"error": result.get('error', 'Failed to send test email')}), 500
     except Exception as e:
