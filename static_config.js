@@ -8,10 +8,10 @@ const STATIC_CONFIG = {
     basePath: "",
     
     // API endpoint when using a separate backend server
-    apiBaseUrl: "https://your-api-domain.com",
+    apiBaseUrl: "https://www.monumevip.com",
     
     // Demo mode - enables mock data when no backend is available
-    demoMode: true
+    demoMode: false
 };
 
 // Do not edit below this line

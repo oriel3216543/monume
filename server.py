@@ -83,20 +83,21 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # Session timeout
 if BASE_PATH:
     app.config['APPLICATION_ROOT'] = BASE_PATH
 
-# Production security headers
+# CORS and security headers
 @app.after_request
-def add_security_headers(response):
+def add_cors_headers(response):
     if PRODUCTION:
-        # Content Security Policy
+        # Production security headers
         response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
-        # XSS Protection
         response.headers['X-XSS-Protection'] = '1; mode=block'
-        # Content Type Options
         response.headers['X-Content-Type-Options'] = 'nosniff'
-        # Frame Options
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-        # Referrer Policy
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    else:
+        # In development, allow all origins for testing
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE'
     return response
 
 # Custom error handler to prevent server crashing
