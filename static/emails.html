@@ -898,21 +898,22 @@
                 
                 let settings;
                 
-                // In development mode, provide fallback if API call fails
                 try {
                     settings = await fetchWithErrorHandling(apiUrl);
                 } catch (error) {
-                    if (isDevelopment) {
-                        console.log('Development mode: Using mock settings');
-                        settings = {
-                            auto_email_enabled: true,
-                            daily_email_enabled: false,
-                            weekly_email_enabled: true,
-                            domain: 'monumevip.com'
-                        };
-                    } else {
-                        throw error; // Re-throw for production environment
-                    }
+                    console.warn('Email settings API error:', error.message);
+                    
+                    // Always provide mock settings regardless of environment when API fails
+                    console.log('Using mock settings due to API error');
+                    settings = {
+                        auto_email_enabled: true,
+                        daily_email_enabled: false,
+                        weekly_email_enabled: true,
+                        domain: isProduction ? hostname : 'development'
+                    };
+                    
+                    // Show non-blocking warning in UI
+                    showToast('Using offline settings - changes will not be saved', 'error');
                 }
 
                 // Update UI with settings
@@ -926,12 +927,14 @@
                     domainInfoElement.closest('.domain-info-container').style.display = 'block';
                 }
             } catch (error) {
-                showToast('Failed to load email settings: ' + error.message, 'error');
+                console.error('Fatal error in loadEmailSettings:', error);
                 
-                // Fallback to default settings if we can't load
+                // Last resort fallback
                 document.getElementById('autoEmailEnabled').checked = true;
                 document.getElementById('dailyEmailEnabled').checked = false;
                 document.getElementById('weeklyEmailEnabled').checked = true;
+                
+                showToast('Failed to load email settings - using defaults', 'error');
             }
         }
         
@@ -943,37 +946,38 @@
                 
                 let data;
                 
-                // In development mode, provide fallback if API call fails
                 try {
                     data = await fetchWithErrorHandling(apiUrl);
                 } catch (error) {
-                    if (isDevelopment) {
-                        console.log('Development mode: Using mock logs');
-                        data = {
-                            logs: [
-                                {
-                                    timestamp: new Date().toISOString(),
-                                    recipient: 'monumequeens@gmail.com',
-                                    type: 'Test Email',
-                                    status: 'success'
-                                },
-                                {
-                                    timestamp: new Date(Date.now() - 3600000).toISOString(),
-                                    recipient: 'user@example.com',
-                                    type: 'Weekly Digest',
-                                    status: 'success'
-                                },
-                                {
-                                    timestamp: new Date(Date.now() - 7200000).toISOString(),
-                                    recipient: 'failed@example.com',
-                                    type: 'Performance Summary',
-                                    status: 'failed'
-                                }
-                            ]
-                        };
-                    } else {
-                        throw error; // Re-throw for production environment
-                    }
+                    console.warn('Email logs API error:', error.message);
+                    
+                    // Always provide mock logs regardless of environment when API fails
+                    console.log('Using mock logs due to API error');
+                    data = {
+                        logs: [
+                            {
+                                timestamp: new Date().toISOString(),
+                                recipient: 'monumequeens@gmail.com',
+                                type: 'Test Email (Mock)',
+                                status: 'success'
+                            },
+                            {
+                                timestamp: new Date(Date.now() - 3600000).toISOString(),
+                                recipient: 'user@example.com',
+                                type: 'Weekly Digest (Mock)',
+                                status: 'success'
+                            },
+                            {
+                                timestamp: new Date(Date.now() - 7200000).toISOString(),
+                                recipient: 'example@monumevip.com',
+                                type: 'Performance Summary (Mock)',
+                                status: 'success'
+                            }
+                        ]
+                    };
+                    
+                    // Show non-blocking warning in UI
+                    showToast('Using offline logs - cannot send real emails', 'error');
                 }
 
                 const logsContainer = document.getElementById('email-logs');
@@ -996,10 +1000,12 @@
                     logsContainer.appendChild(row);
                 });
             } catch (error) {
-                showToast('Failed to load email logs: ' + error.message, 'error');
-                // Fallback to empty logs if we can't load
+                console.error('Fatal error in loadEmailLogs:', error);
+                // Fallback to empty logs if we still get an error
                 document.getElementById('email-logs').innerHTML = 
-                    '<tr><td colspan="4" style="text-align: center;">Unable to load logs</td></tr>';
+                    '<tr><td colspan="4" style="text-align: center;">Unable to load logs - network error</td></tr>';
+                
+                showToast('Failed to load email logs - please check network connection', 'error');
             }
         }
         
