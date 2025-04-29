@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Responses - MonuMe Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --main-color: #ff9562;
+            --gradient-start: #ff7f42;
+            --gradient-end: #ff9562;
+            --sidebar-bg: #272430;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #f8f9fa;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"><rect fill="%23ff9562" width="2000" height="1500"/><defs><radialGradient id="a" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="%23ffffff"/><stop offset="1" stop-color="%23ff9562"/></radialGradient><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="750" x2="1550" y2="750"><stop offset="0" stop-color="%23ffcab1"/><stop offset="1" stop-color="%23ff9562"/></linearGradient></defs><path fill="url(%23a)" d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z"/></svg>') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 280px;
+            background: #272430;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: var(--transition);
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-header {
+            padding: 35px 25px 15px;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: transparent;
+            box-shadow: none;
+            position: relative;
+        }
+
+        .sidebar-header:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .sidebar-brand a {
+            text-decoration: none;
+            border-bottom: none;
+            box-shadow: none;
+            outline: none;
+        }
+
+        .app-title {
+            color: var(--main-color);
+            font-size: 42px;
+            font-weight: 800;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            text-shadow: none;
+            letter-spacing: 1px;
+            margin: 0;
+            transition: transform 0.3s ease;
+            text-align: center;
+            background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 18px;
+        }
+
+        .app-title:hover {
+            transform: scale(1.05);
+            text-shadow: none;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
+            margin-top: 30px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar-menu li a i {
+            min-width: 24px;
+            margin-right: 15px;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-menu li a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.8;
+            z-index: -1;
+            transition: width 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .sidebar-menu li:hover a::before,
+        .sidebar-menu li.active a::before {
+            width: 100%;
+        }
+
+        .sidebar-menu li:hover a,
+        .sidebar-menu li.active a {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu li:hover a i,
+        .sidebar-menu li.active a i {
+            transform: scale(1.2);
+        }
+
+        /* Main content styles */
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 40px;
+            transition: var(--transition);
+        }
+
+        /* Header styles */
+        .responses-header {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .responses-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        .responses-header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--main-color), var(--gradient-start));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+
+        .responses-header p {
+            color: var(--text-secondary);
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Response summary styles */
+        .response-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            flex: 1;
+            min-width: 250px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .summary-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--main-color);
+            transition: all 0.4s ease;
+        }
+
+        .summary-card:hover .summary-icon {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .summary-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover .summary-value {
+            color: var(--main-color);
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Responses filter and controls */
+        .responses-controls {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .form-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-right: auto;
+            padding-right: 20px;
+            position: relative;
+        }
+
+        .form-title::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            display: none; /* Only show on larger screens */
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-filter label {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        .date-input {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: var(--main-color);
+            box-shadow: 0 0 0 3px rgba(255, 149, 98, 0.15);
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .export-btn {
+            background: rgba(39, 174, 96, 0.15);
+            color: #27ae60;
+        }
+
+        .export-btn:hover {
+            background: rgba(39, 174, 96, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .print-btn {
+            background: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+        }
+
+        .print-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .action-btn {
+            background: rgba(255, 149, 98, 0.15);
+            color: var(--main-color);
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 149, 98, 0.3);
+            transform: translateY(-3px);
+        }
+
+        /* Responses container styles */
+        .responses-container {
+            margin-top: 30px;
+        }
+
+        .responses-list {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .response-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .response-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            opacity: 0.7;
+            transition: width 0.3s ease;
+        }
+
+        .response-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .response-card:hover::before {
+            width: 8px;
+            opacity: 1;
+        }
+
+        .response-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .response-card:hover .response-header {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .response-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .responder-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        .response-card:hover .responder-avatar {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 149, 98, 0.2);
+        }
+
+        .responder-info {
+            line-height: 1.3;
+        }
+
+        .responder-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: 3px;
+        }
+
+        .submission-time {
+            color: var(--text-secondary);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .submission-time i {
+            color: var(--main-color);
+            font-size: 14px;
+        }
+
+        .response-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .action-icon:hover {
+            background: var(--main-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .response-body {
+            padding: 25px;
+        }
+
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .response-item {
+            padding-bottom: 20px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+        }
+
+        .response-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .question-text i {
+            color: var(--main-color);
+            font-size: 16px;
+        }
+
+        .answer-text {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 15px;
+            line-height: 1.6;
+            overflow: hidden;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .response-card:hover .answer-text {
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Empty state styles */
+        .empty-state {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            margin-top: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 149, 98, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 40px;
+            color: var(--main-color);
+        }
+
+        .empty-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .empty-text {
+            color: var(--text-secondary);
+            font-size: 16px;
+            max-width: 500px;
+            margin: 0 auto 25px;
+            line-height: 1.6;
+        }
+
+        .share-form-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            border: none;
+            font-size: 16px;
+        }
+
+        .share-form-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Pagination styles */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .page-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border-color: transparent;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-btn.prev, .page-btn.next {
+            width: auto;
+            padding: 0 15px;
+            font-size: 14px;
+        }
+
+        /* Responsive styles */
+        @media screen and (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar-header h2,
+            .sidebar-menu li a span {
+                display: none;
+            }
+            .sidebar-menu li a {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                padding: 30px 20px;
+            }
+            .form-title::after {
+                display: none;
+            }
+            .form-title {
+                width: 100%;
+                margin-bottom: 10px;
+                padding-right: 0;
+            }
+            .responses-controls {
+                justify-content: space-between;
+            }
+            .control-group {
+                margin-left: auto;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .summary-card {
+                flex: 100%;
+            }
+            .control-group {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .date-filter {
+                width: 100%;
+                justify-content: space-between;
+                margin-bottom: 15px;
+            }
+            .date-input {
+                flex: 1;
+            }
+            .response-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .response-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .responses-header h1 {
+                font-size: 36px;
+            }
+            .responses-header p {
+                font-size: 16px;
+            }
+        }
+
+        /* Animation for particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particles background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <a href="dashboard.html" title="Go to Dashboard">
+                    <h1 class="app-title">MonuMe</h1>
+                </a>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="dashboard.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="management.html">
+                    <i class="fas fa-tasks"></i>
+                    <span>Management</span>
+                </a>
+            </li>
+            <li>
+                <a href="tracking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+            </li>
+            <li>
+                <a href="analytics.html">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li>
+                <a href="team_chat.html">
+                    <i class="fas fa-comments"></i>
+                    <span>Team Chat</span>
+                </a>
+            </li>
+            <li>
+                <a href="morning_notes.html">
+                    <i class="fas fa-coffee"></i>
+                    <span>Morning Notes</span>
+                </a>
+            </li>
+            <li>
+                <a href="endofday.html">
+                    <i class="fas fa-moon"></i>
+                    <span>End of Day</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="forms.html">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Forms</span>
+                </a>
+            </li>
+            <li>
+                <a href="users.html">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="responses-header">
+            <h1>Form Responses</h1>
+            <p>View, analyze and export responses from your form. Generate insights for better decision making.</p>
+        </div>
+
+        <!-- Response summary -->
+        <div class="response-summary">
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+                <div class="summary-value" id="totalResponses">0</div>
+                <div class="summary-label">Total Responses</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="summary-value" id="todayResponses">0</div>
+                <div class="summary-label">Today's Responses</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="summary-value" id="avgCompletionTime">0:00</div>
+                <div class="summary-label">Avg. Completion Time</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="summary-value" id="completionRate">0%</div>
+                <div class="summary-label">Completion Rate</div>
+            </div>
+        </div>
+
+        <!-- Response controls -->
+        <div class="responses-controls">
+            <h2 class="form-title" id="formTitle">Loading form title...</h2>
+            
+            <div class="date-filter">
+                <label for="startDate">Date Range:</label>
+                <input type="date" id="startDate" class="date-input">
+                <span>to</span>
+                <input type="date" id="endDate" class="date-input">
+            </div>
+            
+            <div class="control-group">
+                <button class="control-btn export-btn">
+                    <i class="fas fa-file-export"></i>
+                    Export CSV
+                </button>
+                <button class="control-btn print-btn">
+                    <i class="fas fa-print"></i>
+                    Print
+                </button>
+                <button class="control-btn action-btn">
+                    <i class="fas fa-share-alt"></i>
+                    Share Form
+                </button>
+            </div>
+        </div>
+
+        <!-- Responses container -->
+        <div class="responses-container">
+            <div class="responses-list" id="responsesList">
+                <!-- Responses will be loaded here -->
+            </div>
+
+            <!-- Empty state (shown when no responses) -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">
+                    <i class="far fa-clipboard"></i>
+                </div>
+                <h3 class="empty-title">No Responses Yet</h3>
+                <p class="empty-text">Share your form with your team to start collecting responses. You'll see them appear here once submitted.</p>
+                <button class="share-form-btn">
+                    <i class="fas fa-share-alt"></i>
+                    Share Form
+                </button>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <button class="page-btn prev">
+                    <i class="fas fa-chevron-left"></i> Prev
+                </button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn next">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create floating particles
+            const particlesContainer = document.getElementById('particles');
+            const numberOfParticles = 20;
+            
+            for (let i = 0; i < numberOfParticles; i++) {
+                createParticle();
+            }
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size between 5 and 20px
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                const posX = Math.random() * 100;
+                particle.style.left = `${posX}%`;
+                particle.style.bottom = `-${size}px`;
+                
+                // Random opacity and animation duration
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animationDuration = `${Math.random() * 15 + 15}s`;
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+
+            // Get form ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const formId = urlParams.get('id');
+            
+            if (!formId) {
+                alert('No form ID provided. Redirecting to forms page.');
+                window.location.href = 'forms.html';
+                return;
+            }
+
+            // Load form details
+            loadFormDetails(formId);
+            
+            // Load form responses
+            loadFormResponses(formId);
+
+            // Function to load form details
+            function loadFormDetails(formId) {
+                // Try to get from localStorage first (for demo purposes)
+                let formTitle = 'Form Responses';
+                
+                try {
+                    const savedForms = localStorage.getItem('monume_forms');
+                    if (savedForms) {
+                        const forms = JSON.parse(savedForms);
+                        const form = forms.find(f => f.id === formId);
+                        
+                        if (form) {
+                            formTitle = form.title;
+                            
+                            // Set form title
+                            document.getElementById('formTitle').textContent = formTitle;
+                            document.title = `${formTitle} - Responses | MonuMe Tracker`;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading form details:', error);
+                }
+
+                // If form not found in localStorage, try to fetch from server
+                if (formTitle === 'Form Responses') {
+                    fetch(`/api/forms/${formId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Form not found');
+                            }
+                            return response.json();
+                        })
+                        .then(form => {
+                            formTitle = form.title;
+                            document.getElementById('formTitle').textContent = formTitle;
+                            document.title = `${formTitle} - Responses | MonuMe Tracker`;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching form details:', error);
+                            document.getElementById('formTitle').textContent = 'Unknown Form';
+                        });
+                }
+            }
+
+            // Function to load form responses
+            function loadFormResponses(formId) {
+                // For demo purposes, we'll create some dummy responses
+                // In a real app, you would fetch from the server with:
+                // fetch(`/api/form_responses/${formId}`)
+                
+                // Simulate API response delay
+                setTimeout(() => {
+                    // Check if we have any responses (for demo, randomly show empty state sometimes)
+                    const hasResponses = Math.random() > 0.3; // 70% chance to have responses
+                    
+                    if (!hasResponses) {
+                        document.getElementById('responsesList').style.display = 'none';
+                        document.getElementById('emptyState').style.display = 'block';
+                        document.getElementById('pagination').style.display = 'none';
+                        
+                        // Update summary cards
+                        document.getElementById('totalResponses').textContent = '0';
+                        document.getElementById('todayResponses').textContent = '0';
+                        document.getElementById('avgCompletionTime').textContent = '0:00';
+                        document.getElementById('completionRate').textContent = '0%';
+                        
+                        return;
+                    }
+                    
+                    // Generate random responses for demo
+                    const numberOfResponses = Math.floor(Math.random() * 10) + 5; // 5-15 responses
+                    const dummyResponses = generateDummyResponses(numberOfResponses);
+                    
+                    // Update summary cards
+                    document.getElementById('totalResponses').textContent = numberOfResponses;
+                    document.getElementById('todayResponses').textContent = Math.floor(Math.random() * 5); // 0-4 today
+                    document.getElementById('avgCompletionTime').textContent = `${Math.floor(Math.random() * 10) + 2}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
+                    document.getElementById('completionRate').textContent = `${Math.floor(Math.random() * 30) + 70}%`; // 70-99%
+                    
+                    // Display responses
+                    const responsesList = document.getElementById('responsesList');
+                    responsesList.innerHTML = '';
+                    
+                    dummyResponses.forEach(response => {
+                        const responseCard = createResponseCard(response);
+                        responsesList.appendChild(responseCard);
+                    });
+                    
+                    // Show pagination if we have enough responses
+                    if (numberOfResponses > 5) {
+                        document.getElementById('pagination').style.display = 'flex';
+                    }
+                    
+                    // Hide empty state
+                    document.getElementById('emptyState').style.display = 'none';
+                    document.getElementById('responsesList').style.display = 'flex';
+                }, 1000);
+            }
+
+            // Function to create a response card element
+            function createResponseCard(response) {
+                const responseCard = document.createElement('div');
+                responseCard.className = 'response-card';
+                
+                // Create response header
+                const responseHeader = document.createElement('div');
+                responseHeader.className = 'response-header';
+                
+                // Response meta info
+                const responseMeta = document.createElement('div');
+                responseMeta.className = 'response-meta';
+                
+                // Responder avatar - use the responder's initials
+                const responderAvatar = document.createElement('div');
+                responderAvatar.className = 'responder-avatar';
+                const initials = response.responder.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                responderAvatar.textContent = initials;
+                
+                // Responder info
+                const responderInfo = document.createElement('div');
+                responderInfo.className = 'responder-info';
+                
+                const responderName = document.createElement('div');
+                responderName.className = 'responder-name';
+                responderName.textContent = response.responder.name;
+                
+                const submissionTime = document.createElement('div');
+                submissionTime.className = 'submission-time';
+                submissionTime.innerHTML = `<i class="far fa-clock"></i> ${response.submittedAt}`;
+                
+                responderInfo.appendChild(responderName);
+                responderInfo.appendChild(submissionTime);
+                
+                responseMeta.appendChild(responderAvatar);
+                responseMeta.appendChild(responderInfo);
+                
+                // Response actions
+                const responseActions = document.createElement('div');
+                responseActions.className = 'response-actions';
+                
+                // Action icons
+                const actionIcons = [
+                    { icon: 'fa-reply', title: 'Reply' },
+                    { icon: 'fa-star', title: 'Star' },
+                    { icon: 'fa-download', title: 'Download' },
+                    { icon: 'fa-ellipsis-h', title: 'More' }
+                ];
+                
+                actionIcons.forEach(action => {
+                    const actionIcon = document.createElement('div');
+                    actionIcon.className = 'action-icon';
+                    actionIcon.title = action.title;
+                    actionIcon.innerHTML = `<i class="fas ${action.icon}"></i>`;
+                    responseActions.appendChild(actionIcon);
+                });
+                
+                responseHeader.appendChild(responseMeta);
+                responseHeader.appendChild(responseActions);
+                
+                // Create response body
+                const responseBody = document.createElement('div');
+                responseBody.className = 'response-body';
+                
+                const questionsList = document.createElement('div');
+                questionsList.className = 'questions-list';
+                
+                // Add each question and answer
+                response.answers.forEach(answer => {
+                    const responseItem = document.createElement('div');
+                    responseItem.className = 'response-item';
+                    
+                    const questionText = document.createElement('div');
+                    questionText.className = 'question-text';
+                    questionText.innerHTML = `<i class="fas fa-question-circle"></i> ${answer.question}`;
+                    
+                    const answerText = document.createElement('div');
+                    answerText.className = 'answer-text';
+                    answerText.textContent = answer.answer;
+                    
+                    responseItem.appendChild(questionText);
+                    responseItem.appendChild(answerText);
+                    
+                    questionsList.appendChild(responseItem);
+                });
+                
+                responseBody.appendChild(questionsList);
+                
+                // Assemble the response card
+                responseCard.appendChild(responseHeader);
+                responseCard.appendChild(responseBody);
+                
+                return responseCard;
+            }
+
+            // Function to generate dummy responses for demo
+            function generateDummyResponses(count) {
+                const responses = [];
+                
+                // Array of sample questions
+                const sampleQuestions = [
+                    "What are your main areas of focus for today?",
+                    "What challenges are you currently facing?",
+                    "What resources do you need to succeed?",
+                    "How do you rate your current productivity level?",
+                    "Do you have any suggestions for improving team workflow?",
+                    "What are your goals for this week?",
+                    "How can management better support you?",
+                    "What aspects of your work do you find most rewarding?",
+                    "Are there any obstacles preventing you from reaching your full potential?",
+                    "How would you rate your work-life balance currently?"
+                ];
+                
+                // Array of sample answers
+                const sampleAnswers = [
+                    "I'm focusing on completing the project deliverables by the end of the week.",
+                    "The main challenge is coordinating with the remote team members across different time zones.",
+                    "I need additional training on the new software tools we're implementing.",
+                    "My productivity is good but I think we could improve our meeting efficiency.",
+                    "I suggest we implement a better task management system to track progress.",
+                    "My goal is to finish the client presentation and start working on the new marketing campaign.",
+                    "Management could help by providing clearer priorities for the team.",
+                    "I find client interactions and problem-solving the most rewarding aspects of my work.",
+                    "The main obstacle is the amount of administrative tasks taking time away from core responsibilities.",
+                    "My work-life balance is currently manageable but could be improved with more flexible hours."
+                ];
+                
+                // Array of sample names
+                const sampleNames = [
+                    "Alex Johnson",
+                    "Jamie Smith",
+                    "Taylor Williams",
+                    "Casey Brown",
+                    "Jordan Davis",
+                    "Morgan Wilson",
+                    "Riley Miller",
+                    "Quinn Thompson",
+                    "Avery Martinez",
+                    "Cameron Anderson",
+                    "Sam Wright",
+                    "Blake Rodriguez",
+                    "Reese Garcia",
+                    "Dakota Lee",
+                    "Hayden Hernandez"
+                ];
+                
+                // Generate random dates in the past month
+                function getRandomDate() {
+                    const now = new Date();
+                    const pastMonth = new Date(now);
+                    pastMonth.setMonth(now.getMonth() - 1);
+                    
+                    const randomTime = pastMonth.getTime() + Math.random() * (now.getTime() - pastMonth.getTime());
+                    const randomDate = new Date(randomTime);
+                    
+                    return randomDate.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                // Generate the responses
+                for (let i = 0; i < count; i++) {
+                    // Shuffle and select random questions
+                    const shuffledQuestions = [...sampleQuestions].sort(() => 0.5 - Math.random());
+                    const questionCount = Math.floor(Math.random() * 5) + 3; // 3-7 questions
+                    const selectedQuestions = shuffledQuestions.slice(0, questionCount);
+                    
+                    // Create answers for each question
+                    const answers = selectedQuestions.map((question, index) => {
+                        // Use corresponding answer if available, otherwise random
+                        const answerIndex = sampleQuestions.indexOf(question);
+                        const answer = answerIndex < sampleAnswers.length ? 
+                                      sampleAnswers[answerIndex] : 
+                                      sampleAnswers[Math.floor(Math.random() * sampleAnswers.length)];
+                        
+                        return {
+                            question,
+                            answer
+                        };
+                    });
+                    
+                    // Create response object
+                    responses.push({
+                        id: `resp-${Date.now()}-${i}`,
+                        formId: urlParams.get('id'),
+                        responder: {
+                            id: `user-${i}`,
+                            name: sampleNames[Math.floor(Math.random() * sampleNames.length)]
+                        },
+                        submittedAt: getRandomDate(),
+                        answers
+                    });
+                }
+                
+                // Sort by submission date (newest first)
+                return responses.sort((a, b) => {
+                    return new Date(b.submittedAt) - new Date(a.submittedAt);
+                });
+            }
+
+            // Set up date filter
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            
+            // Set default date range (past 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            startDateInput.valueAsDate = thirtyDaysAgo;
+            endDateInput.valueAsDate = today;
+            
+            // Date filter change handler
+            function handleDateFilterChange() {
+                // In a real app, you would refetch filtered responses
+                // For demo, we'll just reload the current responses
+                loadFormResponses(formId);
+            }
+            
+            startDateInput.addEventListener('change', handleDateFilterChange);
+            endDateInput.addEventListener('change', handleDateFilterChange);
+            
+            // Export button functionality
+            const exportBtn = document.querySelector('.export-btn');
+            exportBtn.addEventListener('click', function() {
+                alert('Exporting responses to CSV... This feature will be available soon.');
+            });
+            
+            // Print button functionality
+            const printBtn = document.querySelector('.print-btn');
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Share form button functionality
+            const shareBtn = document.querySelector('.action-btn');
+            const emptyStateShareBtn = document.querySelector('.share-form-btn');
+            
+            function shareForm() {
+                // Get form title for sharing
+                const formTitle = document.getElementById('formTitle').textContent;
+                
+                // Generate form URL
+                const cleanTitle = formTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const shareUrl = `https://monumevip.com/forms/${formId}/${cleanTitle}`;
+                
+                // In a real app, show a share modal
+                alert(`Share this form URL: ${shareUrl}`);
+                
+                // You would show a proper modal here with copy, email, etc. options
+            }
+            
+            shareBtn.addEventListener('click', shareForm);
+            emptyStateShareBtn.addEventListener('click', shareForm);
+            
+            // Pagination functionality
+            const paginationBtns = document.querySelectorAll('.page-btn');
+            
+            paginationBtns.forEach(btn => {
+                if (!btn.classList.contains('prev') && !btn.classList.contains('next')) {
+                    btn.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        paginationBtns.forEach(b => {
+                            if (!b.classList.contains('prev') && !b.classList.contains('next')) {
+                                b.classList.remove('active');
+                            }
+                        });
+                        
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        
+                        // In a real app, you would fetch the corresponding page
+                        // For demo, we'll just reload with random data
+                        loadFormResponses(formId);
+                    });
+                }
+            });
+            
+            // Prev and Next buttons
+            const prevBtn = document.querySelector('.page-btn.prev');
+            const nextBtn = document.querySelector('.page-btn.next');
+            
+            prevBtn.addEventListener('click', function() {
+                // Find current active page
+                const activePage = document.querySelector('.page-btn.active:not(.prev):not(.next)');
+                if (activePage && activePage.previousElementSibling && 
+                    !activePage.previousElementSibling.classList.contains('prev')) {
+                    // Click the previous page button
+                    activePage.previousElementSibling.click();
+                }
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                // Find current active page
+                const activePage = document.querySelector('.page-btn.active:not(.prev):not(.next)');
+                if (activePage && activePage.nextElementSibling && 
+                    !activePage.nextElementSibling.classList.contains('next')) {
+                    // Click the next page button
+                    activePage.nextElementSibling.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

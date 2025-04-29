@@ -1385,7 +1385,7 @@
                     const formTitle = this.closest('.form-card').querySelector('.form-title').textContent;
                     const cleanTitle = formTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
                     
-                    // Generate form URL
+                    // Generate form URL with full domain and path to formdisplay.html
                     const url = `https://monumevip.com/forms/${formId}/${cleanTitle}`;
                     formUrl.textContent = url;
                     
@@ -1565,7 +1565,7 @@
                     const formTitle = this.closest('.form-card').querySelector('.form-title').textContent;
                     const cleanTitle = formTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
                     
-                    // Generate form URL
+                    // Generate form URL with full domain and path to formdisplay.html
                     const url = `https://monumevip.com/forms/${formId}/${cleanTitle}`;
                     document.getElementById('formUrl').textContent = url;
                     
@@ -1578,8 +1578,8 @@
                 viewBtn.addEventListener('click', function() {
                     const formId = this.getAttribute('data-id');
                     
-                    // For now, just alert
-                    alert(`View responses for form ${formId} - This feature is coming soon.`);
+                    // Redirect to view_responses.html with the form ID
+                    window.location.href = `view_responses.html?id=${formId}`;
                 });
             }
             
