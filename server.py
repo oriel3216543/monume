@@ -347,126 +347,260 @@ def serve_index():
         logger.error("index.html not found in root directory")
         return jsonify({"error": "Index file not found"}), 404
 
-# Add explicit route for forms.html
-@app.route('/forms')
-@app.route('/forms.html')
-def serve_forms():
-    logger.info("Serving forms.html directly")
-    forms_path = os.path.join(app.static_folder, 'forms.html')
-    if os.path.isfile(forms_path):
-        return send_file(forms_path)
-    else:
-        logger.error("forms.html not found in static directory")
-        return jsonify({"error": "Forms file not found"}), 404
+# Serve all HTML pages in static folder
+@app.route('/static/<path:page>.html')
+def serve_html_page_from_static(page):
+    file_path = os.path.join(app.static_folder, page + '.html')
+    if os.path.isfile(file_path):
+        logger.info(f"Serving HTML page from static: {page}.html")
+        return send_file(file_path)
+    logger.warning(f"HTML page not found in static: {page}.html")
+    return jsonify({"error": "Page not found"}), 404
 
-# Add route for formdisplay.html to handle form display
-# This route is public and doesn't require authentication
-@app.route('/forms/<form_id>/', methods=['GET', 'POST'])
-@app.route('/forms/<form_id>/<form_title>', methods=['GET', 'POST'])
-def handle_form_display(form_id, form_title=None):
-    if request.method == 'POST':
-        try:
-            # Save form data
-            form_data = request.json
-            if not form_data:
-                return jsonify({"error": "No form data provided"}), 400
+# Direct route for dashboard.html for better reliability
+@app.route('/static/dashboard.html')
+def serve_dashboard():
+    dashboard_path = os.path.join(app.static_folder, 'dashboard.html')
+    if os.path.isfile(dashboard_path):
+        logger.info("Serving dashboard.html")
+        return send_file(dashboard_path)
+    logger.error("dashboard.html not found")
+    return jsonify({"error": "Dashboard file not found"}), 404
 
-            conn = get_db_connection()
-            conn.execute(
-                "INSERT INTO form_responses (form_id, responses, submitted_by) VALUES (?, ?, ?)",
-                (form_id, json.dumps(form_data.get('responses', {})), form_data.get('submitted_by', 'anonymous'))
-            )
-            conn.commit()
-            conn.close()
+# Add favicon route
+@app.route('/favicon.ico')
+def favicon():
+    return send_file('favicon.ico') if os.path.isfile('favicon.ico') else ('', 204)
 
-            return jsonify({"message": "Form data saved successfully"}), 201
-        except Exception as e:
-            logger.error(f"Error saving form data: {e}")
-            return jsonify({"error": "Failed to save form data"}), 500
+# Add robots.txt route
+@app.route('/robots.txt')
+def robots():
+    return send_file('robots.txt') if os.path.isfile('robots.txt') else ('', 204)
 
-    # Serve the form display page
-    logger.info(f"Serving form display for ID: {form_id}")
-    form_display_path = os.path.join(app.static_folder, 'formdisplay.html')
-    if os.path.isfile(form_display_path):
-        return send_file(form_display_path)
-    else:
-        logger.error("formdisplay.html not found in static directory")
-        return jsonify({"error": "Form display page not found"}), 404
+# Add .well-known route for SSL validation and domain ownership verification
+@app.route('/.well-known/<path:filename>')
+def well_known(filename):
+    well_known_dir = os.path.join(root_dir, '.well-known')
+    if os.path.exists(os.path.join(well_known_dir, filename)):
+        return send_from_directory(well_known_dir, filename)
+    return '', 404
 
-# API endpoint to get form data
-@app.route("/api/forms/<form_id>", methods=["GET"])
-def get_form_data(form_id):
-    """Return form data for the specified form ID"""
+# Serve all HTML pages
+@app.route('/<path:page>.html')
+def serve_html_page(page):
+    if page + '.html' in os.listdir(app.static_folder):
+        return send_from_directory(app.static_folder, page + '.html')
+    return jsonify({"error": "Page not found"}), 404
+
+# Update the login route to properly return user data and set session
+@app.route('/login', methods=['POST'])
+def login():
     try:
+        data = request.json
+        if not data:
+            logger.error("No JSON data received")
+            return jsonify({"error": "No JSON data received"}), 400
+
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            logger.error("Username or password not provided")
+            return jsonify({"error": "Username and password are required"}), 400
+
+        logger.debug(f"Login attempt: {username}")
+
         conn = get_db_connection()
-        form = conn.execute("SELECT * FROM forms WHERE id = ?", (form_id,)).fetchone()
+        user = conn.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password)).fetchone()
         conn.close()
-        
-        if form:
+
+        if user:
+            logger.debug(f"Login successful: {username}, Role: {user['role']}")
+            # Set session data
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['role'] = user['role']
+            session['location'] = user['location']
+            session['login_time'] = datetime.now().isoformat()
+            session.permanent = True
+            
+            # Return complete user information
             return jsonify({
-                "id": form["id"],
-                "title": form["title"],
-                "description": form["description"],
-                "questions": form["questions"],
-                "created_at": form["created_at"],
-                "updated_at": form["updated_at"]
+                "username": user["username"],
+                "role": user["role"],
+                "location": user["location"],
+                "user_id": user["id"]
             }), 200
         else:
-            logger.warning(f"Form not found: {form_id}")
-            return jsonify({"error": "Form not found"}), 404
+            logger.debug(f"Login failed: Invalid username or password for {username}")
+            return jsonify({"error": "Invalid username or password"}), 401
+            
+    except sqlite3.Error as db_error:
+        logger.error(f"Database error: {db_error}")
+        response = jsonify({"error": f"Database error: {db_error}"})
+        response.status_code = 500
+        return response
+    except KeyError as key_error:
+        logger.error(f"Missing key in request data: {key_error}")
+        response = jsonify({"error": f"Missing key in request data: {key_error}"})
+        response.status_code = 400
+        return response
     except Exception as e:
-        logger.error(f"Error getting form data: {e}")
+        logger.error(f"Unexpected server error: {e}")
+        response = jsonify({"error": f"Unexpected server error: {e}"})
+        response.status_code = 500
+        return response
+
+# Add logout endpoint
+@app.route('/logout', methods=['POST'])
+def logout():
+    try:
+        # Clear session data
+        session.clear()
+        return jsonify({"message": "Logged out successfully"}), 200
+    except Exception as e:
+        logger.error(f"Error in logout: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-# API endpoint to get form responses
-@app.route("/api/form_responses/<form_id>", methods=["GET"])
-def get_form_responses(form_id):
-    """Get all responses for a specific form."""
-    conn = get_db_connection()
-    
-    # Get form details first to verify it exists
-    form = conn.execute('SELECT id, title FROM forms WHERE id = ?', (form_id,)).fetchone()
-    
-    if not form:
-        return jsonify({'error': 'Form not found'}), 404
-    
-    # Get all responses for this form
-    responses = conn.execute('''
-        SELECT r.id, r.form_id, r.user_id, r.submitted_at, u.name as user_name 
-        FROM form_responses r
-        LEFT JOIN users u ON r.user_id = u.id
-        WHERE r.form_id = ?
-        ORDER BY r.submitted_at DESC
-    ''', (form_id,)).fetchall()
-    
-    result = []
-    for response in responses:
-        # Get all answers for this response
-        answers = conn.execute('''
-            SELECT a.id, a.question_id, q.text as question_text, a.answer_text
-            FROM form_answers a
-            JOIN form_questions q ON a.question_id = q.id
-            WHERE a.response_id = ?
-        ''', (response['id'],)).fetchall()
+# Add the current user endpoint
+@app.route("/get_current_user")
+def get_current_user():
+    try:
+        # Check if user is authenticated
+        if 'user_id' not in session:
+            return jsonify({"error": "Not authenticated"}), 401
+            
+        # Return the user data from session
+        return jsonify({
+            "username": session.get("username"), 
+            "role": session.get("role"),
+            "location": session.get("location"),
+            "user_id": session.get("user_id")
+        }), 200
+    except Exception as e:
+        logger.error(f"Error in get_current_user: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# Modify get_history to include user role check
+@app.route("/get_history")
+def get_history():
+    try:
+        logger.debug("Fetching history data...")
         
-        answer_list = [{
-            'question': row['question_text'],
-            'answer': row['answer_text']
-        } for row in answers]
+        # Authorization check - only allow logged in users
+        if 'user_id' not in session:
+            logger.warning("Unauthorized attempt to access history")
+            return jsonify({"error": "Authentication required"}), 401
         
-        result.append({
-            'id': response['id'],
-            'formId': response['form_id'],
-            'responder': {
-                'id': response['user_id'],
-                'name': response['user_name'] or 'Anonymous User'
-            },
-            'submittedAt': response['submitted_at'],
-            'answers': answer_list
-        })
-    
-    conn.close()
-    return jsonify(result)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = """
+            SELECT 
+                u.username,
+                u.location,
+                strftime('%Y-%m-%d', e.date) as date,
+                e.opal_demos,
+                e.opal_sales,
+                e.scan_demos,
+                e.scan_sold,
+                e.net_sales,
+                e.hours_worked
+            FROM employee_responses e
+            INNER JOIN users u ON e.user_id = u.id
+            ORDER BY e.date DESC
+        """
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        logger.debug(f"Found {len(rows)} history records")
+
+        history = []
+        for row in rows:
+            history_item = {
+                'username': row['username'],
+                'location': row['location'],
+                'date': row['date'],
+                'opal_demos': int(row['opal_demos'] or 0),
+                'opal_sales': int(row['opal_sales'] or 0),
+                'scan_demos': int(row['scan_demos'] or 0),
+                'scan_sold': int(row['scan_sold'] or 0),
+                'net_sales': float(row['net_sales'] or 0),
+                'hours_worked': float(row['hours_worked'] or 0)
+            }
+            history.append(history_item)
+
+        conn.close()
+        return jsonify({"history": history})
+
+    except Exception as e:
+        logger.error(f"Error in get_history: {str(e)}")
+        return jsonify({"error": str(e), "history": []}), 500
+
+@app.route("/save_tracking_data", methods=["POST"])
+def save_tracking_data():
+    """Save tracking data."""
+    try:
+        # Authentication check
+        if 'user_id' not in session:
+            logger.warning("Unauthorized attempt to save tracking data")
+            return jsonify({"error": "Authentication required"}), 401
+            
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Get user_id from session instead of relying on client
+        user_id = session.get("user_id")
+        if not user_id:
+            return jsonify({"error": "User not authenticated properly"}), 401
+
+        # Get today's date
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        conn = get_db_connection()
+        try:
+            # Save tracking data
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO employee_responses (
+                    user_id, date, opal_demos, opal_sales, 
+                    scan_demos, scan_sold, net_sales, hours_worked
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user_id,
+                today,
+                data.get("opal_demos", 0),
+                data.get("opal_sales", 0),
+                data.get("scan_demos", 0),
+                data.get("scan_sold", 0),
+                data.get("net_sales", 0),
+                data.get("hours_worked", 0)
+            ))
+            
+            # Get user data for email
+            user = cursor.execute(
+                "SELECT username, email, name, role, location FROM users WHERE id = ?", 
+                (user_id,)
+            ).fetchone()
+            
+            conn.commit()
+            
+            return jsonify({
+                "message": "Tracking data saved successfully", 
+                "date": today
+            }), 201
+            
+        finally:
+            conn.close()
+
+    except sqlite3.Error as db_error:
+        logger.error(f"Database error: {db_error}")
+        return jsonify({"error": f"Database error: {str(db_error)}"}), 500
+    except Exception as e:
+        logger.error(f"Error saving tracking data: {e}")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
 
 # Add health check endpoint for monitoring
 @app.route("/health")

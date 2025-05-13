@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Add our specialized Force Out handler script -->
+    <script src="/static/js/force-out/force-out-handler.js"></script>
     <style>
         * {
             margin: 0;
@@ -945,7 +947,7 @@
                     deactivateUser(username);
                 } else if (e.target.classList.contains('forceout-btn')) {
                     const username = e.target.closest('.active-user-item').getAttribute('data-username');
-                    forceOutUser(username);
+                    showForceOutModal(username);
                 }
             });
         });
@@ -1115,21 +1117,52 @@
             } else {
                 // Create user items
                 activeUsers.forEach(user => {
+                    const startTime = new Date(user.startTime);
+                    const timeActive = getTimeActive(startTime);
+                    
+                    // Create container for the user item
                     const userItem = document.createElement('div');
                     userItem.className = 'active-user-item';
                     userItem.setAttribute('data-username', user.username);
                     
-                    const startTime = new Date(user.startTime);
-                    const timeActive = getTimeActive(startTime);
+                    // Create the name div
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'active-user-name';
+                    nameDiv.innerHTML = `${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span>`;
                     
-                    userItem.innerHTML = `
-                        <div class="active-user-name">${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span></div>
-                        <div class="active-user-buttons">
-                            <button class="unactive-btn">Unactive</button>
-                            <button class="forceout-btn">Force Out</button>
-                        </div>
-                    `;
+                    // Create buttons container
+                    const buttonsDiv = document.createElement('div');
+                    buttonsDiv.className = 'active-user-buttons';
                     
+                    // Create Unactive button
+                    const unactiveBtn = document.createElement('button');
+                    unactiveBtn.className = 'unactive-btn';
+                    unactiveBtn.textContent = 'Unactive';
+                    
+                    // Create Force Out button
+                    const forceOutBtn = document.createElement('button');
+                    forceOutBtn.className = 'forceout-btn';
+                    forceOutBtn.textContent = 'Force Out';
+                    forceOutBtn.setAttribute('data-username', user.username);
+                    
+                    // Add direct event handlers
+                    unactiveBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        deactivateUser(user.username);
+                        return false;
+                    };
+                    
+                    forceOutBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        showForceOutModal(user.username);
+                        return false;
+                    };
+                    
+                    // Assemble the DOM
+                    buttonsDiv.appendChild(unactiveBtn);
+                    buttonsDiv.appendChild(forceOutBtn);
+                    userItem.appendChild(nameDiv);
+                    userItem.appendChild(buttonsDiv);
                     activeUserList.appendChild(userItem);
                 });
             }
@@ -1400,8 +1433,7 @@
         }
         
         // Force out a user (admin/manager only) - IMPROVED VERSION
-        function forceOutUser(username) {
-            // Always show the modal regardless of permissions
+        function showForceOutModal(username) {
             // Create verification modal
             const verificationModal = document.createElement('div');
             verificationModal.style.position = 'fixed';
@@ -1669,7 +1701,6 @@
             // Add keypress handler for Enter key
             passwordInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // Prevent default form submission
                     forceOutButton.click();
                 }
             });

@@ -291,7 +291,8 @@ function setupFormCubeEventListeners() {
                 e.stopPropagation(); // Prevent event bubbling
                 const formCube = this.closest('.form-cube');
                 const formId = formCube.dataset.formId;
-                showNotification(`Viewing responses for form ID: ${formId} - This feature is coming soon!`, 'info');
+                // Use a simpler URL structure for form responses 
+                window.location.href = `view_responses.html?form=${formId}`;
             });
         });
     }

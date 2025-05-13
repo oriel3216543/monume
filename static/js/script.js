@@ -170,7 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Team Chat Functionality
 document.addEventListener('DOMContentLoaded', function() {
-    initializeTeamChat();
+    // Only initialize team chat if the required elements exist on this page
+    if (document.getElementById('chatMessages') || document.getElementById('messageInput')) {
+        initializeTeamChat();
+    }
 });
 
 function initializeTeamChat() {
@@ -180,6 +183,11 @@ function initializeTeamChat() {
     const sendMessageBtn = document.getElementById('sendMessageBtn');
     const userSelectionModal = document.getElementById('user-selection-modal');
     const passwordModal = document.getElementById('chat-password-modal');
+    
+    // Exit if the necessary elements don't exist
+    if (!chatMessages || !messageInput || !sendMessageBtn) {
+        return;
+    }
     
     // Initialize chat data if it doesn't exist
     if (!localStorage.getItem('chatMessages')) {
@@ -593,3 +601,756 @@ function getCurrentUser() {
     
     return currentUser;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load sidebar
+    fetch('sidebar-template.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('sidebar-container').innerHTML = data;
+        });
+
+    // Initialize tabs
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            
+            // Hide all tabs
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Show active tab
+            button.classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+
+    // Initialize calendar only if the element exists
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl && typeof FullCalendar !== 'undefined') {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            editable: true,
+            selectable: true,
+            selectMirror: true,
+            dayMaxEvents: true,
+            events: getAppointments(),
+            select: function(info) {
+                // Pre-fill date when clicking on calendar
+                document.getElementById('appointment-date').value = info.startStr;
+                
+                // Open the appointment modal
+                document.getElementById('create-appointment-modal').style.display = 'block';
+                
+                // Set default duration to 30 minutes
+                document.getElementById('appointment-duration').value = 30;
+                
+                calendar.unselect();
+            },
+            eventClick: function(info) {
+                // Show appointment details when clicking on an event
+                showAppointmentDetails(info.event);
+            }
+        });
+        calendar.render();
+    }
+
+    // Get sales representatives
+    function getSalesReps() {
+        // In a real implementation, this would fetch from a database
+        const storedReps = localStorage.getItem('salesReps');
+        if (storedReps) {
+            return JSON.parse(storedReps);
+        }
+        return [
+            { id: '1', name: 'David Johnson' },
+            { id: '2', name: 'Sarah Miller' },
+            { id: '3', name: 'Michael Brown' },
+            { id: '4', name: 'Emily Davis' }
+        ];
+    }
+
+    // Populate sales rep dropdown
+    function populateSalesRepDropdown() {
+        const salesRepSelect = document.getElementById('appointment-sales-rep');
+        // Clear existing options except the first
+        while (salesRepSelect.options.length > 1) {
+            salesRepSelect.remove(1);
+        }
+        
+        // Add sales reps to dropdown
+        const salesReps = getSalesReps();
+        salesReps.forEach(rep => {
+            const option = document.createElement('option');
+            option.value = rep.id;
+            option.textContent = rep.name;
+            salesRepSelect.appendChild(option);
+        });
+    }
+
+    // Mock functions for demo
+    function getAppointments() {
+        // In a real implementation, this would fetch from a database
+        const storedAppointments = localStorage.getItem('appointments');
+        if (storedAppointments) {
+            return JSON.parse(storedAppointments);
+        }
+        return [
+            {
+                id: '1',
+                title: 'Consultation with John Doe',
+                start: '2025-04-30T10:00:00',
+                end: '2025-04-30T11:00:00',
+                extendedProps: {
+                    type: 'consultation',
+                    customerId: '1',
+                    customerName: 'John Doe',
+                    customerPhone: '555-123-4567',
+                    customerEmail: 'john@example.com',
+                    salesRepId: '1',
+                    salesRepName: 'David Johnson',
+                    notes: 'Initial consultation'
+                }
+            },
+            {
+                id: '2',
+                title: 'Service for Jane Smith',
+                start: '2025-05-02T14:00:00',
+                end: '2025-05-02T15:30:00',
+                extendedProps: {
+                    type: 'service',
+                    customerId: '2',
+                    customerName: 'Jane Smith',
+                    customerPhone: '555-987-6543',
+                    customerEmail: 'jane@example.com',
+                    salesRepId: '2',
+                    salesRepName: 'Sarah Miller',
+                    notes: 'Standard service'
+                }
+            }
+        ];
+    }
+
+    function updateStatsCounters() {
+        const appointments = getAppointments();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const nextWeek = new Date();
+        nextWeek.setDate(today.getDate() + 7);
+        
+        const todayCount = appointments.filter(apt => {
+            const aptDate = new Date(apt.start);
+            aptDate.setHours(0, 0, 0, 0);
+            return aptDate.getTime() === today.getTime();
+        }).length;
+        
+        const upcomingCount = appointments.filter(apt => {
+            const aptDate = new Date(apt.start);
+            aptDate.setHours(0, 0, 0, 0);
+            return aptDate >= today && aptDate <= nextWeek;
+        }).length;
+        
+        document.getElementById('today-count').textContent = todayCount;
+        document.getElementById('upcoming-count').textContent = upcomingCount;
+        
+        // Update customer count
+        const customers = getCustomers();
+        document.getElementById('customer-count').textContent = customers.length;
+    }
+
+    function getCustomers() {
+        // In a real implementation, this would fetch from a database
+        const storedCustomers = localStorage.getItem('customers');
+        if (storedCustomers) {
+            return JSON.parse(storedCustomers);
+        }
+        return [
+            {
+                id: '1',
+                firstName: 'John',
+                lastName: 'Doe',
+                phone: '555-123-4567',
+                email: 'john@example.com',
+                notes: 'Regular customer'
+            },
+            {
+                id: '2',
+                firstName: 'Jane',
+                lastName: 'Smith',
+                phone: '555-987-6543',
+                email: 'jane@example.com',
+                notes: 'New customer'
+            }
+        ];
+    }
+
+    // Show appointment details in modal
+    function showAppointmentDetails(event) {
+        document.getElementById('modal-title').textContent = event.title;
+        document.getElementById('modal-type').textContent = event.extendedProps.type.charAt(0).toUpperCase() + event.extendedProps.type.slice(1);
+        
+        const startDate = new Date(event.start);
+        const endDate = new Date(event.end);
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit' };
+        
+        document.getElementById('modal-datetime').textContent = 
+            `${startDate.toLocaleDateString(undefined, dateOptions)} at ${startDate.toLocaleTimeString(undefined, timeOptions)}`;
+        
+        const durationMinutes = (endDate - startDate) / (1000 * 60);
+        document.getElementById('modal-duration').textContent = `${durationMinutes} minutes`;
+        
+        document.getElementById('modal-customer').textContent = event.extendedProps.customerName;
+        document.getElementById('modal-sales-rep').textContent = event.extendedProps.salesRepName || 'Not assigned';
+        document.getElementById('modal-notes').textContent = event.extendedProps.notes || 'No notes';
+        
+        // Store event ID for edit/delete operations
+        document.getElementById('appointment-modal').setAttribute('data-event-id', event.id);
+        
+        // Show modal
+        document.getElementById('appointment-modal').style.display = 'block';
+    }
+
+    // Handle appointment form submission
+    document.getElementById('save-appointment').addEventListener('click', function() {
+        const form = document.getElementById('appointment-form');
+        
+        // Check form validity
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const title = document.getElementById('appointment-title').value;
+        const type = document.getElementById('appointment-type').value;
+        const date = document.getElementById('appointment-date').value;
+        const time = document.getElementById('appointment-time').value;
+        const duration = parseInt(document.getElementById('appointment-duration').value);
+        const salesRepId = document.getElementById('appointment-sales-rep').value;
+        const notes = document.getElementById('appointment-notes').value;
+        
+        // Get customer id from the hidden input
+        const customerIdElement = document.getElementById('selected-customer-id');
+        
+        if (!customerIdElement || !customerIdElement.value) {
+            alert('Please add a customer for this appointment.');
+            return;
+        }
+        
+        const customerId = customerIdElement.value;
+        
+        // Find customer info
+        const customers = getCustomers();
+        const customer = customers.find(c => c.id === customerId);
+        
+        if (!customer) {
+            alert('Please select a valid customer.');
+            return;
+        }
+        
+        // Find sales rep info
+        const salesReps = getSalesReps();
+        const salesRep = salesReps.find(r => r.id === salesRepId);
+        
+        if (!salesRep) {
+            alert('Please select a valid sales representative.');
+            return;
+        }
+        
+        // Create appointment object
+        const startDateTime = new Date(`${date}T${time}`);
+        const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
+        
+        const appointment = {
+            id: Date.now().toString(), // Generate unique ID
+            title: title,
+            start: startDateTime.toISOString(),
+            end: endDateTime.toISOString(),
+            extendedProps: {
+                type: type,
+                customerId: customer.id,
+                customerName: `${customer.firstName} ${customer.lastName}`,
+                customerPhone: customer.phone,
+                customerEmail: customer.email,
+                salesRepId: salesRep.id,
+                salesRepName: salesRep.name,
+                notes: notes
+            }
+        };
+        
+        // Save the appointment
+        saveAppointment(appointment);
+        
+        // Reset form
+        form.reset();
+        
+        // Set default duration to 30 minutes
+        document.getElementById('appointment-duration').value = 30;
+        
+        // Remove the customer selection result
+        const customerSelectionResult = document.querySelector('.customer-selection-result');
+        if (customerSelectionResult) {
+            customerSelectionResult.remove();
+        }
+        
+        // Hide modal
+        document.getElementById('create-appointment-modal').style.display = 'none';
+        
+        // Show success message
+        alert('Appointment created successfully!');
+    });
+
+    // Save appointment to storage
+    function saveAppointment(appointment) {
+        let appointments = getAppointments();
+        
+        // Check if we're updating an existing appointment
+        const existingIndex = appointments.findIndex(a => a.id === appointment.id);
+        
+        if (existingIndex >= 0) {
+            appointments[existingIndex] = appointment;
+        } else {
+            appointments.push(appointment);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        
+        // Refresh calendar
+        calendar.removeAllEvents();
+        calendar.addEventSource(appointments);
+        
+        // Update stats
+        updateStatsCounters();
+    }
+
+    // Handle customer form submission
+    document.getElementById('customer-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const customerId = document.getElementById('customer-id').value;
+        const firstName = document.getElementById('customer-first-name').value;
+        const lastName = document.getElementById('customer-last-name').value;
+        const phone = document.getElementById('customer-phone').value;
+        const email = document.getElementById('customer-email').value;
+        const notes = document.getElementById('customer-notes').value;
+        
+        // Create customer object
+        const customer = {
+            id: customerId || Date.now().toString(), // Generate unique ID if not editing
+            firstName: firstName,
+            lastName: lastName,
+            phone: phone,
+            email: email,
+            notes: notes
+        };
+        
+        // Save the customer
+        saveCustomer(customer);
+        
+        // Reset form and hide
+        document.getElementById('customer-form').reset();
+        document.getElementById('customer-form-container').style.display = 'none';
+        
+        // Refresh customer search results
+        searchCustomers();
+        
+        // Show success message
+        alert(`Customer ${customerId ? 'updated' : 'created'} successfully!`);
+    });
+
+    // Save customer to storage
+    function saveCustomer(customer) {
+        let customers = getCustomers();
+        
+        // Check if we're updating an existing customer
+        const existingIndex = customers.findIndex(c => c.id === customer.id);
+        
+        if (existingIndex >= 0) {
+            customers[existingIndex] = customer;
+        } else {
+            customers.push(customer);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('customers', JSON.stringify(customers));
+        
+        // Update stats
+        updateStatsCounters();
+    }
+
+    // Search customers
+    function searchCustomers(searchTerm = '') {
+        const customers = getCustomers();
+        const resultsContainer = document.getElementById('customer-results');
+        resultsContainer.innerHTML = '';
+        
+        const filteredCustomers = searchTerm 
+            ? customers.filter(customer => 
+                `${customer.firstName} ${customer.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                customer.phone.includes(searchTerm) ||
+                (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
+            )
+            : customers;
+        
+        if (filteredCustomers.length === 0) {
+            resultsContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No customers found. Try a different search or add a new customer.</p>';
+            return;
+        }
+        
+        filteredCustomers.forEach(customer => {
+            const customerCard = document.createElement('div');
+            customerCard.className = 'customer-card';
+            customerCard.innerHTML = `
+                <h3 class="customer-name">${customer.firstName} ${customer.lastName}</h3>
+                <p class="customer-contact">
+                    <i class="fas fa-phone"></i> ${customer.phone} 
+                    ${customer.email ? `&nbsp;&nbsp;|&nbsp;&nbsp; <i class="fas fa-envelope"></i> ${customer.email}` : ''}
+                </p>
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <button class="btn btn-secondary edit-customer" data-id="${customer.id}" style="padding: 5px 10px; margin-right: 10px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-primary schedule-appointment" data-id="${customer.id}" style="padding: 5px 10px;">
+                        <i class="fas fa-calendar-plus"></i> Schedule
+                    </button>
+                </div>
+            `;
+            
+            resultsContainer.appendChild(customerCard);
+        });
+        
+        // Add event listeners to buttons
+        document.querySelectorAll('.edit-customer').forEach(button => {
+            button.addEventListener('click', function() {
+                const customerId = this.getAttribute('data-id');
+                editCustomer(customerId);
+            });
+        });
+        
+        document.querySelectorAll('.schedule-appointment').forEach(button => {
+            button.addEventListener('click', function() {
+                const customerId = this.getAttribute('data-id');
+                scheduleForCustomer(customerId);
+            });
+        });
+    }
+
+    // Edit customer
+    function editCustomer(customerId) {
+        const customers = getCustomers();
+        const customer = customers.find(c => c.id === customerId);
+        
+        if (!customer) {
+            alert('Customer not found.');
+            return;
+        }
+        
+        // Fill form with customer data
+        document.getElementById('customer-id').value = customer.id;
+        document.getElementById('customer-first-name').value = customer.firstName;
+        document.getElementById('customer-last-name').value = customer.lastName;
+        document.getElementById('customer-phone').value = customer.phone;
+        document.getElementById('customer-email').value = customer.email || '';
+        document.getElementById('customer-notes').value = customer.notes || '';
+        
+        // Update form title
+        document.getElementById('customer-form-title').textContent = 'Edit Customer';
+        
+        // Show form
+        document.getElementById('customer-form-container').style.display = 'block';
+    }
+
+    // Schedule for customer
+    function scheduleForCustomer(customerId) {
+        const customers = getCustomers();
+        const customer = customers.find(c => c.id === customerId);
+        
+        if (!customer) {
+            alert('Customer not found.');
+            return;
+        }
+        
+        // Open appointment creation modal
+        document.getElementById('create-appointment-modal').style.display = 'block';
+        
+        // Set default duration to 30 minutes
+        document.getElementById('appointment-duration').value = 30;
+        
+        // Create and add customer info to the appointment form
+        const customerNameElement = document.createElement('div');
+        customerNameElement.classList.add('customer-selection-result');
+        customerNameElement.innerHTML = `
+            <div style="background: rgba(255, 149, 98, 0.1); padding: 10px; border-radius: 10px; margin-top: 10px;">
+                <strong>${customer.firstName} ${customer.lastName}</strong><br>
+                <small>${customer.phone}</small>
+                <input type="hidden" id="selected-customer-id" value="${customer.id}">
+            </div>
+        `;
+        
+        // Remove any existing customer selection
+        const existingSelection = document.querySelector('.customer-selection-result');
+        if (existingSelection) {
+            existingSelection.remove();
+        }
+        
+        // Insert after the add customer button
+        const addCustomerBtn = document.getElementById('add-customer-for-appointment');
+        addCustomerBtn.insertAdjacentElement('afterend', customerNameElement);
+    }
+
+    // Add event listeners
+    document.getElementById('customer-search').addEventListener('input', function() {
+        searchCustomers(this.value);
+    });
+    
+    document.getElementById('add-customer-btn').addEventListener('click', function() {
+        // Reset form
+        document.getElementById('customer-form').reset();
+        document.getElementById('customer-id').value = '';
+        
+        // Update form title
+        document.getElementById('customer-form-title').textContent = 'Add New Customer';
+        
+        // Show form
+        document.getElementById('customer-form-container').style.display = 'block';
+    });
+    
+    document.getElementById('cancel-customer-btn').addEventListener('click', function() {
+        document.getElementById('customer-form').reset();
+        document.getElementById('customer-form-container').style.display = 'none';
+    });
+    
+    document.getElementById('clear-form').addEventListener('click', function() {
+        document.getElementById('appointment-form').reset();
+        
+        // Set default duration to 30 minutes
+        document.getElementById('appointment-duration').value = 30;
+        
+        // Remove customer selection
+        const customerSelection = document.querySelector('.customer-selection-result');
+        if (customerSelection) {
+            customerSelection.remove();
+        }
+    });
+    
+    // Add new appointment button
+    document.getElementById('add-appointment-btn').addEventListener('click', function() {
+        document.getElementById('create-appointment-modal').style.display = 'block';
+        
+        // Set default duration to 30 minutes
+        document.getElementById('appointment-duration').value = 30;
+    });
+    
+    // Modal event listeners
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('appointment-modal').style.display = 'none';
+    });
+    
+    document.getElementById('close-create-modal').addEventListener('click', function() {
+        document.getElementById('create-appointment-modal').style.display = 'none';
+    });
+    
+    document.getElementById('close-modal').addEventListener('click', function() {
+        document.getElementById('appointment-modal').style.display = 'none';
+    });
+    
+    document.getElementById('delete-appointment').addEventListener('click', function() {
+        const eventId = document.getElementById('appointment-modal').getAttribute('data-event-id');
+        
+        if (confirm('Are you sure you want to delete this appointment?')) {
+            deleteAppointment(eventId);
+            document.getElementById('appointment-modal').style.display = 'none';
+        }
+    });
+    
+    document.getElementById('edit-appointment').addEventListener('click', function() {
+        const eventId = document.getElementById('appointment-modal').getAttribute('data-event-id');
+        editAppointment(eventId);
+        document.getElementById('appointment-modal').style.display = 'none';
+    });
+    
+    // Delete appointment
+    function deleteAppointment(eventId) {
+        let appointments = getAppointments();
+        appointments = appointments.filter(a => a.id !== eventId);
+        
+        // Save to localStorage
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        
+        // Refresh calendar
+        calendar.removeAllEvents();
+        calendar.addEventSource(appointments);
+        
+        // Update stats
+        updateStatsCounters();
+        
+        // Show success message
+        alert('Appointment deleted successfully!');
+    }
+    
+    // Edit appointment
+    function editAppointment(eventId) {
+        const appointments = getAppointments();
+        const appointment = appointments.find(a => a.id === eventId);
+        
+        if (!appointment) {
+            alert('Appointment not found.');
+            return;
+        }
+        
+        // Open the appointment modal
+        document.getElementById('create-appointment-modal').style.display = 'block';
+        
+        // Fill form with appointment data
+        document.getElementById('appointment-title').value = appointment.title;
+        document.getElementById('appointment-type').value = appointment.extendedProps.type;
+        
+        const startDate = new Date(appointment.start);
+        document.getElementById('appointment-date').value = startDate.toISOString().split('T')[0];
+        document.getElementById('appointment-time').value = startDate.toTimeString().substring(0, 5);
+        
+        const endDate = new Date(appointment.end);
+        const durationMinutes = (endDate - startDate) / (1000 * 60);
+        document.getElementById('appointment-duration').value = durationMinutes;
+        
+        // Add customer info to form
+        const customer = {
+            id: appointment.extendedProps.customerId,
+            firstName: appointment.extendedProps.customerName.split(' ')[0],
+            lastName: appointment.extendedProps.customerName.split(' ')[1] || '',
+            phone: appointment.extendedProps.customerPhone
+        };
+        
+        // Create customer selection element
+        const customerNameElement = document.createElement('div');
+        customerNameElement.classList.add('customer-selection-result');
+        customerNameElement.innerHTML = `
+            <div style="background: rgba(255, 149, 98, 0.1); padding: 10px; border-radius: 10px; margin-top: 10px;">
+                <strong>${customer.firstName} ${customer.lastName}</strong><br>
+                <small>${customer.phone}</small>
+                <input type="hidden" id="selected-customer-id" value="${customer.id}">
+            </div>
+        `;
+        
+        // Remove any existing customer selection
+        const existingSelection = document.querySelector('.customer-selection-result');
+        if (existingSelection) {
+            existingSelection.remove();
+        }
+        
+        // Insert customer info
+        const addCustomerBtn = document.getElementById('add-customer-for-appointment');
+        addCustomerBtn.insertAdjacentElement('afterend', customerNameElement);
+        
+        document.getElementById('appointment-sales-rep').value = appointment.extendedProps.salesRepId;
+        document.getElementById('appointment-notes').value = appointment.extendedProps.notes || '';
+    }
+    
+    // Add Customer Modal
+    document.getElementById('add-customer-for-appointment').addEventListener('click', function() {
+        // Show the add customer modal
+        document.getElementById('add-customer-modal').style.display = 'block';
+    });
+    
+    document.getElementById('close-customer-modal').addEventListener('click', function() {
+        document.getElementById('add-customer-modal').style.display = 'none';
+    });
+    
+    document.getElementById('cancel-add-customer').addEventListener('click', function() {
+        document.getElementById('add-customer-modal').style.display = 'none';
+    });
+    
+    document.getElementById('save-new-customer').addEventListener('click', function() {
+        const firstName = document.getElementById('new-customer-first-name').value;
+        const lastName = document.getElementById('new-customer-last-name').value;
+        const phone = document.getElementById('new-customer-phone').value;
+        const email = document.getElementById('new-customer-email').value;
+        const notes = document.getElementById('new-customer-notes').value;
+        
+        if(!firstName || !lastName || !phone) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        
+        // Create and save the new customer
+        const customer = {
+            id: Date.now().toString(), // Generate unique ID
+            firstName: firstName,
+            lastName: lastName,
+            phone: phone,
+            email: email,
+            notes: notes
+        };
+        
+        // Save the customer
+        let customers = getCustomers();
+        customers.push(customer);
+        localStorage.setItem('customers', JSON.stringify(customers));
+        
+        // Reset the form
+        document.getElementById('add-customer-form').reset();
+        
+        // Hide the modal
+        document.getElementById('add-customer-modal').style.display = 'none';
+        
+        // Update customer info in the appointment modal
+        const customerNameElement = document.createElement('div');
+        customerNameElement.classList.add('customer-selection-result');
+        customerNameElement.innerHTML = `
+            <div style="background: rgba(255, 149, 98, 0.1); padding: 10px; border-radius: 10px; margin-top: 10px;">
+                <strong>${firstName} ${lastName}</strong><br>
+                <small>${phone}</small>
+                <input type="hidden" id="selected-customer-id" value="${customer.id}">
+            </div>
+        `;
+        
+        // Remove any existing customer selection
+        const existingSelection = document.querySelector('.customer-selection-result');
+        if (existingSelection) {
+            existingSelection.remove();
+        }
+        
+        // Insert after the add customer button
+        const addCustomerBtn = document.getElementById('add-customer-for-appointment');
+        addCustomerBtn.insertAdjacentElement('afterend', customerNameElement);
+        
+        // Show success message
+        alert('Customer added successfully!');
+        
+        // Update stats
+        updateStatsCounters();
+    });
+    
+    // Fix modal scrolling when opened
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    
+    // Stop propagation for modal content to prevent closing when clicking inside
+    const modalContents = document.querySelectorAll('.modal-content');
+    modalContents.forEach(content => {
+        content.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+    
+    // Initialize the page
+    populateSalesRepDropdown();
+    searchCustomers();
+    updateStatsCounters();
+});

@@ -645,7 +645,8 @@
                 emailStatus.className = 'email-status pending';
                 emailStatus.style.display = 'block';
                 
-                const apiUrl = `${apiBasePath}/send_test_email`;
+                // Use relative URL - will work on both development and production
+                const apiUrl = '/send_test_email';
                 console.log(`Sending test email via: ${apiUrl}`);
                 
                 const response = await fetch(apiUrl, {
@@ -845,9 +846,9 @@
             try {
                 console.log("Loading email settings...");
                 
-                // Direct API method - skip iframe approach that's failing
-                const apiUrl = `${apiBasePath}/get_email_settings`;
-                console.log(`Fetching email settings directly from: ${apiUrl}`);
+                // Use relative URL - will work on both development and production
+                const apiUrl = '/get_email_settings';
+                console.log(`Fetching email settings from: ${apiUrl}`);
 
                 const response = await fetch(apiUrl, {
                     method: 'GET',
@@ -882,7 +883,8 @@
         // Load email logs from the server
         async function loadEmailLogs() {
             try {
-                const apiUrl = `${apiBasePath}/get_email_logs`;
+                // Use relative URL - will work on both development and production
+                const apiUrl = '/get_email_logs';
                 console.log(`Fetching email logs from: ${apiUrl}`);
 
                 const response = await fetch(apiUrl, fetchOptions);
@@ -927,7 +929,7 @@
                 const element = document.getElementById(toggle.id);
                 element.addEventListener('change', async function() {
                     try {
-                        const apiUrl = `${apiBasePath}/update_email_setting`;
+                        const apiUrl = `/update_email_setting`;
                         console.log(`Updating email setting at: ${apiUrl}`);
                         
                         let success = false;

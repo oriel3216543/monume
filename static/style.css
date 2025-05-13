@@ -1188,6 +1188,14 @@
 }
 
 /* Team MonuMe card styles */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensures content is spaced out */
+    height: 100%; /* Makes the card take full height */
+    min-height: 350px; /* Set a minimum height for all cards */
+}
+
 .stat-card-icon {
     width: 48px;
     height: 48px;
@@ -1215,50 +1223,16 @@
 }
 
 .stat-card-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    margin-top: auto; /* Pushes the buttons to the bottom */
+    width: 100%;
 }
 
-.action-button {
-    flex: 1;
-    padding: 8px 0;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.action-button i {
-    margin-right: 5px;
-    font-size: 12px;
-}
-
-.start-btn {
-    background-color: rgba(255, 149, 98, 0.15);
-    color: var(--main-color);
-}
-
-.view-btn {
-    background-color: rgba(79, 195, 247, 0.15);
-    color: #4fc3f7;
-}
-
-.start-btn:hover {
-    background-color: rgba(255, 149, 98, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 149, 98, 0.2);
-}
-
-.view-btn:hover {
-    background-color: rgba(79, 195, 247, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(79, 195, 247, 0.2);
+.stat-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    margin-top: -10px; /* Ensures all values are at the same height */
 }
 
 /* URL Modal Styles */
@@ -1831,4 +1805,41 @@
     text-align: center;
     font-size: 0.8rem;
     color: #757575;
+}
+
+/* Updated welcome-container to use the new purple gradient and center text */
+.welcome-container {
+    background: linear-gradient(135deg, #6a1b9a, #ab47bc); /* New purple gradient */
+    color: white; /* Ensure all text is white */
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(106, 27, 154, 0.4); /* Adjusted shadow for purple */
+    margin-bottom: 40px;
+    text-align: center; /* Center text inside */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+/* Ensure the text 'See The Result, Shape The Future' is white */
+.welcome-container h1, .welcome-container p {
+    color: white; /* Ensure all text inside is white */
+}
+
+/* Updated welcome-container to have a purple 'V' like the appointments stat-cards */
+.welcome-container h1 span {
+    color: var(--main-color); /* Default color for text */
+}
+
+.welcome-container h1 span.v {
+    color: #7f42ff; /* Purple color for 'V' */
+    font-weight: bold;
+}
+
+/* Updated dashboard welcome title to be purple */
+.dashboard-welcome-title {
+    color: #7f42ff; /* Purple color */
+    font-weight: bold;
 }

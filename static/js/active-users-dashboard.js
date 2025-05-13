@@ -23,6 +23,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize users database
     initializeUsersDatabase();
+    
+    // Debug log for view active users button
+    if (viewActiveUsersBtn) {
+        viewActiveUsersBtn.addEventListener('click', function() {
+            console.log('View Active Users button clicked');
+            const modal = document.getElementById('active-users-modal');
+            if (modal) {
+                console.log('Active Users Modal found');
+                modal.style.display = 'flex';
+                console.log('Active Users Modal display set to flex');
+            } else {
+                console.error('Active Users Modal not found in the DOM.');
+            }
+        });
+    } else {
+        console.error('view-active-users-btn not found in the DOM.');
+    }
+    
+    // Close button in active users content
+    const closeButton = document.getElementById('active-users-close-btn');
+    if (closeButton) {
+        closeButton.addEventListener('click', function() {
+            const modal = document.getElementById('active-users-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Ensure the "Force Out" button functionality is set up correctly
+    const activeUserList = document.getElementById('active-user-list');
+
+    if (activeUserList) {
+        activeUserList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('forceout-btn')) {
+                console.log('Force Out button clicked.'); // Debug log
+                const username = e.target.closest('.active-user-item')?.getAttribute('data-username');
+                if (username) {
+                    console.log(`Username retrieved: ${username}`); // Debug log
+                    openForceOutModal(username);
+                } else {
+                    console.error('Failed to retrieve username for Force Out button.');
+                }
+            } else {
+                console.log('Clicked element is not a Force Out button.'); // Debug log
+            }
+        });
+    } else {
+        console.error('Active user list not found in the DOM.');
+    }
 });
 
 // Update active users count in the dashboard
@@ -36,8 +86,15 @@ function updateActiveUsersCount() {
 
 // Deactivate a user (requires password verification)
 function deactivateUser(username) {
+    // Check if a verification modal already exists
+    const existingModal = document.querySelector('.verification-modal');
+    if (existingModal) {
+        return; // Exit if a modal is already open
+    }
+
     // Create a styled modal for password verification
     const verificationModal = document.createElement('div');
+    verificationModal.className = 'verification-modal';
     verificationModal.style.position = 'fixed';
     verificationModal.style.top = '0';
     verificationModal.style.left = '0';
@@ -50,7 +107,7 @@ function deactivateUser(username) {
     verificationModal.style.justifyContent = 'center';
     verificationModal.style.alignItems = 'center';
     verificationModal.style.zIndex = '2000';
-    
+
     const modalContent = document.createElement('div');
     modalContent.style.backgroundColor = 'white';
     modalContent.style.borderRadius = '20px';
@@ -60,10 +117,10 @@ function deactivateUser(username) {
     modalContent.style.textAlign = 'center';
     modalContent.style.animation = 'modalFadeIn 0.3s ease';
     modalContent.style.position = 'relative';
-    
+
     // Add a colored top border
     modalContent.style.borderTop = '6px solid #ff9562';
-    
+
     const title = document.createElement('h3');
     title.textContent = 'Password Verification';
     title.style.marginTop = '0';
@@ -71,12 +128,12 @@ function deactivateUser(username) {
     title.style.fontSize = '22px';
     title.style.fontWeight = '700';
     title.style.marginBottom = '15px';
-    
+
     const text = document.createElement('p');
     text.innerHTML = `Please enter <span style="color: #ff9562; font-weight: 600;">${username}</span>'s password to deactivate:`;
     text.style.marginBottom = '20px';
     text.style.color = '#666';
-    
+
     const passwordInput = document.createElement('input');
     passwordInput.type = 'password';
     passwordInput.placeholder = 'Enter password';
@@ -87,12 +144,12 @@ function deactivateUser(username) {
     passwordInput.style.borderRadius = '10px';
     passwordInput.style.fontSize = '16px';
     passwordInput.style.boxSizing = 'border-box';
-    
+
     const buttonsDiv = document.createElement('div');
     buttonsDiv.style.display = 'flex';
     buttonsDiv.style.justifyContent = 'space-between';
     buttonsDiv.style.gap = '15px';
-    
+
     const cancelButton = document.createElement('button');
     cancelButton.textContent = 'Cancel';
     cancelButton.style.flex = '1';
@@ -104,7 +161,7 @@ function deactivateUser(username) {
     cancelButton.style.transition = 'all 0.2s ease';
     cancelButton.style.backgroundColor = '#f0f0f0';
     cancelButton.style.color = '#666';
-    
+
     const verifyButton = document.createElement('button');
     verifyButton.textContent = 'Verify';
     verifyButton.style.flex = '1';
@@ -116,50 +173,54 @@ function deactivateUser(username) {
     verifyButton.style.transition = 'all 0.2s ease';
     verifyButton.style.background = 'linear-gradient(135deg, #ff7f42, #ff9562)';
     verifyButton.style.color = 'white';
-    
+
+    // Remove existing event listeners to prevent duplicates
+    cancelButton.replaceWith(cancelButton.cloneNode(true));
+    verifyButton.replaceWith(verifyButton.cloneNode(true));
+
     // Add hover effects
     cancelButton.addEventListener('mouseover', function() {
         this.style.backgroundColor = '#e0e0e0';
         this.style.transform = 'translateY(-2px)';
     });
-    
+
     cancelButton.addEventListener('mouseout', function() {
         this.style.backgroundColor = '#f0f0f0';
         this.style.transform = 'translateY(0)';
     });
-    
+
     verifyButton.addEventListener('mouseover', function() {
         this.style.transform = 'translateY(-2px)';
         this.style.boxShadow = '0 5px 15px rgba(255, 127, 66, 0.3)';
     });
-    
+
     verifyButton.addEventListener('mouseout', function() {
         this.style.transform = 'translateY(0)';
         this.style.boxShadow = 'none';
     });
-    
+
     // Add event listeners
     cancelButton.addEventListener('click', function() {
         document.body.removeChild(verificationModal);
     });
-    
+
     verifyButton.addEventListener('click', function() {
         const password = passwordInput.value;
         if (!password) {
             alert('Please enter a password');
             return;
         }
-        
+
         const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
         const user = users.find(u => u.username === username);
-        
+
         if (user && user.password === password) {
             // Remove from active users
             removeActiveUser(username);
-            
+
             // Remove the modal
             document.body.removeChild(verificationModal);
-            
+
             // Show success message
             const successToast = createToast(`${username} has been deactivated successfully`, 'success');
             document.body.appendChild(successToast);
@@ -169,7 +230,7 @@ function deactivateUser(username) {
                     document.body.removeChild(successToast);
                 }, 500);
             }, 3000);
-            
+
             // Refresh active users modal
             openActiveUsersModal();
         } else {
@@ -179,23 +240,23 @@ function deactivateUser(username) {
             errorMsg.style.color = '#ff3333';
             errorMsg.style.margin = '0 0 15px 0';
             errorMsg.style.fontSize = '14px';
-            
+
             // Remove any existing error message
             const existingError = modalContent.querySelector('.error-message');
             if (existingError) {
                 existingError.remove();
             }
-            
+
             // Add class for easy removal
             errorMsg.classList.add('error-message');
-            
+
             // Insert before buttons
             buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
-            
+
             // Clear password field
             passwordInput.value = '';
             passwordInput.focus();
-            
+
             // Add shake animation
             modalContent.style.animation = 'none';
             setTimeout(() => {
@@ -203,14 +264,14 @@ function deactivateUser(username) {
             }, 10);
         }
     });
-    
+
     // Add keypress handler for Enter key
     passwordInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             verifyButton.click();
         }
     });
-    
+
     // Add a close button in top right
     const closeButton = document.createElement('button');
     closeButton.innerHTML = '&times;';
@@ -223,32 +284,32 @@ function deactivateUser(username) {
     closeButton.style.cursor = 'pointer';
     closeButton.style.color = '#aaa';
     closeButton.style.transition = 'color 0.2s';
-    
+
     closeButton.addEventListener('mouseover', function() {
         this.style.color = '#ff9562';
     });
-    
+
     closeButton.addEventListener('mouseout', function() {
         this.style.color = '#aaa';
     });
-    
+
     closeButton.addEventListener('click', function() {
         document.body.removeChild(verificationModal);
     });
-    
+
     // Assemble the modal
     buttonsDiv.appendChild(cancelButton);
     buttonsDiv.appendChild(verifyButton);
-    
+
     modalContent.appendChild(closeButton);
     modalContent.appendChild(title);
     modalContent.appendChild(text);
     modalContent.appendChild(passwordInput);
     modalContent.appendChild(buttonsDiv);
-    
+
     verificationModal.appendChild(modalContent);
     document.body.appendChild(verificationModal);
-    
+
     // Focus the password field
     setTimeout(() => {
         passwordInput.focus();
@@ -292,38 +353,20 @@ function createToast(message, type = 'info') {
 
 // Force out a user (admin/manager only)
 function forceOutUser(username) {
-    const currentRole = getCurrentUserRole();
-    
-    if (currentRole !== 'admin' && currentRole !== 'manager') {
-        const errorToast = createToast('You do not have permission to force out users.', 'error');
-        document.body.appendChild(errorToast);
-        setTimeout(() => {
-            errorToast.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(errorToast);
-            }, 500);
-        }, 3000);
-        return;
+    console.log(`Force Out button clicked for user: ${username}`); // Debug log
+
+    // Check if a force-out modal already exists
+    const existingModal = document.querySelector('.forceout-modal');
+    if (existingModal) {
+        console.log('Force-out modal already exists. Exiting.'); // Debug log
+        return; // Exit if a modal is already open
     }
-    
-    // Get all admin and manager users
-    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-    const adminUsers = users.filter(user => user.role === 'admin' || user.role === 'manager');
-    
-    if (adminUsers.length === 0) {
-        const errorToast = createToast('No admin users found in the system.', 'error');
-        document.body.appendChild(errorToast);
-        setTimeout(() => {
-            errorToast.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(errorToast);
-            }, 500);
-        }, 3000);
-        return;
-    }
-    
+
+    console.log('Creating force-out modal...'); // Debug log
+
     // Create admin selection modal
     const selectionModal = document.createElement('div');
+    selectionModal.className = 'forceout-modal';
     selectionModal.style.position = 'fixed';
     selectionModal.style.top = '0';
     selectionModal.style.left = '0';
@@ -336,7 +379,7 @@ function forceOutUser(username) {
     selectionModal.style.justifyContent = 'center';
     selectionModal.style.alignItems = 'center';
     selectionModal.style.zIndex = '2000';
-    
+
     const modalContent = document.createElement('div');
     modalContent.style.backgroundColor = 'white';
     modalContent.style.borderRadius = '20px';
@@ -346,184 +389,52 @@ function forceOutUser(username) {
     modalContent.style.textAlign = 'center';
     modalContent.style.animation = 'modalFadeIn 0.3s ease';
     modalContent.style.position = 'relative';
-    
+
+    console.log('Force-out modal content created.'); // Debug log
+
     // Add a colored top border - red for force out
     modalContent.style.borderTop = '6px solid #f44336';
-    
-    const title = document.createElement('h3');
-    title.textContent = 'Select Admin for Force Out';
-    title.style.marginTop = '0';
-    title.style.color = '#f44336';
-    title.style.fontSize = '22px';
-    title.style.fontWeight = '700';
-    title.style.marginBottom = '15px';
-    
-    const text = document.createElement('p');
-    text.innerHTML = `Choose an admin to force out <span style="color: #f44336; font-weight: 600;">${username}</span>:`;
-    text.style.marginBottom = '20px';
-    text.style.color = '#666';
-    
-    // Create admin user list
-    const userListContainer = document.createElement('div');
-    userListContainer.style.marginBottom = '25px';
-    userListContainer.style.maxHeight = '200px';
-    userListContainer.style.overflowY = 'auto';
-    userListContainer.style.padding = '10px';
-    userListContainer.style.borderRadius = '10px';
-    userListContainer.style.backgroundColor = '#f9f9f9';
-    
-    adminUsers.forEach(admin => {
-        const adminItem = document.createElement('div');
-        adminItem.className = 'admin-user-item';
-        adminItem.style.padding = '10px 15px';
-        adminItem.style.margin = '8px 0';
-        adminItem.style.backgroundColor = '#fff';
-        adminItem.style.borderRadius = '8px';
-        adminItem.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
-        adminItem.style.cursor = 'pointer';
-        adminItem.style.transition = 'all 0.2s ease';
-        adminItem.style.display = 'flex';
-        adminItem.style.justifyContent = 'space-between';
-        adminItem.style.alignItems = 'center';
-        
-        adminItem.innerHTML = `
-            <div>
-                <span style="font-weight: 600;">${admin.username}</span>
-                <span style="display: block; font-size: 12px; color: #666;">${admin.role}</span>
-            </div>
-        `;
-        
-        adminItem.addEventListener('mouseover', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 5px 15px rgba(244, 67, 54, 0.2)';
-            this.style.backgroundColor = '#fff8f8';
-        });
-        
-        adminItem.addEventListener('mouseout', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
-            this.style.backgroundColor = '#fff';
-        });
-        
-        adminItem.addEventListener('click', function() {
-            // Show password verification for selected admin
-            showPasswordVerification(admin, username, selectionModal);
-        });
-        
-        userListContainer.appendChild(adminItem);
-    });
-    
-    // Close button at the bottom
-    const closeButtonContainer = document.createElement('div');
-    closeButtonContainer.style.textAlign = 'center';
-    closeButtonContainer.style.marginTop = '20px';
-    
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Cancel';
-    closeButton.style.backgroundColor = '#f0f0f0';
-    closeButton.style.color = '#666';
-    closeButton.style.padding = '10px 25px';
-    closeButton.style.border = 'none';
-    closeButton.style.borderRadius = '10px';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.fontWeight = '600';
-    closeButton.style.transition = 'all 0.2s ease';
-    
-    closeButton.addEventListener('mouseover', function() {
-        this.style.backgroundColor = '#e0e0e0';
-        this.style.transform = 'translateY(-2px)';
-    });
-    
-    closeButton.addEventListener('mouseout', function() {
-        this.style.backgroundColor = '#f0f0f0';
-        this.style.transform = 'translateY(0)';
-    });
-    
-    closeButton.addEventListener('click', function() {
-        document.body.removeChild(selectionModal);
-    });
-    
-    closeButtonContainer.appendChild(closeButton);
-    
-    // Add a close button in top right
-    const topCloseButton = document.createElement('button');
-    topCloseButton.innerHTML = '&times;';
-    topCloseButton.style.position = 'absolute';
-    topCloseButton.style.top = '10px';
-    topCloseButton.style.right = '15px';
-    topCloseButton.style.background = 'none';
-    topCloseButton.style.border = 'none';
-    topCloseButton.style.fontSize = '24px';
-    topCloseButton.style.cursor = 'pointer';
-    topCloseButton.style.color = '#aaa';
-    topCloseButton.style.transition = 'color 0.2s';
-    
-    topCloseButton.addEventListener('mouseover', function() {
-        this.style.color = '#f44336';
-    });
-    
-    topCloseButton.addEventListener('mouseout', function() {
-        this.style.color = '#aaa';
-    });
-    
-    topCloseButton.addEventListener('click', function() {
-        document.body.removeChild(selectionModal);
-    });
-    
-    // Assemble the modal
-    modalContent.appendChild(topCloseButton);
-    modalContent.appendChild(title);
-    modalContent.appendChild(text);
-    modalContent.appendChild(userListContainer);
-    modalContent.appendChild(closeButtonContainer);
-    
-    selectionModal.appendChild(modalContent);
-    document.body.appendChild(selectionModal);
-}
 
-// Show password verification for selected admin
-function showPasswordVerification(admin, userToForceOut, previousModal) {
-    // Create verification modal
-    const verificationModal = document.createElement('div');
-    verificationModal.style.position = 'fixed';
-    verificationModal.style.top = '0';
-    verificationModal.style.left = '0';
-    verificationModal.style.width = '100%';
-    verificationModal.style.height = '100%';
-    verificationModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    verificationModal.style.backdropFilter = 'blur(5px)';
-    verificationModal.style.WebkitBackdropFilter = 'blur(5px)';
-    verificationModal.style.display = 'flex';
-    verificationModal.style.justifyContent = 'center';
-    verificationModal.style.alignItems = 'center';
-    verificationModal.style.zIndex = '2001';
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.backgroundColor = 'white';
-    modalContent.style.borderRadius = '20px';
-    modalContent.style.padding = '30px';
-    modalContent.style.width = '350px';
-    modalContent.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
-    modalContent.style.textAlign = 'center';
-    modalContent.style.animation = 'modalFadeIn 0.3s ease';
-    modalContent.style.position = 'relative';
-    
-    // Add a colored top border
-    modalContent.style.borderTop = '6px solid #f44336';
-    
     const title = document.createElement('h3');
-    title.textContent = 'Password Verification';
+    title.textContent = 'Force Out User';
     title.style.marginTop = '0';
     title.style.color = '#f44336';
     title.style.fontSize = '22px';
     title.style.fontWeight = '700';
     title.style.marginBottom = '15px';
-    
+
     const text = document.createElement('p');
-    text.innerHTML = `Enter password for <span style="color: #f44336; font-weight: 600;">${admin.username}</span> to force out ${userToForceOut}:`;
+    text.innerHTML = `Select an admin or manager to authorize the force out of <span style="color: #f44336; font-weight: 600;">${username}</span>:`;
     text.style.marginBottom = '20px';
     text.style.color = '#666';
-    
+
+    console.log('Adding dropdown and password input to modal.'); // Debug log
+
+    // Create admin/manager dropdown
+    const dropdown = document.createElement('select');
+    dropdown.style.width = '100%';
+    dropdown.style.padding = '10px';
+    dropdown.style.marginBottom = '20px';
+    dropdown.style.border = '1px solid #ddd';
+    dropdown.style.borderRadius = '10px';
+    dropdown.style.fontSize = '16px';
+
+    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+    const adminUsers = users.filter(user => user.role === 'admin' || user.role === 'manager');
+
+    if (adminUsers.length === 0) {
+        console.error('No admin or manager users found.'); // Debug log
+        alert('No admin or manager users available to authorize this action.');
+        return;
+    }
+
+    adminUsers.forEach(admin => {
+        const option = document.createElement('option');
+        option.value = admin.username;
+        option.textContent = `${admin.name || admin.username} (${admin.role})`;
+        dropdown.appendChild(option);
+    });
+
     const passwordInput = document.createElement('input');
     passwordInput.type = 'password';
     passwordInput.placeholder = 'Enter password';
@@ -534,26 +445,26 @@ function showPasswordVerification(admin, userToForceOut, previousModal) {
     passwordInput.style.borderRadius = '10px';
     passwordInput.style.fontSize = '16px';
     passwordInput.style.boxSizing = 'border-box';
-    
+
     const buttonsDiv = document.createElement('div');
     buttonsDiv.style.display = 'flex';
     buttonsDiv.style.justifyContent = 'space-between';
     buttonsDiv.style.gap = '15px';
-    
-    const backButton = document.createElement('button');
-    backButton.textContent = 'Back';
-    backButton.style.flex = '1';
-    backButton.style.padding = '12px 0';
-    backButton.style.border = 'none';
-    backButton.style.borderRadius = '10px';
-    backButton.style.fontWeight = '600';
-    backButton.style.cursor = 'pointer';
-    backButton.style.transition = 'all 0.2s ease';
-    backButton.style.backgroundColor = '#f0f0f0';
-    backButton.style.color = '#666';
-    
+
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.style.flex = '1';
+    cancelButton.style.padding = '12px 0';
+    cancelButton.style.border = 'none';
+    cancelButton.style.borderRadius = '10px';
+    cancelButton.style.fontWeight = '600';
+    cancelButton.style.cursor = 'pointer';
+    cancelButton.style.transition = 'all 0.2s ease';
+    cancelButton.style.backgroundColor = '#f0f0f0';
+    cancelButton.style.color = '#666';
+
     const verifyButton = document.createElement('button');
-    verifyButton.textContent = 'Force Out';
+    verifyButton.textContent = 'Verify';
     verifyButton.style.flex = '1';
     verifyButton.style.padding = '12px 0';
     verifyButton.style.border = 'none';
@@ -563,50 +474,36 @@ function showPasswordVerification(admin, userToForceOut, previousModal) {
     verifyButton.style.transition = 'all 0.2s ease';
     verifyButton.style.backgroundColor = '#f44336';
     verifyButton.style.color = 'white';
-    
-    // Add hover effects
-    backButton.addEventListener('mouseover', function() {
-        this.style.backgroundColor = '#e0e0e0';
-        this.style.transform = 'translateY(-2px)';
-    });
-    
-    backButton.addEventListener('mouseout', function() {
-        this.style.backgroundColor = '#f0f0f0';
-        this.style.transform = 'translateY(0)';
-    });
-    
-    verifyButton.addEventListener('mouseover', function() {
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 5px 15px rgba(244, 67, 54, 0.3)';
-    });
-    
-    verifyButton.addEventListener('mouseout', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = 'none';
-    });
-    
+
+    console.log('Adding event listeners to modal buttons.'); // Debug log
+
     // Add event listeners
-    backButton.addEventListener('click', function() {
-        document.body.removeChild(verificationModal);
+    cancelButton.addEventListener('click', function() {
+        console.log('Force-out modal canceled.'); // Debug log
+        document.body.removeChild(selectionModal);
     });
-    
+
     verifyButton.addEventListener('click', function() {
+        const selectedAdmin = dropdown.value;
         const password = passwordInput.value;
+
         if (!password) {
             alert('Please enter a password');
             return;
         }
-        
-        if (admin.password === password) {
-            // Remove from active users
-            removeActiveUser(userToForceOut);
-            
-            // Remove both modals
-            document.body.removeChild(verificationModal);
-            document.body.removeChild(previousModal);
-            
+
+        const admin = adminUsers.find(user => user.username === selectedAdmin);
+
+        if (admin && admin.password === password) {
+            console.log(`Force-out authorized by ${selectedAdmin}.`); // Debug log
+            // Remove user from active users
+            removeActiveUser(username);
+
+            // Remove the modal
+            document.body.removeChild(selectionModal);
+
             // Show success message
-            const successToast = createToast(`${userToForceOut} has been forced out by ${admin.username}`, 'success');
+            const successToast = createToast(`${username} has been forced out successfully`, 'success');
             document.body.appendChild(successToast);
             setTimeout(() => {
                 successToast.style.opacity = '0';
@@ -614,90 +511,33 @@ function showPasswordVerification(admin, userToForceOut, previousModal) {
                     document.body.removeChild(successToast);
                 }, 500);
             }, 3000);
-            
+
             // Refresh active users modal
             openActiveUsersModal();
         } else {
-            // Show error message
-            const errorMsg = document.createElement('p');
-            errorMsg.textContent = 'Invalid password. Please try again.';
-            errorMsg.style.color = '#ff3333';
-            errorMsg.style.margin = '0 0 15px 0';
-            errorMsg.style.fontSize = '14px';
-            
-            // Remove any existing error message
-            const existingError = modalContent.querySelector('.error-message');
-            if (existingError) {
-                existingError.remove();
-            }
-            
-            // Add class for easy removal
-            errorMsg.classList.add('error-message');
-            
-            // Insert before buttons
-            buttonsDiv.parentNode.insertBefore(errorMsg, buttonsDiv);
-            
-            // Clear password field
+            console.error('Invalid password entered.'); // Debug log
+            alert('Invalid password. Please try again.');
             passwordInput.value = '';
             passwordInput.focus();
-            
-            // Add shake animation
-            modalContent.style.animation = 'none';
-            setTimeout(() => {
-                modalContent.style.animation = 'shake 0.5s';
-            }, 10);
         }
     });
-    
-    // Add keypress handler for Enter key
-    passwordInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            verifyButton.click();
-        }
-    });
-    
-    // Add a close button in top right
-    const closeButton = document.createElement('button');
-    closeButton.innerHTML = '&times;';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '10px';
-    closeButton.style.right = '15px';
-    closeButton.style.background = 'none';
-    closeButton.style.border = 'none';
-    closeButton.style.fontSize = '24px';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.color = '#aaa';
-    closeButton.style.transition = 'color 0.2s';
-    
-    closeButton.addEventListener('mouseover', function() {
-        this.style.color = '#f44336';
-    });
-    
-    closeButton.addEventListener('mouseout', function() {
-        this.style.color = '#aaa';
-    });
-    
-    closeButton.addEventListener('click', function() {
-        document.body.removeChild(verificationModal);
-    });
-    
+
+    console.log('Assembling modal content.'); // Debug log
+
     // Assemble the modal
-    buttonsDiv.appendChild(backButton);
+    buttonsDiv.appendChild(cancelButton);
     buttonsDiv.appendChild(verifyButton);
-    
-    modalContent.appendChild(closeButton);
+
     modalContent.appendChild(title);
     modalContent.appendChild(text);
+    modalContent.appendChild(dropdown);
     modalContent.appendChild(passwordInput);
     modalContent.appendChild(buttonsDiv);
-    
-    verificationModal.appendChild(modalContent);
-    document.body.appendChild(verificationModal);
-    
-    // Focus the password field
-    setTimeout(() => {
-        passwordInput.focus();
-    }, 100);
+
+    selectionModal.appendChild(modalContent);
+    document.body.appendChild(selectionModal);
+
+    console.log('Force-out modal displayed.'); // Debug log
 }
 
 // Helper function to remove a user from active users
@@ -720,7 +560,6 @@ function setupActiveUsersButtons() {
         if (cardHeader) {
             cardHeader.innerHTML = `
                 <h2 class="team-monume-title">
-                    <i class="fas fa-users" style="color: #ff7f42; margin-right: 10px;"></i>
                     Team MonuMe
                 </h2>
             `;
@@ -741,13 +580,35 @@ function setupActiveUsersButtons() {
         const actionButtons = teamMonumeCard.querySelector('.stat-card-actions');
         if (actionButtons) {
             actionButtons.innerHTML = `
-                <button class="action-button start-btn" id="start-session-btn">
-                    <i class="fas fa-play"></i> Start
-                </button>
-                <button class="action-button view-btn" id="view-active-users-btn">
-                    <i class="fas fa-users"></i> Activate
-                </button>
+                <button class="action-button" id="start-session-btn">Start</button>
+                <button class="action-button" id="view-active-users-btn">View</button>
             `;
+            
+            // Apply exact styles from the Gift Card card buttons in dashboard.html
+            actionButtons.style.display = 'flex';
+            actionButtons.style.gap = '15px';
+            actionButtons.style.marginTop = '20px';
+            
+            // Apply the correct button styling to match Gift Card buttons
+            const buttons = actionButtons.querySelectorAll('.action-button');
+            buttons.forEach(button => {
+                // Apply the exact styling from Gift Card buttons in dashboard.html
+                button.style.flex = '1';
+                button.style.display = 'flex';
+                button.style.alignItems = 'center';
+                button.style.justifyContent = 'center';
+                button.style.padding = '12px 15px';
+                button.style.border = 'none';
+                button.style.borderRadius = '12px'; // Same as Gift Card buttons
+                button.style.fontWeight = '600';
+                button.style.fontSize = '14px';
+                button.style.cursor = 'pointer';
+                button.style.transition = 'all 0.3s ease';
+                button.style.background = '#272430'; // Matching sidebar background
+                button.style.color = 'white';
+                button.style.boxShadow = '0 4px 12px rgba(39, 36, 48, 0.2)';
+                button.style.textTransform = 'none';
+            });
             
             // Add event listeners for the buttons
             const startSessionBtn = document.getElementById('start-session-btn');
@@ -755,10 +616,36 @@ function setupActiveUsersButtons() {
             
             if (startSessionBtn) {
                 startSessionBtn.addEventListener('click', openUserSelectionModal);
+                
+                // Add hover effect matching Gift Card buttons
+                startSessionBtn.addEventListener('mouseover', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 8px 15px rgba(39, 36, 48, 0.3)';
+                    this.style.background = 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))';
+                });
+                
+                startSessionBtn.addEventListener('mouseout', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '0 4px 12px rgba(39, 36, 48, 0.2)';
+                    this.style.background = '#272430';
+                });
             }
             
             if (viewActiveUsersBtn) {
                 viewActiveUsersBtn.addEventListener('click', openActiveUsersModal);
+                
+                // Add hover effect matching Gift Card buttons
+                viewActiveUsersBtn.addEventListener('mouseover', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 8px 15px rgba(39, 36, 48, 0.3)';
+                    this.style.background = 'linear-gradient(135deg, var(--gradient-start), var(--gradient-end))';
+                });
+                
+                viewActiveUsersBtn.addEventListener('mouseout', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '0 4px 12px rgba(39, 36, 48, 0.2)';
+                    this.style.background = '#272430';
+                });
             }
         }
     }
@@ -853,13 +740,13 @@ function closeActiveUsersModal() {
 function openActiveUsersModal() {
     const modal = document.getElementById('active-users-modal');
     const activeUserList = document.getElementById('active-user-list');
-    
+
     // Clear previous list
     activeUserList.innerHTML = '';
-    
+
     // Get active users
     const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
-    
+
     if (activeUsers.length === 0) {
         const emptyMessage = document.createElement('p');
         emptyMessage.textContent = 'No active users at the moment.';
@@ -873,10 +760,10 @@ function openActiveUsersModal() {
             const userItem = document.createElement('div');
             userItem.className = 'active-user-item';
             userItem.setAttribute('data-username', user.username);
-            
+
             const startTime = new Date(user.startTime);
             const timeActive = getTimeActive(startTime);
-            
+
             userItem.innerHTML = `
                 <div class="active-user-name">${user.username} <span style="font-weight: normal; font-size: 13px; color: #666;">(${timeActive})</span></div>
                 <div class="active-user-buttons">
@@ -884,13 +771,35 @@ function openActiveUsersModal() {
                     <button class="forceout-btn">Force Out</button>
                 </div>
             `;
-            
+
             activeUserList.appendChild(userItem);
+            
+            // Directly attach event listeners to each button for immediate effect
+            const unactiveBtn = userItem.querySelector('.unactive-btn');
+            const forceOutBtn = userItem.querySelector('.forceout-btn');
+            
+            if (unactiveBtn) {
+                unactiveBtn.addEventListener('click', function() {
+                    console.log(`Direct unactive button clicked for ${user.username}`);
+                    deactivateUser(user.username);
+                });
+            }
+            
+            if (forceOutBtn) {
+                forceOutBtn.addEventListener('click', function() {
+                    console.log(`Direct force out button clicked for ${user.username}`);
+                    openForceOutModal(user.username);
+                });
+            }
         });
     }
-    
+
     // Show the modal
     modal.style.display = 'flex';
+
+    // This is the old event delegation approach, keeping it as a fallback
+    // Remove any existing event listener to prevent duplicates
+    activeUserList.removeEventListener('click', handleActiveUserButtonClick);
     
     // Add event listener for buttons in active user list
     activeUserList.addEventListener('click', handleActiveUserButtonClick);
@@ -898,12 +807,26 @@ function openActiveUsersModal() {
 
 // Handle clicks on the active user buttons 
 function handleActiveUserButtonClick(e) {
+    console.log('Active user button clicked:', e.target); // Debug log
+
     if (e.target.classList.contains('unactive-btn')) {
-        const username = e.target.closest('.active-user-item').getAttribute('data-username');
-        deactivateUser(username);
+        const username = e.target.closest('.active-user-item')?.getAttribute('data-username');
+        if (username) {
+            console.log('Unactive button clicked for user:', username); // Debug log
+            deactivateUser(username);
+        } else {
+            console.error('Failed to retrieve username for Unactive button.');
+        }
     } else if (e.target.classList.contains('forceout-btn')) {
-        const username = e.target.closest('.active-user-item').getAttribute('data-username');
-        forceOutUser(username);
+        const username = e.target.closest('.active-user-item')?.getAttribute('data-username');
+        if (username) {
+            console.log('Force Out button clicked for user:', username); // Debug log
+            openForceOutModal(username);
+        } else {
+            console.error('Failed to retrieve username for Force Out button.');
+        }
+    } else {
+        console.log('Clicked element is not a recognized button.'); // Debug log
     }
 }
 
@@ -956,79 +879,73 @@ function closeForceOutModal() {
 
 // Confirm Force Out action
 function confirmForceOut() {
-    const forceoutUserSelect = document.getElementById('forceout-user-select');
-    const forceoutPassword = document.getElementById('forceout-password');
-    const forceoutError = document.getElementById('forceout-error');
-    
-    const username = forceoutUserSelect.value;
-    const password = forceoutPassword.value;
-    
-    if (!username) {
-        alert('Please select a user to force out');
+    const modal = document.getElementById('forceout-modal');
+    const adminSelect = document.getElementById('forceout-admin-select');
+    const passwordInput = document.getElementById('forceout-password');
+    const errorElement = document.getElementById('forceout-error');
+    const username = modal.getAttribute('data-forceout-username');
+    const adminUsername = adminSelect.value;
+    const password = passwordInput.value;
+
+    if (!adminUsername) {
+        errorElement.textContent = 'Please select a manager or admin';
+        errorElement.style.display = 'block';
         return;
     }
-    
     if (!password) {
-        forceoutError.textContent = 'Please enter your password';
-        forceoutError.style.display = 'block';
+        errorElement.textContent = 'Please enter the password';
+        errorElement.style.display = 'block';
         return;
     }
-    
-    // Verify password against current user
-    const currentUser = localStorage.getItem('currentUser') || localStorage.getItem('username');
+    // Verify password for selected admin/manager
     const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-    const user = users.find(u => u.username === currentUser);
-    
-    if (user && user.password === password) {
+    const admin = users.find(u => u.username === adminUsername && (u.role === 'admin' || u.role === 'manager'));
+    if (admin && admin.password === password) {
         // Remove user from active users
         removeActiveUser(username);
-        
-        // Close modal
         closeForceOutModal();
-        
-        // Show success message
         alert(`${username} has been forced out successfully`);
-        
-        // Refresh active users modal
         openActiveUsersModal();
     } else {
-        // Show error message
-        forceoutError.textContent = 'Invalid password. Please try again.';
-        forceoutError.style.display = 'block';
-        forceoutPassword.value = '';
-        forceoutPassword.focus();
+        errorElement.textContent = 'Invalid password. Please try again.';
+        errorElement.style.display = 'block';
+        passwordInput.value = '';
+        passwordInput.focus();
     }
 }
 
-// Function to open user selection modal
-function openUserSelectionModal() {
-    const modal = document.getElementById('user-selection-modal');
-    const userList = document.getElementById('user-list');
-    
-    if (!modal || !userList) {
-        console.error('User selection modal or user list not found in the DOM');
-        return;
-    }
-    
-    // Clear previous list
-    userList.innerHTML = '';
-    
-    // Get all users and active users
+// Function to open the Force Out modal for a specific user
+function openForceOutModal(username) {
+    const modal = document.getElementById('forceout-modal');
+    const userDisplay = document.getElementById('forceout-user-display');
+    const adminSelect = document.getElementById('forceout-admin-select');
+    const errorElement = document.getElementById('forceout-error');
+    const passwordInput = document.getElementById('forceout-password');
+
+    // Show the username to be forced out
+    if (userDisplay) userDisplay.textContent = username;
+    // Clear previous error
+    if (errorElement) errorElement.style.display = 'none';
+    // Clear password field
+    if (passwordInput) passwordInput.value = '';
+    // Clear previous options
+    if (adminSelect) adminSelect.innerHTML = '';
+
+    // Get all managers and admins
     const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
-    const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
-    const activeUsernames = activeUsers.map(user => user.username);
-    
-    // Create user items, excluding already active users
-    users.forEach(user => {
-        if (!activeUsernames.includes(user.username)) {
-            const userItem = document.createElement('div');
-            userItem.className = 'user-item';
-            userItem.setAttribute('data-username', user.username);
-            userItem.textContent = user.name || user.username; // Show the full name if available
-            userList.appendChild(userItem);
-        }
+    const adminUsers = users.filter(user => user.role === 'admin' || user.role === 'manager');
+    adminUsers.forEach(admin => {
+        const option = document.createElement('option');
+        option.value = admin.username;
+        option.textContent = `${admin.name || admin.username} (${admin.role})`;
+        adminSelect.appendChild(option);
     });
-    
     // Show the modal
-    modal.style.display = 'flex';
+    if (modal) modal.style.display = 'flex';
+    // Focus the password field
+    setTimeout(() => {
+        if (passwordInput) passwordInput.focus();
+    }, 100);
+    // Store the username to be forced out for confirmation
+    modal.setAttribute('data-forceout-username', username);
 }

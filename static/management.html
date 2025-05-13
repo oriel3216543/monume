@@ -575,6 +575,116 @@
             10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
             20%, 40%, 60%, 80% { transform: translateX(10px); }
         }
+
+        /* Events section styles */
+        #management-events-section {
+            margin-top: 50px;
+        }
+
+        #management-events-section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--main-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        #management-events-section h2::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        .events-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .event-row {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .event-row:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .event-date-block {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .event-date-main {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--main-color);
+        }
+
+        .event-date-month {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .event-info {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+
+        .event-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .event-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .event-action-btn {
+            background: var(--main-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .event-action-btn:hover {
+            background: var(--gradient-start);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 127, 66, 0.3);
+        }
+
+        .no-events {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 16px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.05);
+        }
     </style>
 </head>
 <body>
@@ -834,6 +944,74 @@
                 showVerificationModal();
             }
         }
+
+        // Add navigation for Analytics tile
+        function navigateToAnalyticsPage() {
+            // Check if user is authenticated for management
+            const isAuthenticated = localStorage.getItem('managementAuthenticated') === 'true';
+            const userRole = localStorage.getItem('role');
+            if (isAuthenticated && (userRole === 'admin' || userRole === 'manager')) {
+                const currentPath = window.location.pathname;
+                if (currentPath.includes('/static/')) {
+                    window.location.href = "analytics.html";
+                } else {
+                    window.location.href = "/static/analytics.html";
+                }
+            } else {
+                showVerificationModal();
+            }
+        }
+
+        // Function to render events in the management page
+        async function renderManagementEvents() {
+            const eventsList = document.getElementById('management-events-list');
+            if (!eventsList) return;
+
+            const localEvents = JSON.parse(localStorage.getItem('monume_events') || '[]');
+            const holidays = await fetchUpcomingHolidays();
+            let allEvents = [
+                ...localEvents.map((ev, idx) => ({ ...ev, type: 'local', _idx: idx })),
+                ...holidays.map(ev => ({ ...ev, type: 'holiday' }))
+            ];
+
+            // Remove duplicates (same date and title)
+            allEvents = allEvents.filter((ev, idx, arr) =>
+                arr.findIndex(e => e.date === ev.date && e.title === ev.title) === idx
+            );
+
+            // Sort by date ascending
+            allEvents.sort((a, b) => a.date.localeCompare(b.date));
+            eventsList.innerHTML = '';
+
+            if (allEvents.length === 0) {
+                eventsList.innerHTML = '<div class="no-events">No events available.</div>';
+                return;
+            }
+
+            allEvents.forEach((ev, idx) => {
+                const dateObj = new Date(ev.date);
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+                const eventRow = document.createElement('div');
+                eventRow.className = 'event-row';
+                eventRow.innerHTML = `
+                    <div class="event-date-block">
+                        <span class="event-date-main">${day}</span>
+                        <span class="event-date-month">${month}</span>
+                    </div>
+                    <div class="event-info">
+                        <div class="event-title">${ev.title}${ev.type === 'holiday' ? ' <span style=\'color:#ab47bc;font-weight:600;font-size:13px\'>(Holiday)</span>' : ''}</div>
+                    </div>
+                    <div class="event-actions">
+                        <button class="event-action-btn edit-btn" onclick="editEvent(${idx})">Edit</button>
+                    </div>
+                `;
+                eventsList.appendChild(eventRow);
+            });
+        }
+
+        // Call the render function when the page loads
+        document.addEventListener('DOMContentLoaded', renderManagementEvents);
     </script>
 
     <!-- Main content -->
@@ -857,6 +1035,19 @@
                 <div class="icon"><i class="fas fa-envelope"></i></div>
                 <h3>Communications</h3>
                 <p>Configure email templates, notifications, and messaging systems</p>
+            </div>
+            <div class="tile" onclick="navigateToAnalyticsPage()" id="analyticsTile">
+                <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                <h3>Analytics</h3>
+                <p>View and analyze performance data and reports</p>
+            </div>
+        </div>
+
+        <!-- Events Management Section -->
+        <div id="management-events-section">
+            <h2>Manage Events</h2>
+            <div id="management-events-list" class="events-list">
+                <!-- Events will be dynamically loaded here -->
             </div>
         </div>
     </div>
