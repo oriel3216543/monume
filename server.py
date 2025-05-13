@@ -1430,26 +1430,14 @@ if __name__ == '__main__':
         # Common settings
         app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit file size to 16MB
         
-        # Start server
+        # Start server - Use the Railway-compatible format
         logger.info(f"Starting MonuMe Tracker server in {'PRODUCTION' if PRODUCTION else 'DEVELOPMENT'} mode...")
         logger.info(f"Listening on {DOMAIN}:{PORT}")
         
-        if PRODUCTION and SSL_CERT and SSL_KEY and os.path.exists(SSL_CERT) and os.path.exists(SSL_KEY):
-            # Create SSL context for HTTPS
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            context.load_cert_chain(SSL_CERT, SSL_KEY)
-            logger.info("Using SSL for secure HTTPS connections")
-            
-            # Start waitress with SSL
-            from waitress.server import create_server
-            server = create_server(app, host=DOMAIN, port=PORT, url_scheme='https')
-            server.run()
-        else:
-            # Start waitress without SSL
-            if PRODUCTION and (not SSL_CERT or not SSL_KEY):
-                logger.warning("Running in PRODUCTION without SSL certificates!")
-                
-            serve(app, host=DOMAIN, port=PORT)
+        # Standard waitress configuration for Railway
+        from waitress import serve
+        serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+        
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         logger.error(traceback.format_exc())

@@ -11,3 +11,5 @@ gunicorn==21.2.0
 # Replaced pydompdf with pdfkit which is available on PyPI
 pdfkit==1.0.0
 cryptography==41.0.3
+# For Railway deployment
+nginx
