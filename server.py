@@ -1054,14 +1054,14 @@ def send_email(recipient, subject, body, is_html=False):
             
         config.read(email_config_path)
         
-        # Get SMTP configuration
-        smtp_server = config.get('SMTP', 'server', fallback='')
-        smtp_port = config.getint('SMTP', 'port', fallback=587)
-        smtp_user = config.get('SMTP', 'username', fallback='')
-        smtp_password = config.get('SMTP', 'password', fallback='')
-        sender_email = config.get('SENDER', 'email', fallback='noreply@monumetracker.com')
-        sender_name = config.get('SENDER', 'name', fallback='MonuMe Tracker')
-        use_tls = config.getboolean('SMTP', 'use_tls', fallback=True)
+        # Get SMTP configuration from the EMAIL section - updated to match existing config
+        smtp_server = config.get('EMAIL', 'smtp_server', fallback='')
+        smtp_port = config.getint('EMAIL', 'smtp_port', fallback=587)
+        smtp_user = config.get('EMAIL', 'sender_email', fallback='')
+        smtp_password = config.get('EMAIL', 'password', fallback='')
+        sender_email = config.get('EMAIL', 'sender_email', fallback='noreply@monumetracker.com')
+        sender_name = config.get('EMAIL', 'sender_name', fallback='MonuMe Tracker')
+        use_tls = config.getboolean('EMAIL', 'use_tls', fallback=True)
         
         if not smtp_server or not smtp_user or not smtp_password:
             logger.warning("SMTP configuration is incomplete")
