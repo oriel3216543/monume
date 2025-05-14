@@ -1,4 +1,4 @@
 Flask==2.3.3
 waitress==2.1.2
-xhtml2pdf==0.2.11
+pdfdocument==3.0.0
 
