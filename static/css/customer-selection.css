@@ -1,0 +1,58 @@
+/* Selected customer styling */
+.selected-customer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #FF9562;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.customer-details {
+    flex: 1;
+}
+
+.customer-details strong {
+    font-size: 16px;
+    display: block;
+    color: #333;
+}
+
+.customer-contact-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.customer-contact-info span {
+    color: #666;
+}
+
+.customer-gender {
+    font-size: 14px;
+    color: #888;
+    margin-top: 3px;
+}
+
+.customer-clear {
+    color: #FF9562;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.customer-clear:hover {
+    opacity: 1;
+}

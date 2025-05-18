@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Status Dashboard | MonuMe</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --main-color: #ff9562;
+            --gradient-start: #ff7f42;
+            --gradient-end: #ff9562;
+            --sidebar-bg: #272430;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-hover-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-light: #f8f9fa;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"><rect fill="%23ff9562" width="2000" height="1500"/><defs><radialGradient id="a" gradientUnits="objectBoundingBox"><stop offset="0" stop-color="%23ffffff"/><stop offset="1" stop-color="%23ff9562"/></radialGradient><linearGradient id="b" gradientUnits="userSpaceOnUse" x1="0" y1="750" x2="1550" y2="750"><stop offset="0" stop-color="%23ffcab1"/><stop offset="1" stop-color="%23ff9562"/></linearGradient></defs><path fill="url(%23a)" d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z"/><path d="M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6-24.1 96-57.4 189.4-99.3 278.6-41.9 89.2-92.4 174.1-150.3 253.3-58 79.2-123.4 152.6-195.1 219-71.7 66.4-149.6 125.8-232.2 177.2-82.7 51.4-170.1 94.7-260.7 129.1-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500v-400.7c96.1-2.1 191.8-13.3 285.4-33.6 93.6-20.2 185-49.5 272.5-87.2 87.6-37.7 171.3-83.8 249.6-137.3 78.4-53.5 151.5-114.5 217.9-181.7 66.5-67.2 126.4-140.7 178.6-218.9 52.3-78.3 96.9-161.4 133-247.9 36.1-86.5 63.8-176.2 82.6-267.6 18.8-91.4 28.6-184.4 29.6-277.4H1500c0.9 92.9 10.7 185.8 29.2 277.2z" fill="url(%23b)"/></svg>') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            color: var(--text-primary);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+            transition: margin-left 0.3s;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 20px 25px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .status-dashboard {
+            padding: 0;
+            max-width: 100%;
+            margin: 0;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 16px;
+            position: relative;
+            border-left: 5px solid #ccc;
+            transition: all 0.3s ease;
+        }
+        
+        .status-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .status-card.confirmed {
+            border-left-color: #28a745;
+        }
+        
+        .status-card.cancelled {
+            border-left-color: #dc3545;
+        }
+        
+        .status-card.rescheduled {
+            border-left-color: #0d6efd;
+        }
+        
+        .status-card.scheduled {
+            border-left-color: #ff9900;
+        }
+        
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: white;
+        }
+        
+        .status-badge.confirmed {
+            background-color: #28a745;
+        }
+        
+        .status-badge.cancelled {
+            background-color: #dc3545;
+        }
+        
+        .status-badge.rescheduled {
+            background-color: #0d6efd;
+        }
+        
+        .status-badge.scheduled {
+            background-color: #ff9900;
+        }
+        
+        .status-time {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .status-body {
+            margin-bottom: 12px;
+        }
+        
+        .status-customer {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .status-detail {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 5px;
+        }
+        
+        .status-detail i {
+            width: 24px;
+            color: #666;
+            margin-right: 8px;
+        }
+        
+        .status-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        
+        .status-actions button {
+            background: #ff9562;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-actions button i {
+            margin-right: 6px;
+        }
+        
+        .status-actions button:hover {
+            background: #ff8142;
+        }
+        
+        .status-actions button.secondary {
+            background: #6c757d;
+        }
+        
+        .status-actions button.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .status-filter {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .status-filter button {
+            background: #f1f1f1;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        
+        .status-filter button.active {
+            background: #ff9562;
+            color: white;
+        }
+        
+        .status-filter button i {
+            margin-right: 6px;
+        }
+        
+        .refresh-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        .refresh-btn i {
+            margin-right: 6px;
+        }
+        
+        .refresh-btn:hover {
+            color: #333;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .rotating {
+            animation: rotate 1s linear;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .no-changes {
+            padding: 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            color: #666;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        @media (max-width: 768px) {
+            .status-filter {
+                flex-wrap: wrap;
+            }
+            
+            .status-filter button {
+                margin-bottom: 10px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include sidebar -->
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Appointment Status Dashboard</h1>
+            <button class="refresh-btn" id="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        
+        <div class="status-dashboard">
+            <div class="status-filter">
+                <button class="active" data-filter="all">
+                    <i class="fas fa-list"></i> All
+                </button>
+                <button data-filter="confirmed">
+                    <i class="fas fa-check-circle"></i> Confirmed
+                </button>
+                <button data-filter="cancelled">
+                    <i class="fas fa-times-circle"></i> Cancelled
+                </button>
+                <button data-filter="rescheduled">
+                    <i class="fas fa-calendar-alt"></i> Rescheduled
+                </button>
+            </div>
+            
+            <div id="status-container">
+                <!-- Status updates will be loaded here dynamically -->
+                <div class="no-changes">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Loading appointment status changes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load sidebar
+        fetch('sidebar-template.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('sidebar-container').innerHTML = data;
+            });
+    </script>
+    <script src="status-dashboard.js"></script>
+</body>
+</html>

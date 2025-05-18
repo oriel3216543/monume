@@ -231,6 +231,146 @@ def send_test_email_handler():
         logger.error(f"Error sending test email: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/send_appointment_email', methods=["POST"])
+def send_appointment_email_handler():
+    """Handle requests to send appointment confirmation emails"""
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Validate required fields
+        email = data.get("email")
+        if not email:
+            return jsonify({"error": "Email address is required"}), 400
+            
+        subject = data.get("subject", "Appointment Confirmation")
+        appointment_data = data.get("appointmentData", {})
+        confirmation_link = data.get("confirmationLink", "")
+        
+        if not appointment_data:
+            return jsonify({"error": "Appointment data is required"}), 400
+            
+        if not confirmation_link:
+            return jsonify({"error": "Confirmation link is required"}), 400
+        
+        # Generate HTML content for the email
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    color: #333;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #fff;
+                    padding: 20px;
+                    border-radius: 10px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }}
+                .header {{
+                    background: linear-gradient(135deg, #ff9562, #ff7f42);
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                    border-radius: 8px 8px 0 0;
+                    margin: -20px -20px 20px;
+                }}
+                .logo {{
+                    font-size: 28px;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                }}
+                .appointment-details {{
+                    background-color: #f8f9fa;
+                    border-left: 4px solid #ff9562;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                }}
+                .confirm-button {{
+                    display: inline-block;
+                    background: linear-gradient(135deg, #ff9562, #ff7f42);
+                    color: white;
+                    padding: 12px 25px;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                }}
+                .footer {{
+                    margin-top: 30px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #777;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">MonuMe</div>
+                    <div>Appointment Confirmation</div>
+                </div>
+                
+                <p>Hello {appointment_data.get('customerName', 'there')},</p>
+                
+                <p>Thank you for scheduling an appointment with MonuMe. Please review and confirm your appointment details below:</p>
+                
+                <div class="appointment-details">
+                    <p><strong>Appointment:</strong> {appointment_data.get('title', 'Not specified')}</p>
+                    <p><strong>Date:</strong> {appointment_data.get('date', 'Not specified')}</p>
+                    <p><strong>Time:</strong> {appointment_data.get('time', 'Not specified')}</p>
+                    {f"<p><strong>With:</strong> {appointment_data.get('salesRepName')}</p>" if appointment_data.get('salesRepName') else ""}
+                </div>
+                
+                <p>To confirm your appointment, please click the button below:</p>
+                
+                <div style="text-align: center;">
+                    <a href="{confirmation_link}" class="confirm-button">Confirm Appointment</a>
+                </div>
+                
+                <p>Alternatively, you can copy and paste the following link into your browser:</p>
+                <p style="word-break: break-all;">{confirmation_link}</p>
+                
+                <p>If you need to reschedule or cancel your appointment, please contact us as soon as possible.</p>
+                
+                <p>We look forward to seeing you!</p>
+                
+                <p>Best Regards,<br>The MonuMe Team</p>
+                
+                <div class="footer">
+                    <p>This is an automated message from MonuMe. Please do not reply to this email.</p>
+                    <p>&copy; {datetime.now().strftime('%Y')} MonuMe. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Call the email sender module
+        logger.info(f"Sending appointment confirmation email to {email}")
+        result = email_sender.send_email(
+            recipient_email=email,
+            subject=subject,
+            html_content=html_content,
+            email_type="appointment"
+        )
+        
+        if result.get('success'):
+            return jsonify({"message": "Appointment confirmation email sent successfully!"}), 200
+        else:
+            return jsonify({"error": result.get('error', 'Failed to send appointment email')}), 500
+            
+    except Exception as e:
+        logger.error(f"Error sending appointment email: {e}")
+        return jsonify({"error": str(e)}), 500
+
 # Modified static file serving with proper MIME types and improved file not found handling
 @app.route('/<path:filename>')
 def serve_static(filename):
@@ -1172,6 +1312,21 @@ def init_db():
             )
         ''')
         
+        # Create appointment status changes table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS appointment_status_changes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                token TEXT NOT NULL,
+                appointment_id TEXT,
+                customer_name TEXT,
+                original_datetime TEXT,
+                new_datetime TEXT,
+                status TEXT CHECK(status IN ('scheduled', 'confirmed', 'cancelled', 'rescheduled')),
+                notes TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
         # Create forms table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS forms (
@@ -1202,6 +1357,8 @@ def init_db():
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_email_logs_timestamp ON email_logs(timestamp)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_forms_created_at ON forms(created_at)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_form_responses_form_id ON form_responses(form_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_appointment_status_token ON appointment_status_changes(token)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_appointment_status_timestamp ON appointment_status_changes(timestamp)')
         
         # Add default admin user if none exists
         admin_exists = cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'").fetchone()[0]
@@ -1408,36 +1565,287 @@ def update_email_setting_handler():
         logger.error(f"Error updating email setting: {e}")
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
+@app.route('/send_appointment_email', methods=['POST'])
+def send_appointment_email_handler():
     try:
-        # Initialize database
-        init_db()
-        
-        # Ensure email config exists
-        ensure_email_config_exists()
-        
-        # Configure app for production
-        if PRODUCTION:
-            app.config['SERVER_NAME'] = DOMAIN
-            app.config['PREFERRED_URL_SCHEME'] = 'https'
-            app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
-            app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript from reading cookies
-            app.config['PERMANENT_SESSION_LIFETIME'] = 1800  # Session timeout in seconds (30 min)
+        data = request.get_json()
+        to = data.get('to')
+        subject = data.get('subject')
+        body = data.get('body')
+        if not to or not subject or not body:
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        # Use existing send_email function
+        success, msg = send_email(to, subject, body, is_html=False)
+        if success:
+            return jsonify({'success': True, 'message': msg})
         else:
-            # Development settings
-            app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Disable caching
+            return jsonify({'success': False, 'error': msg}), 500
+    except Exception as e:
+        logger.error(f"Error in send_appointment_email_handler: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/appointment-status', methods=['GET', 'POST'])
+def appointment_status_handler():
+    """
+    Handle appointment status updates:
+    - GET: Get appointment information from token
+    - POST: Update appointment status (confirm/cancel/reschedule)
+    """
+    if request.method == 'GET':
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'success': False, 'error': 'Token is required'}), 400
         
-        # Common settings
-        app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit file size to 16MB
+        # In a real implementation, this would query a database
+        # For the demo, we'll redirect to the HTML page
+        return redirect(url_for('serve_html_page_from_static', page='appointment-status') + f'?token={token}')
+    
+    elif request.method == 'POST':
+        try:
+            data = request.get_json()
+            token = data.get('token')
+            status = data.get('status')
+            new_datetime = data.get('datetime')
+            
+            if not token or not status:
+                return jsonify({'success': False, 'error': 'Token and status are required'}), 400
+                
+            if status not in ['confirmed', 'cancelled', 'rescheduled', 'scheduled']:
+                return jsonify({'success': False, 'error': 'Invalid status value'}), 400
+            
+            # Store the status change in the database
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Add notes based on status
+            notes = ''
+            if status == 'confirmed':
+                notes = 'Customer confirmed appointment via status link'
+            elif status == 'cancelled':
+                notes = 'Customer cancelled appointment via status link'
+            elif status == 'rescheduled':
+                notes = f'Customer requested reschedule via status link to {new_datetime}'
+            
+            # Insert into database
+            cursor.execute('''
+                INSERT INTO appointment_status_changes 
+                (token, status, new_datetime, notes)
+                VALUES (?, ?, ?, ?)
+            ''', (token, status, new_datetime, notes))
+            
+            conn.commit()
+            
+            # Create status change notification data
+            status_data = {
+                'status': status,
+                'token': token,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # Add datetime information for rescheduling
+            if status == 'rescheduled' and new_datetime:
+                status_data['datetime'] = new_datetime
+            
+            # Send notification to staff about status change
+            # Note: The appointment_data would normally be fetched from database
+            # For now we'll use a minimal placeholder
+            appointment_data = {'token': token}
+            if new_datetime:
+                appointment_data['datetime'] = new_datetime
+            
+            # Try to send notification in background without blocking response
+            try:
+                send_staff_notification(appointment_data, status_data)
+            except Exception as notify_err:
+                # Log error but continue with the response
+                logger.error(f"Failed to send staff notification: {str(notify_err)}")
+            
+            return jsonify({
+                'success': True,
+                'message': f'Appointment status updated to {status}',
+                'status': status
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in appointment status handler: {str(e)}")
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+def send_staff_notification(appointment_data, status_change):
+    """Send notification to staff about appointment status changes."""
+    try:
+        # Get staff emails from database or config
+        # For now, we'll use a placeholder email
+        staff_email = "staff@monumevip.com"  # Replace with actual staff email or fetch from settings
         
-        # Start server - Use the Railway-compatible format
-        logger.info(f"Starting MonuMe Tracker server in {'PRODUCTION' if PRODUCTION else 'DEVELOPMENT'} mode...")
-        logger.info(f"Listening on {DOMAIN}:{PORT}")
+        # Format date and time if available
+        appointment_datetime = "Unknown time"
+        if 'datetime' in appointment_data:
+            appointment_datetime = appointment_data['datetime']
+        elif 'start' in appointment_data:
+            appointment_datetime = appointment_data['start']
         
-        # Standard waitress configuration for Railway
-        from waitress import serve
-        serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+        # Get customer name if available
+        customer_name = "Unknown customer"
+        if 'customerName' in appointment_data:
+            customer_name = appointment_data['customerName']
+        elif 'extendedProps' in appointment_data and 'customerName' in appointment_data['extendedProps']:
+            customer_name = appointment_data['extendedProps']['customerName']
+            
+        # Create email subject and body
+        subject = f"Appointment Status Change: {status_change['status'].upper()}"
+        
+        # Create HTML email content
+        html_content = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #ff9562; color: white; padding: 10px 20px; text-align: center;">
+                <h2 style="margin: 0;">Appointment Status Update</h2>
+            </div>
+            
+            <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
+                <p>An appointment status has been changed by the customer.</p>
+                
+                <div style="background: #f9f9f9; padding: 15px; margin: 15px 0; border-left: 5px solid #ff9562;">
+                    <p><strong>Customer:</strong> {customer_name}</p>
+                    <p><strong>Original Time:</strong> {appointment_datetime}</p>
+                    <p><strong>New Status:</strong> <span style="font-weight: bold; color: {get_status_color(status_change['status'])};">{status_change['status'].upper()}</span></p>
+                    
+                    {get_status_specific_message(status_change)}
+                </div>
+                
+                <p>Please check your appointment calendar for more details.</p>
+            </div>
+            
+            <div style="background: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #666;">
+                &copy; 2025 MonuMe Inc. All rights reserved.
+            </div>
+        </div>
+        """
+        
+        # Send email
+        success, message = send_email(staff_email, subject, html_content, is_html=True)
+        if success:
+            logger.info(f"Notification sent to staff about {status_change['status']} appointment")
+        else:
+            logger.error(f"Failed to send staff notification: {message}")
+            
+        return success
+    except Exception as e:
+        logger.error(f"Error sending staff notification: {str(e)}")
+        return False
+
+def get_status_color(status):
+    """Return color code for appointment status."""
+    status_colors = {
+        "confirmed": "#28a745",
+        "cancelled": "#dc3545",
+        "rescheduled": "#0d6efd",
+        "scheduled": "#ff9900"
+    }
+    return status_colors.get(status.lower(), "#6c757d")
+
+def get_status_specific_message(status_change):
+    """Return additional message based on status."""
+    status = status_change.get('status', '').lower()
+    
+    if status == 'rescheduled' and 'datetime' in status_change:
+        new_time = status_change['datetime']
+        return f"<p><strong>Requested New Time:</strong> {new_time}</p>"
+    elif status == 'cancelled':
+        return "<p>You may want to follow up with the customer to reschedule.</p>"
+    elif status == 'confirmed':
+        return "<p>The customer has confirmed they will attend this appointment.</p>"
+    
+    return ""
+
+@app.route('/api/appointment-status-changes', methods=['GET'])
+def get_appointment_status_changes():
+    """Get recent appointment status changes for staff dashboard."""
+    try:
+        # Authentication check
+        if 'user_id' not in session:
+            return jsonify({'success': False, 'error': 'Authentication required'}), 401
+        
+        # Get limit parameter from query string (default to 20)
+        limit = request.args.get('limit', 20, type=int)
+        
+        # Get status filter from query string (default to all)
+        status_filter = request.args.get('status', '')
+        
+        # Connect to database
+        conn = get_db_connection()
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Build query based on filters
+        query = '''
+            SELECT 
+                id, token, appointment_id, customer_name, original_datetime,
+                new_datetime, status, notes, timestamp
+            FROM appointment_status_changes
+        '''
+        
+        params = []
+        
+        # Add status filter if provided
+        if status_filter and status_filter.lower() in ['confirmed', 'cancelled', 'rescheduled', 'scheduled']:
+            query += ' WHERE status = ?'
+            params.append(status_filter.lower())
+        
+        # Add order by and limit
+        query += ' ORDER BY timestamp DESC LIMIT ?'
+        params.append(limit)
+        
+        # Execute query
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        
+        # Convert rows to list of dicts
+        status_changes = []
+        for row in rows:
+            status_changes.append(dict(row))
+        
+        # If no status changes found yet, return sample data for demonstration
+        if not status_changes:
+            # Create mock data showing different status changes
+            status_changes = [
+                {
+                    'id': '12345',
+                    'token': 'abc123def456',
+                    'appointment_id': 'appt_1234',
+                    'customer_name': 'John Smith',
+                    'original_datetime': '2023-11-10T14:30:00',
+                    'status': 'confirmed',
+                    'timestamp': (datetime.now() - timedelta(hours=2)).isoformat(),
+                    'notes': 'Customer confirmed via email link'
+                },
+                {
+                    'id': '12346',
+                    'token': 'ghi789jkl012',
+                    'appointment_id': 'appt_1235',
+                    'customer_name': 'Sarah Johnson',
+                    'original_datetime': '2023-11-12T10:00:00',
+                    'status': 'cancelled',
+                    'timestamp': (datetime.now() - timedelta(days=1)).isoformat(),
+                    'notes': 'Customer cancelled due to conflict'
+                },
+                {
+                    'id': '12347',
+                    'token': 'mno345pqr678',
+                    'appointment_id': 'appt_1236',
+                    'customer_name': 'Michael Wong',
+                    'original_datetime': '2023-11-11T16:15:00',
+                    'status': 'rescheduled',
+                    'timestamp': (datetime.now() - timedelta(hours=6)).isoformat(),
+                    'new_datetime': '2023-11-15T14:00:00',
+                    'notes': 'Customer requested new time'
+                }
+            ]
+        
+        return jsonify({
+            'success': True,
+            'statusChanges': status_changes
+        })
         
     except Exception as e:
-        logger.error(f"Failed to start server: {e}")
-        logger.error(traceback.format_exc())
+        logger.error(f"Error getting appointment status changes: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500

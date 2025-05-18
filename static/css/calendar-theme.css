@@ -1,0 +1,486 @@
+/* 
+ * MonuMe Calendar Theme
+ * Custom theme for FullCalendar that matches the purple stat card styles
+ */
+
+:root {
+    --calendar-purple-main: #8e44ad;
+    --calendar-purple-dark: #7d3c98;
+    --calendar-purple-light: #a569bd;
+    --calendar-purple-lighter: #c39bd3;
+    --calendar-purple-bg: rgba(142, 68, 173, 0.1);
+    --calendar-purple-hover: rgba(142, 68, 173, 0.15);
+    --calendar-border-radius: 12px;
+    --calendar-shadow: 0 10px 30px rgba(142, 68, 173, 0.15);
+    
+    /* Additional colors for gradients */
+    --calendar-purple-gradient: linear-gradient(135deg, #8e44ad, #9b59b6);
+    --calendar-button-gradient: linear-gradient(135deg, #a55eea, #8e44ad);
+}
+
+/* Calendar Container */
+.calendar-container {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--calendar-border-radius);
+    padding: 30px;
+    box-shadow: var(--calendar-shadow);
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    /* Remove overflow and fixed height if present */
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    /* Let it grow as needed */
+}
+
+.calendar-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--calendar-purple-main), var(--calendar-purple-light));
+    transition: width 0.3s ease;
+}
+
+.calendar-container:hover {
+    box-shadow: 0 15px 30px rgba(142, 68, 173, 0.2);
+    transform: translateY(-5px);
+}
+
+.calendar-container:hover::before {
+    width: 7px;
+}
+
+/* Full Calendar Overrides */
+.fc .fc-toolbar {
+    margin-bottom: 1.5em !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
+    background: rgba(142, 68, 173, 0.08) !important;
+    border-radius: 10px !important;
+    align-items: center !important;
+    border: 1px solid rgba(142, 68, 173, 0.15) !important;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.5em !important;
+    font-weight: 700 !important;
+    color: var(--calendar-purple-dark) !important;
+    letter-spacing: 0.5px !important;
+    text-transform: capitalize !important;
+}
+
+/* Button styling */
+.fc .fc-button-primary {
+    background-color: var(--calendar-purple-main) !important;
+    border-color: var(--calendar-purple-dark) !important;
+    box-shadow: 0 2px 5px rgba(142, 68, 173, 0.3) !important;
+    transition: all 0.2s ease !important;
+    text-transform: capitalize !important;
+    font-size: 0.85em !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    padding: 8px 15px !important;
+    margin: 0 5px !important; /* Add horizontal spacing between buttons */
+    border-radius: 8px !important;
+    border: none !important;
+}
+
+.fc .fc-button-primary:hover {
+    background-color: var(--calendar-purple-dark) !important;
+    background-image: var(--calendar-button-gradient) !important;
+    box-shadow: 0 4px 8px rgba(142, 68, 173, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: #6c3483 !important; /* Even darker purple */
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(0) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Active button indicator */
+.fc .fc-button-primary:not(:disabled).fc-button-active::after {
+    content: "" !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    width: 30px !important;
+    height: 3px !important;
+    background-color: white !important;
+    border-radius: 3px !important;
+    transform: translateX(-50%) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Shimmer effect for buttons */
+.shimmer-effect {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.shimmer-effect::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.2) 50%, 
+        rgba(255,255,255,0) 100%) !important;
+    animation: shimmer 1.5s infinite !important;
+}
+
+@keyframes shimmer {
+    to {
+        left: 100% !important;
+    }
+}
+
+/* Today button */
+.fc .fc-button-primary.fc-today-button {
+    background-color: #a55eea !important;
+    box-shadow: 0 2px 6px rgba(165, 94, 234, 0.4) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    font-weight: 700 !important;
+}
+
+.fc .fc-button-primary.fc-today-button::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.2) 50%, 
+        rgba(255,255,255,0) 100%) !important;
+    transition: all 0.8s ease !important;
+}
+
+.fc .fc-button-primary.fc-today-button:hover {
+    background-color: #9152d0 !important;
+}
+
+.fc .fc-button-primary.fc-today-button:hover::before {
+    left: 100% !important;
+}
+
+/* Button group spacing */
+.fc .fc-button-group {
+    display: flex !important;
+    gap: 8px !important; /* Space between buttons in a group */
+    background-color: rgba(142, 68, 173, 0.05) !important;
+    border-radius: 10px !important;
+    padding: 3px !important;
+    border: 1px solid rgba(142, 68, 173, 0.1) !important;
+}
+
+.fc-header-toolbar {
+    padding: 0 8px !important;
+}
+
+.fc-toolbar-chunk {
+    margin: 0 8px !important; /* Space between button groups */
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Header styling */
+.fc .fc-col-header-cell {
+    background-color: var(--calendar-purple-bg) !important;
+    padding: 10px 0 !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+    color: var(--calendar-purple-dark) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    padding: 8px !important;
+}
+
+/* Day grid styling */
+.fc .fc-daygrid-day.fc-day {
+    transition: background-color 0.2s ease !important;
+    background-color: rgba(255, 255, 255, 0.8) !important; /* Consistent background for all date cells */
+}
+
+.fc .fc-daygrid-day.fc-day:hover {
+    background-color: var(--calendar-purple-hover) !important;
+}
+
+.fc .fc-daygrid-day-number {
+    color: #333333 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    padding: 8px !important;
+}
+
+/* Current day styling - keeping purple highlight but more subtle */
+.fc .fc-day-today {
+    background-color: rgba(142, 68, 173, 0.1) !important;
+    position: relative !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+    color: var(--calendar-purple-main) !important;
+    font-weight: 700 !important;
+}
+
+/* Event styling */
+.fc-event {
+    border-radius: 4px !important;
+    border-left: 4px solid !important;
+    padding: 4px !important;
+    font-size: 0.9em !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.fc-event:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    z-index: 10 !important;
+}
+
+/* List view styling */
+.fc-list-day {
+    background-color: rgba(142, 68, 173, 0.08) !important;
+}
+
+.fc-list-day-cushion {
+    background-color: rgba(142, 68, 173, 0.15) !important;
+}
+
+.fc-list-event:hover td {
+    background-color: rgba(142, 68, 173, 0.1) !important;
+}
+
+.fc-list-event-dot {
+    border-color: var(--calendar-purple-main) !important;
+}
+
+.fc-list-day-text,
+.fc-list-day-side-text {
+    color: var(--calendar-purple-dark) !important;
+    font-weight: 600 !important;
+}
+
+/* Week number styling - completely hidden */
+.fc-week-number,
+.fc-col-header-cell.fc-day-today.fc-week-number,
+.fc-col-header-cell.fc-week-number,
+.fc-daygrid-body-week-number,
+.fc-daygrid-week-number,
+.fc-week-number {
+    display: none !important;
+}
+
+/* Business hours styling */
+.fc-non-business {
+    background-color: rgba(142, 68, 173, 0.05) !important;
+}
+
+/* Events type styling */
+.event-appointment {
+    background-color: var(--gradient-start) !important;
+    border-color: var(--gradient-end) !important;
+}
+
+.event-event {
+    background-color: var(--calendar-purple-main) !important;
+    border-color: var(--calendar-purple-dark) !important;
+    box-shadow: 0 2px 5px rgba(142, 68, 173, 0.2) !important;
+}
+
+.event-event:hover {
+    box-shadow: 0 4px 10px rgba(142, 68, 173, 0.3) !important;
+}
+
+.event-event .fc-event-title,
+.event-event .fc-event-time {
+    font-weight: 600 !important;
+    color: white !important;
+}
+
+/* Time grid styling */
+.fc .fc-timegrid-slot {
+    height: 3em !important;
+}
+
+.fc .fc-timegrid-slot-minor {
+    border-top-style: dotted !important;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+    border-color: var(--calendar-purple-main) !important;
+    border-width: 2px !important;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+    border-color: var(--calendar-purple-main) !important;
+    border-width: 5px !important;
+}
+
+/* Week and day view */
+.fc-timegrid-event {
+    padding: 4px 8px !important;
+}
+
+.fc-timegrid-event .fc-event-title {
+    font-weight: 600 !important;
+}
+
+/* More events popup */
+.fc-more-popover {
+    border: none !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 8px !important;
+}
+
+.fc-more-popover .fc-popover-header {
+    background-color: var(--calendar-purple-main) !important;
+    color: white !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+    padding: 10px !important;
+}
+
+/* Medium screen adjustments */
+@media (max-width: 992px) and (min-width: 769px) {
+    .fc .fc-toolbar {
+        padding: 10px !important;
+    }
+    
+    .fc .fc-toolbar-chunk {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        margin: 0 4px !important;
+    }
+    
+    .fc .fc-button-primary {
+        padding: 6px 12px !important;
+        margin: 0 2px !important;
+        font-size: 0.8em !important;
+    }
+    
+    .fc .fc-button-group {
+        gap: 4px !important;
+        padding: 2px !important;
+    }
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+    .fc .fc-toolbar {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 12px 8px !important;
+    }
+    
+    .fc .fc-toolbar-title {
+        margin-bottom: 0.5em !important;
+        text-align: center !important;
+        font-size: 1.3em !important;
+    }
+    
+    .fc .fc-toolbar-chunk {
+        margin-bottom: 0.5em !important;
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        flex-wrap: wrap !important;
+    }
+    
+    /* Increase button spacing on mobile */
+    .fc .fc-button-primary {
+        margin: 0 4px !important;
+        padding: 8px 10px !important; /* Larger tap targets for mobile */
+        font-size: 0.8em !important;
+    }
+    
+    .fc .fc-button-group {
+        gap: 6px !important;
+        width: auto !important;
+        margin: 4px auto !important;
+    }
+    
+    /* Stack view buttons on very small screens */
+    @media (max-width: 480px) {
+        .fc .fc-toolbar-chunk:last-child .fc-button-group {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            width: 100% !important;
+            gap: 5px !important;
+        }
+        
+        .fc .fc-button-primary {
+            width: 100% !important;
+            margin: 2px 0 !important;
+            padding: 10px 8px !important;
+        }
+    }
+}
+
+/* Hide week number columns completely */
+.fc-day-number.fc-week-number,
+.fc .fc-daygrid-week-number,
+.fc-week-number {
+    display: none !important;
+}
+
+/* Hide list view button */
+.fc-listMonth-button {
+    display: none !important;
+}
+
+/* Make the calendar container and calendar itself expand freely
+ * Remove any fixed height/overflow/box constraints
+ */
+#calendar {
+    height: auto !important;
+    min-height: 600px;
+    max-height: none !important;
+    width: 100% !important;
+    /* Let FullCalendar grow as needed */
+}
+
+/* Make sure FullCalendar's scroll is not forced */
+.fc-scroller {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* Ensure all days are always visible, even with many events */
+.fc-daygrid-day-frame {
+    min-height: 80px !important;
+    height: auto !important;
+}
+
+/* Allow the calendar to expand vertically for many appointments */
+.fc-daygrid-body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}

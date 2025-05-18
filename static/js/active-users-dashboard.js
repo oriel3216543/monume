@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (startSessionBtn) {
         startSessionBtn.addEventListener('click', function() {
-            console.log("Start button clicked - letting dashboard.html handle the modal");
+            // Open the user selection modal
+            openUserSelectionModal();
         });
     }
     
@@ -24,18 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize users database
     initializeUsersDatabase();
     
-    // Debug log for view active users button
+    // Set up event listener for view active users button
     if (viewActiveUsersBtn) {
         viewActiveUsersBtn.addEventListener('click', function() {
-            console.log('View Active Users button clicked');
-            const modal = document.getElementById('active-users-modal');
-            if (modal) {
-                console.log('Active Users Modal found');
-                modal.style.display = 'flex';
-                console.log('Active Users Modal display set to flex');
-            } else {
-                console.error('Active Users Modal not found in the DOM.');
-            }
+            // Open the active users modal
+            openActiveUsersModal();
         });
     } else {
         console.error('view-active-users-btn not found in the DOM.');
@@ -948,4 +942,82 @@ function openForceOutModal(username) {
     }, 100);
     // Store the username to be forced out for confirmation
     modal.setAttribute('data-forceout-username', username);
+}
+
+// Add this function to support the Start Session modal on dashboard.html
+function openUserSelectionModal() {
+    const modal = document.getElementById('user-selection-modal');
+    const userList = document.getElementById('user-list');
+    if (!modal || !userList) return;
+    // Clear previous list
+    userList.innerHTML = '';
+    // Get all users and active users
+    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+    const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+    const activeUsernames = activeUsers.map(user => user.username);
+    // Create user items, excluding already active users
+    users.forEach(user => {
+        if (!activeUsernames.includes(user.username)) {
+            const userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            userItem.setAttribute('data-username', user.username);
+            userItem.textContent = user.name || user.username;
+            userItem.addEventListener('click', function() {
+                selectUser(user.username);
+            });
+            userList.appendChild(userItem);
+        }
+    });
+    // Show the modal
+    modal.style.display = 'flex';
+}
+
+function selectUser(username) {
+    document.getElementById('selected-username').textContent = username;
+    document.getElementById('user-password').value = '';
+    // Close selection modal and open password modal
+    document.getElementById('user-selection-modal').style.display = 'none';
+    document.getElementById('password-modal').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('user-password').focus();
+    }, 100);
+}
+
+function closeUserSelectionModal() {
+    document.getElementById('user-selection-modal').style.display = 'none';
+}
+
+function closePasswordModal() {
+    document.getElementById('password-modal').style.display = 'none';
+}
+
+function verifyPasswordAndStart() {
+    const username = document.getElementById('selected-username').textContent;
+    const password = document.getElementById('user-password').value;
+    const users = JSON.parse(localStorage.getItem('monumeUsers')) || [];
+    const user = users.find(u => u.username === username);
+    if (user && user.password === password) {
+        // Add user to active users
+        const activeUsers = JSON.parse(localStorage.getItem('activeUsers')) || [];
+        activeUsers.push({ username: user.username, role: user.role, startTime: new Date().toISOString() });
+        localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
+        updateActiveUsersCount();
+        closePasswordModal();
+        // Optionally redirect or show a success message
+    } else {
+        alert('Invalid password. Please try again.');
+        document.getElementById('user-password').value = '';
+        document.getElementById('user-password').focus();
+    }
+}
+
+// Attach modal button event listeners
+if (document.getElementById('cancel-selection')) {
+    document.getElementById('cancel-selection').onclick = closeUserSelectionModal;
+}
+if (document.getElementById('cancel-password')) {
+    document.getElementById('cancel-password').onclick = closePasswordModal;
+}
+if (document.getElementById('verify-password')) {
+    document.getElementById('verify-password').onclick = verifyPasswordAndStart;
 }

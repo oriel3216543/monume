@@ -1251,102 +1251,40 @@ document.addEventListener('DOMContentLoaded', function() {
         // Insert customer info
         const addCustomerBtn = document.getElementById('add-customer-for-appointment');
         addCustomerBtn.insertAdjacentElement('afterend', customerNameElement);
-        
-        document.getElementById('appointment-sales-rep').value = appointment.extendedProps.salesRepId;
+          document.getElementById('appointment-sales-rep').value = appointment.extendedProps.salesRepId;
         document.getElementById('appointment-notes').value = appointment.extendedProps.notes || '';
     }
     
-    // Add Customer Modal
-    document.getElementById('add-customer-for-appointment').addEventListener('click', function() {
-        // Show the add customer modal
-        document.getElementById('add-customer-modal').style.display = 'block';
-    });
-    
-    document.getElementById('close-customer-modal').addEventListener('click', function() {
-        document.getElementById('add-customer-modal').style.display = 'none';
-    });
-    
-    document.getElementById('cancel-add-customer').addEventListener('click', function() {
-        document.getElementById('add-customer-modal').style.display = 'none';
-    });
-    
-    document.getElementById('save-new-customer').addEventListener('click', function() {
-        const firstName = document.getElementById('new-customer-first-name').value;
-        const lastName = document.getElementById('new-customer-last-name').value;
-        const phone = document.getElementById('new-customer-phone').value;
-        const email = document.getElementById('new-customer-email').value;
-        const notes = document.getElementById('new-customer-notes').value;
-        
-        if(!firstName || !lastName || !phone) {
-            alert('Please fill in all required fields');
-            return;
-        }
-        
-        // Create and save the new customer
-        const customer = {
-            id: Date.now().toString(), // Generate unique ID
-            firstName: firstName,
-            lastName: lastName,
-            phone: phone,
-            email: email,
-            notes: notes
-        };
-        
-        // Save the customer
-        let customers = getCustomers();
-        customers.push(customer);
-        localStorage.setItem('customers', JSON.stringify(customers));
-        
-        // Reset the form
-        document.getElementById('add-customer-form').reset();
-        
-        // Hide the modal
-        document.getElementById('add-customer-modal').style.display = 'none';
-        
-        // Update customer info in the appointment modal
-        const customerNameElement = document.createElement('div');
-        customerNameElement.classList.add('customer-selection-result');
-        customerNameElement.innerHTML = `
-            <div style="background: rgba(255, 149, 98, 0.1); padding: 10px; border-radius: 10px; margin-top: 10px;">
-                <strong>${firstName} ${lastName}</strong><br>
-                <small>${phone}</small>
-                <input type="hidden" id="selected-customer-id" value="${customer.id}">
-            </div>
-        `;
-        
-        // Remove any existing customer selection
-        const existingSelection = document.querySelector('.customer-selection-result');
-        if (existingSelection) {
-            existingSelection.remove();
-        }
-        
-        // Insert after the add customer button
-        const addCustomerBtn = document.getElementById('add-customer-for-appointment');
-        addCustomerBtn.insertAdjacentElement('afterend', customerNameElement);
-        
-        // Show success message
-        alert('Customer added successfully!');
-        
-        // Update stats
-        updateStatsCounters();
-    });
-    
-    // Fix modal scrolling when opened
-    const modals = document.querySelectorAll('.modal');
+    // REMOVED: All customer modal event listeners from script.js
+    // These are now handled properly in events.js
+    console.log('All customer modal event listeners in script.js are disabled to prevent duplicates');
+    // DO NOT add event listeners for:
+    // - add-customer-for-appointment
+    // - close-customer-modal
+    // - cancel-add-customer
+    // - save-new-customer
+      // Fix modal scrolling when opened - but exclude customer modals which are handled in events.js
+    const modals = document.querySelectorAll('.modal:not(#add-customer-modal)');
     modals.forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
+        if (modal.id !== 'add-customer-modal') {  // Double-check to avoid conflicts
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
     });
     
     // Stop propagation for modal content to prevent closing when clicking inside
+    // Exclude the customer modal content which is handled in events.js
     const modalContents = document.querySelectorAll('.modal-content');
     modalContents.forEach(content => {
-        content.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
+        // Check if this content is not inside the customer modal
+        if (!content.closest('#add-customer-modal')) {
+            content.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
     });
     
     // Initialize the page
