@@ -1,0 +1,14 @@
+# This file is auto-generated from requirements.txt for pip-compile
+# Add your top-level dependencies here, one per line
+Flask==2.3.3
+werkzeug==2.3.7
+waitress==2.1.2
+SQLAlchemy==2.0.20
+python-dotenv==1.0.0
+flask-cors==4.0.0
+Jinja2==3.1.2
+requests==2.31.0
+pyopenssl==23.2.0
+gunicorn==21.2.0
+pdfkit==1.0.0
+cryptography==41.0.3

@@ -1,0 +1,2 @@
+# Allow monume user to start/stop nginx without password
+monume ALL=(root) NOPASSWD: /usr/sbin/nginx, /usr/sbin/nginx -s stop, /usr/sbin/nginx -s reload, /bin/cat /var/log/nginx/error.log

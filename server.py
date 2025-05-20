@@ -1565,8 +1565,8 @@ def update_email_setting_handler():
         logger.error(f"Error updating email setting: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/send_appointment_email', methods=['POST'])
-def send_appointment_email_handler():
+@app.route('/send_simple_email', methods=['POST'])
+def send_simple_email_handler():
     try:
         data = request.get_json()
         to = data.get('to')
@@ -1581,7 +1581,7 @@ def send_appointment_email_handler():
         else:
             return jsonify({'success': False, 'error': msg}), 500
     except Exception as e:
-        logger.error(f"Error in send_appointment_email_handler: {e}")
+        logger.error(f"Error in send_simple_email_handler: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/appointment-status', methods=['GET', 'POST'])

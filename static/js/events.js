@@ -1537,7 +1537,7 @@ function saveAppointment() {
             .replace('{date}', startDateTime.toLocaleString())
             .replace('{statusLink}', statusLink);
         // Call backend to send email (pseudo, see email_sender.py)
-        fetch('/send_appointment_email', {
+        fetch('/send_simple_email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1977,7 +1977,7 @@ function saveAppointment() {
                 .replace('{date}', startDateTime.toLocaleString())
                 .replace('{statusLink}', statusLink);
             // Call backend to send email (pseudo, see email_sender.py)
-            fetch('/send_appointment_email', {
+            fetch('/send_simple_email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2417,7 +2417,7 @@ function saveAppointment() {
                 .replace('{date}', startDateTime.toLocaleString())
                 .replace('{statusLink}', statusLink);
             // Call backend to send email (pseudo, see email_sender.py)
-            fetch('/send_appointment_email', {
+            fetch('/send_simple_email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2857,7 +2857,7 @@ function saveAppointment() {
                 .replace('{date}', startDateTime.toLocaleString())
                 .replace('{statusLink}', statusLink);
             // Call backend to send email (pseudo, see email_sender.py)
-            fetch('/send_appointment_email', {
+            fetch('/send_simple_email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3297,7 +3297,7 @@ function saveAppointment() {
                 .replace('{date}', startDateTime.toLocaleString())
                 .replace('{statusLink}', statusLink);
             // Call backend to send email (pseudo, see email_sender.py)
-            fetch('/send_appointment_email', {
+            fetch('/send_simple_email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

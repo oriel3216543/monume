@@ -60,9 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
         Object.keys(testData).forEach(key => {
             template = template.replace(new RegExp(`{${key}}`, 'g'), testData[key]);
         });
-        
-        // Send test email
-        fetch('/send_appointment_email', {
+          // Send test email
+        fetch('/send_simple_email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

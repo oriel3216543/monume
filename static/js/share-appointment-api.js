@@ -29,8 +29,7 @@ async function sendAppointmentEmail(email, appointment, appointmentLink) {
             },
             confirmationLink: appointmentLink
         };
-        
-        // Send the request to the API
+          // Send the request to the API
         const response = await fetch('/send_appointment_email', {
             method: 'POST',
             headers: {
