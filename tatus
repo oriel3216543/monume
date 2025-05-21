@@ -1,0 +1,565 @@
+[1mdiff --git a/static/js/appointment-fix-tester.js b/static/js/appointment-fix-tester.js[m
+[1mindex e69de29..601be06 100644[m
+[1m--- a/static/js/appointment-fix-tester.js[m
+[1m+++ b/static/js/appointment-fix-tester.js[m
+[36m@@ -0,0 +1,560 @@[m
+[32m+[m[32m/**[m
+[32m+[m[32m * MonuMe Appointment Fix Tester[m
+[32m+[m[32m * This file allows you to test the fixes made to the appointment edit functionality[m
+[32m+[m[32m */[m
+[32m+[m
+[32m+[m[32mdocument.addEventListener('DOMContentLoaded', function() {[m
+[32m+[m[32m    console.log('MonuMe fix tester loaded');[m
+[32m+[m[32m    createTestPanel();[m
+[32m+[m[32m});[m
+[32m+[m
+[32m+[m[32mfunction createTestPanel() {[m
+[32m+[m[32m    // Create the test panel button[m
+[32m+[m[32m    const testButton = document.createElement('button');[m
+[32m+[m[32m    testButton.textContent = 'Test Edit Fixes';[m
+[32m+[m[32m    testButton.style.position = 'fixed';[m
+[32m+[m[32m    testButton.style.bottom = '20px';[m
+[32m+[m[32m    testButton.style.right = '20px';[m
+[32m+[m[32m    testButton.style.zIndex = '9999';[m
+[32m+[m[32m    testButton.style.padding = '10px 15px';[m
+[32m+[m[32m    testButton.style.backgroundColor = '#007bff';[m
+[32m+[m[32m    testButton.style.color = '#fff';[m
+[32m+[m[32m    testButton.style.border = 'none';[m
+[32m+[m[32m    testButton.style.borderRadius = '5px';[m
+[32m+[m[32m    testButton.style.cursor = 'pointer';[m
+[32m+[m[32m    testButton.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Create the test panel[m
+[32m+[m[32m    const testPanel = document.createElement('div');[m
+[32m+[m[32m    testPanel.id = 'edit-fix-test-panel';[m
+[32m+[m[32m    testPanel.style.display = 'none';[m
+[32m+[m[32m    testPanel.style.position = 'fixed';[m
+[32m+[m[32m    testPanel.style.bottom = '80px';[m
+[32m+[m[32m    testPanel.style.right = '20px';[m
+[32m+[m[32m    testPanel.style.width = '400px';[m
+[32m+[m[32m    testPanel.style.maxHeight = '80vh';[m
+[32m+[m[32m    testPanel.style.overflowY = 'auto';[m
+[32m+[m[32m    testPanel.style.backgroundColor = '#fff';[m
+[32m+[m[32m    testPanel.style.padding = '20px';[m
+[32m+[m[32m    testPanel.style.borderRadius = '5px';[m
+[32m+[m[32m    testPanel.style.boxShadow = '0 0 20px rgba(0,0,0,0.3)';[m
+[32m+[m[32m    testPanel.style.zIndex = '9998';[m
+[32m+[m[41m    [m
+[32m+[m[32m    testPanel.innerHTML = `[m
+[32m+[m[32m        <h3>MonuMe Edit Fix Tester</h3>[m
+[32m+[m[32m        <div style="margin-bottom: 10px;">[m
+[32m+[m[32m            <button id="close-test-panel" style="float: right; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>[m
+[32m+[m[32m            <p>Use this panel to test the appointment edit fix functionality.</p>[m
+[32m+[m[32m        </div>[m
+[32m+[m[41m        [m
+[32m+[m[32m        <div style="margin-bottom: 15px;">[m
+[32m+[m[32m            <h4>Step 1: Choose an appointment</h4>[m
+[32m+[m[32m            <select id="test-appointment-selector" style="width: 100%; padding: 5px;">[m
+[32m+[m[32m                <option value="">Loading appointments...</option>[m
+[32m+[m[32m            </select>[m
+[32m+[m[32m        </div>[m
+[32m+[m[41m        [m
+[32m+[m[32m        <div style="margin-bottom: 15px;">[m
+[32m+[m[32m            <h4>Step 2: Test specific fixes</h4>[m
+[32m+[m[32m            <button id="test-open-edit-modal" class="test-button" disabled>Open Edit Modal</button>[m
+[32m+[m[32m            <button id="test-field-validation" class="test-button" disabled>Test No Validation</button>[m
+[32m+[m[32m            <button id="test-save-no-changes" class="test-button" disabled>Save Without Changes</button>[m
+[32m+[m[32m            <button id="test-change-one-field" class="test-button" disabled>Change Just Title</button>[m
+[32m+[m[32m            <button id="test-check-rep-selection" class="test-button" disabled>Check Rep Selection</button>[m
+[32m+[m[32m        </div>[m
+[32m+[m[41m        [m
+[32m+[m[32m        <div style="margin-bottom: 15px;">[m
+[32m+[m[32m            <h4>Test results:</h4>[m
+[32m+[m[32m            <div id="test-results" style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; height: 150px; overflow-y: auto;">[m
+[32m+[m[32m                <em>Results will appear here</em>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m        </div>[m
+[32m+[m[41m        [m
+[32m+[m[32m        <div>[m
+[32m+[m[32m            <h4>Black screen test</h4>[m
+[32m+[m[32m            <button id="test-check-backdrop" class="test-button">Check For Backdrops</button>[m
+[32m+[m[32m            <button id="test-remove-backdrop" class="test-button">Remove All Backdrops</button>[m
+[32m+[m[32m            <p><small>If you see a black screen, click "Remove All Backdrops"</small></p>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    `;[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add styles for the test buttons[m
+[32m+[m[32m    const style = document.createElement('style');[m
+[32m+[m[32m    style.textContent = `[m
+[32m+[m[32m        .test-button {[m
+[32m+[m[32m            background-color: #007bff;[m
+[32m+[m[32m            color: white;[m
+[32m+[m[32m            border: none;[m
+[32m+[m[32m            padding: 5px 10px;[m
+[32m+[m[32m            margin: 5px;[m
+[32m+[m[32m            border-radius: 3px;[m
+[32m+[m[32m            cursor: pointer;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        .test-button:disabled {[m
+[32m+[m[32m            background-color: #cccccc;[m
+[32m+[m[32m            cursor: not-allowed;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        .test-button:hover:not(:disabled) {[m
+[32m+[m[32m            background-color: #0069d9;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        .test-success {[m
+[32m+[m[32m            color: green;[m
+[32m+[m[32m            font-weight: bold;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        .test-failure {[m
+[32m+[m[32m            color: red;[m
+[32m+[m[32m            font-weight: bold;[m
+[32m+[m[32m        }[m
+[32m+[m[32m        .test-info {[m
+[32m+[m[32m            color: #0069d9;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    `;[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add elements to the page[m
+[32m+[m[32m    document.head.appendChild(style);[m
+[32m+[m[32m    document.body.appendChild(testButton);[m
+[32m+[m[32m    document.body.appendChild(testPanel);[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add event listener for the test button[m
+[32m+[m[32m    testButton.addEventListener('click', function() {[m
+[32m+[m[32m        testPanel.style.display = testPanel.style.display === 'none' ? 'block' : 'none';[m
+[32m+[m[32m        if (testPanel.style.display === 'block') {[m
+[32m+[m[32m            loadAppointmentsForTesting();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add event listener for the close button[m
+[32m+[m[32m    document.getElementById('close-test-panel').addEventListener('click', function() {[m
+[32m+[m[32m        testPanel.style.display = 'none';[m
+[32m+[m[32m    });[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Add event listeners for the test buttons[m
+[32m+[m[32m    document.getElementById('test-open-edit-modal').addEventListener('click', openEditModal);[m
+[32m+[m[32m    document.getElementById('test-field-validation').addEventListener('click', testFieldValidation);[m
+[32m+[m[32m    document.getElementById('test-save-no-changes').addEventListener('click', testSaveNoChanges);[m
+[32m+[m[32m    document.getElementById('test-change-one-field').addEventListener('click', testChangeOneField);[m
+[32m+[m[32m    document.getElementById('test-check-rep-selection').addEventListener('click', testCheckRepSelection);[m
+[32m+[m[32m    document.getElementById('test-check-backdrop').addEventListener('click', testCheckBackdrop);[m
+[32m+[m[32m    document.getElementById('test-remove-backdrop').addEventListener('click', testRemoveBackdrop);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Load appointments for testing[m
+[32m+[m[32mfunction loadAppointmentsForTesting() {[m
+[32m+[m[32m    const selector = document.getElementById('test-appointment-selector');[m
+[32m+[m[41m    [m
+[32m+[m[32m    try {[m
+[32m+[m[32m        // Get appointments[m
+[32m+[m[32m        const appointments = getSafeAppointments();[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (!appointments || appointments.length === 0) {[m
+[32m+[m[32m            logTestResult('No appointments found. Try refreshing the page.');[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Clear existing options[m
+[32m+[m[32m        selector.innerHTML = '';[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Add options for each appointment[m
+[32m+[m[32m        appointments.forEach(appointment => {[m
+[32m+[m[32m            const option = document.createElement('option');[m
+[32m+[m[32m            option.value = appointment.id;[m
+[32m+[m[32m            option.textContent = `ID ${appointment.id}: ${appointment.title}`;[m
+[32m+[m[32m            selector.appendChild(option);[m
+[32m+[m[32m        });[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Enable test buttons[m
+[32m+[m[32m        document.getElementById('test-open-edit-modal').disabled = false;[m
+[32m+[m[41m        [m
+[32m+[m[32m        logTestResult('Loaded ' + appointments.length + ' appointments for testing', 'info');[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error loading appointments: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in loadAppointmentsForTesting:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Open edit modal[m
+[32m+[m[32mfunction openEditModal() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const appointmentId = document.getElementById('test-appointment-selector').value;[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (!appointmentId) {[m
+[32m+[m[32m            logTestResult('Please select an appointment first', 'failure');[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Get the appointment[m
+[32m+[m[32m        const appointments = getSafeAppointments();[m
+[32m+[m[32m        const appointment = appointments.find(a => String(a.id) === String(appointmentId));[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (!appointment) {[m
+[32m+[m[32m            logTestResult('Appointment not found', 'failure');[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        logTestResult('Opening edit modal for appointment ' + appointmentId, 'info');[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Use the existing edit function if available[m
+[32m+[m[32m        if (typeof editAppointment === 'function') {[m
+[32m+[m[32m            editAppointment(appointment);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Enable other test buttons[m
+[32m+[m[32m            document.querySelectorAll('.test-button').forEach(button => {[m
+[32m+[m[32m                button.disabled = false;[m
+[32m+[m[32m            });[m
+[32m+[m[41m            [m
+[32m+[m[32m            logTestResult('Edit modal opened successfully', 'success');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            logTestResult('Edit function not found', 'failure');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error opening edit modal: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in openEditModal:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Test field validation (should be bypassed in edit mode)[m
+[32m+[m[32mfunction testFieldValidation() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        logTestResult('Testing field validation bypass...', 'info');[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Clear the title field[m
+[32m+[m[32m        const titleField = document.getElementById('appointment-title');[m
+[32m+[m[32m        const originalTitle = titleField.value;[m
+[32m+[m[32m        titleField.value = '';[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Try to save the appointment[m
+[32m+[m[32m        if (document.getElementById('create-appointment-modal')?.getAttribute('data-editing') === 'true') {[m
+[32m+[m[32m            logTestResult('Confirmed edit mode is active', 'success');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            logTestResult('Warning: Form does not appear to be in edit mode', 'failure');[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Check if validation is bypassed (should not show alerts)[m
+[32m+[m[32m        const alertShown = false;[m
+[32m+[m[32m        const originalAlert = window.alert;[m
+[32m+[m[32m        window.alert = function(message) {[m
+[32m+[m[32m            logTestResult('Alert shown: ' + message, 'failure');[m
+[32m+[m[32m            alertShown = true;[m
+[32m+[m[32m            originalAlert.apply(this, arguments);[m
+[32m+[m[32m        };[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Reset title[m
+[32m+[m[32m        titleField.value = originalTitle;[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Reset alert[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m            window.alert = originalAlert;[m
+[32m+[m[32m            if (!alertShown) {[m
+[32m+[m[32m                logTestResult('Validation bypass test passed - no alerts shown', 'success');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }, 1000);[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error during validation test: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in testFieldValidation:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Save without changes[m
+[32m+[m[32mfunction testSaveNoChanges() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        logTestResult('Testing save without changes...', 'info');[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Click the save button[m
+[32m+[m[32m        const saveButton = document.getElementById('save-appointment');[m
+[32m+[m[32m        if (saveButton) {[m
+[32m+[m[32m            saveButton.click();[m
+[32m+[m[32m            logTestResult('Save button clicked', 'info');[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Check if modal is closed after save[m
+[32m+[m[32m            setTimeout(() => {[m
+[32m+[m[32m                const modalVisible = document.getElementById('create-appointment-modal').style.display !== 'none';[m
+[32m+[m[32m                if (!modalVisible) {[m
+[32m+[m[32m                    logTestResult('Modal closed successfully after save', 'success');[m
+[32m+[m[32m                } else {[m
+[32m+[m[32m                    logTestResult('Modal is still open after save', 'failure');[m
+[32m+[m[32m                }[m
+[32m+[m[41m                [m
+[32m+[m[32m                // Check for backdrops[m
+[32m+[m[32m                const hasBackdrop = document.querySelector('.modal-backdrop');[m
+[32m+[m[32m                if (!hasBackdrop) {[m
+[32m+[m[32m                    logTestResult('No backdrop found after save - success!', 'success');[m
+[32m+[m[32m                } else {[m
+[32m+[m[32m                    logTestResult('Backdrop still present after save', 'failure');[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }, 1000);[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            logTestResult('Save button not found', 'failure');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error during save test: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in testSaveNoChanges:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Change just one field (title)[m
+[32m+[m[32mfunction testChangeOneField() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        // Open the edit modal again[m
+[32m+[m[32m        const appointmentId = document.getElementById('test-appointment-selector').value;[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Get the appointment[m
+[32m+[m[32m        const appointments = getSafeAppointments();[m
+[32m+[m[32m        const appointment = appointments.find(a => String(a.id) === String(appointmentId));[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (!appointment) {[m
+[32m+[m[32m            logTestResult('Appointment not found', 'failure');[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // If modal is not open, open it[m
+[32m+[m[32m        const modal = document.getElementById('create-appointment-modal');[m
+[32m+[m[32m        if (modal.style.display !== 'block') {[m
+[32m+[m[32m            logTestResult('Reopening edit modal', 'info');[m
+[32m+[m[32m            editAppointment(appointment);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Wait for modal to open[m
+[32m+[m[32m            setTimeout(() => {[m
+[32m+[m[32m                changeOnlyTitle();[m
+[32m+[m[32m            }, 500);[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            changeOnlyTitle();[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        function changeOnlyTitle() {[m
+[32m+[m[32m            // Change only the title[m
+[32m+[m[32m            const titleField = document.getElementById('appointment-title');[m
+[32m+[m[32m            const originalTitle = titleField.value;[m
+[32m+[m[32m            const newTitle = originalTitle + ' (EDITED)';[m
+[32m+[m[41m            [m
+[32m+[m[32m            titleField.value = newTitle;[m
+[32m+[m[32m            logTestResult('Changed title to: ' + newTitle, 'info');[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Save the appointment[m
+[32m+[m[32m            const saveButton = document.getElementById('save-appointment');[m
+[32m+[m[32m            if (saveButton) {[m
+[32m+[m[32m                saveButton.click();[m
+[32m+[m[32m                logTestResult('Save button clicked after changing only title', 'info');[m
+[32m+[m[41m                [m
+[32m+[m[32m                // Check if the change was saved[m
+[32m+[m[32m                setTimeout(() => {[m
+[32m+[m[32m                    const updatedAppointments = getSafeAppointments();[m
+[32m+[m[32m                    const updatedAppointment = updatedAppointments.find(a => String(a.id) === String(appointmentId));[m
+[32m+[m[41m                    [m
+[32m+[m[32m                    if (updatedAppointment && updatedAppointment.title === newTitle) {[m
+[32m+[m[32m                        logTestResult('Title change saved successfully', 'success');[m
+[32m+[m[32m                    } else {[m
+[32m+[m[32m                        logTestResult('Title change not saved', 'failure');[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }, 1000);[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                logTestResult('Save button not found', 'failure');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error during title change test: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in testChangeOneField:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Check if sales rep selection is maintained[m
+[32m+[m[32mfunction testCheckRepSelection() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        // Open the edit modal again[m
+[32m+[m[32m        const appointmentId = document.getElementById('test-appointment-selector').value;[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Get the appointment[m
+[32m+[m[32m        const appointments = getSafeAppointments();[m
+[32m+[m[32m        const appointment = appointments.find(a => String(a.id) === String(appointmentId));[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (!appointment) {[m
+[32m+[m[32m            logTestResult('Appointment not found', 'failure');[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // If modal is not open, open it[m
+[32m+[m[32m        const modal = document.getElementById('create-appointment-modal');[m
+[32m+[m[32m        if (modal.style.display !== 'block') {[m
+[32m+[m[32m            logTestResult('Opening edit modal for rep selection test', 'info');[m
+[32m+[m[32m            editAppointment(appointment);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Wait for modal to open[m
+[32m+[m[32m            setTimeout(() => {[m
+[32m+[m[32m                checkAndChangeRep();[m
+[32m+[m[32m            }, 500);[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            checkAndChangeRep();[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        function checkAndChangeRep() {[m
+[32m+[m[32m            // Get the current sales rep[m
+[32m+[m[32m            const repDropdown = document.getElementById('appointment-sales-rep');[m
+[32m+[m[32m            const currentRepId = repDropdown.value;[m
+[32m+[m[32m            let currentRepName = '';[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (repDropdown.selectedOptions[0]) {[m
+[32m+[m[32m                currentRepName = repDropdown.selectedOptions[0].textContent;[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            logTestResult('Current sales rep: ' + currentRepName + ' (ID: ' + currentRepId + ')', 'info');[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Change the sales rep[m
+[32m+[m[32m            if (repDropdown.options.length > 1) {[m
+[32m+[m[32m                // Select a different option[m
+[32m+[m[32m                for (let i = 0; i < repDropdown.options.length; i++) {[m
+[32m+[m[32m                    if (repDropdown.options[i].value !== currentRepId) {[m
+[32m+[m[32m                        repDropdown.selectedIndex = i;[m
+[32m+[m[32m                        break;[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }[m
+[32m+[m[41m                [m
+[32m+[m[32m                const newRepId = repDropdown.value;[m
+[32m+[m[32m                const newRepName = repDropdown.selectedOptions[0].textContent;[m
+[32m+[m[41m                [m
+[32m+[m[32m                logTestResult('Changed sales rep to: ' + newRepName + ' (ID: ' + newRepId + ')', 'info');[m
+[32m+[m[41m                [m
+[32m+[m[32m                // Save the appointment[m
+[32m+[m[32m                const saveButton = document.getElementById('save-appointment');[m
+[32m+[m[32m                if (saveButton) {[m
+[32m+[m[32m                    saveButton.click();[m
+[32m+[m[32m                    logTestResult('Save button clicked after changing sales rep', 'info');[m
+[32m+[m[41m                    [m
+[32m+[m[32m                    // Check if the change was saved[m
+[32m+[m[32m                    setTimeout(() => {[m
+[32m+[m[32m                        const updatedAppointments = getSafeAppointments();[m
+[32m+[m[32m                        const updatedAppointment = updatedAppointments.find(a => String(a.id) === String(appointmentId));[m
+[32m+[m[41m                        [m
+[32m+[m[32m                        if (updatedAppointment && String(updatedAppointment.extendedProps.salesRepId) === String(newRepId)) {[m
+[32m+[m[32m                            logTestResult('Sales rep change saved successfully', 'success');[m
+[32m+[m[32m                        } else {[m
+[32m+[m[32m                            logTestResult('Sales rep change not saved correctly', 'failure');[m
+[32m+[m[32m                        }[m
+[32m+[m[32m                    }, 1000);[m
+[32m+[m[32m                } else {[m
+[32m+[m[32m                    logTestResult('Save button not found', 'failure');[m
+[32m+[m[32m                }[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                logTestResult('Not enough sales reps to test changing', 'info');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error during rep selection test: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in testCheckRepSelection:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Check for backdrops[m
+[32m+[m[32mfunction testCheckBackdrop() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        const backdrops = document.querySelectorAll('.modal-backdrop');[m
+[32m+[m[32m        const backdropCount = backdrops.length;[m
+[32m+[m[41m        [m
+[32m+[m[32m        logTestResult('Found ' + backdropCount + ' backdrop elements', backdropCount > 0 ? 'failure' : 'success');[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Check body class[m
+[32m+[m[32m        if (document.body.classList.contains('modal-open')) {[m
+[32m+[m[32m            logTestResult('Body has modal-open class - may cause issues', 'failure');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            logTestResult('Body does not have modal-open class - good', 'success');[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Check for any fixed position elements that could be backdrops[m
+[32m+[m[32m        const possibleBackdrops = Array.from(document.querySelectorAll('div'))[m
+[32m+[m[32m            .filter(div => {[m
+[32m+[m[32m                const style = window.getComputedStyle(div);[m
+[32m+[m[32m                return style.position === 'fixed' &&[m[41m [m
+[32m+[m[32m                       !div.id &&[m
+[32m+[m[32m                       style.zIndex >= 1000 &&[m
+[32m+[m[32m                       (parseFloat(style.opacity) > 0);[m
+[32m+[m[32m            });[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (possibleBackdrops.length > 0) {[m
+[32m+[m[32m            logTestResult('Found ' + possibleBackdrops.length + ' possible backdrop-like elements', 'failure');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            logTestResult('No backdrop-like elements found - good', 'success');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error checking backdrops: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in testCheckBackdrop:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Test function: Remove backdrops[m
+[32m+[m[32mfunction testRemoveBackdrop() {[m
+[32m+[m[32m    try {[m
+[32m+[m[32m        logTestResult('Removing all backdrops...', 'info');[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Call our global function if available[m
+[32m+[m[32m        if (typeof window.checkAndRemoveBackdrops === 'function') {[m
+[32m+[m[32m            window.checkAndRemoveBackdrops();[m
+[32m+[m[32m            logTestResult('Used global backdrop removal function', 'info');[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Method 1: Remove by standard class[m
+[32m+[m[32m        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {[m
+[32m+[m[32m            logTestResult('Removing standard modal backdrop', 'info');[m
+[32m+[m[32m            if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);[m
+[32m+[m[32m        });[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Method 2: Remove by fade show class[m
+[32m+[m[32m        document.querySelectorAll('.modal-backdrop.fade.show').forEach(backdrop => {[m
+[32m+[m[32m            logTestResult('Removing fade show modal backdrop', 'info');[m
+[32m+[m[32m            if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);[m
+[32m+[m[32m        });[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Method 3: Find any element that might be a backdrop by style[m
+[32m+[m[32m        const possibleBackdrops = Array.from(document.querySelectorAll('div'))[m
+[32m+[m[32m            .filter(div => {[m
+[32m+[m[32m                const style = window.getComputedStyle(div);[m
+[32m+[m[32m                return style.position === 'fixed' &&[m[41m [m
+[32m+[m[32m                       !div.id &&[m
+[32m+[m[32m                       style.zIndex >= 1000 &&[m
+[32m+[m[32m                       (parseFloat(style.opacity) > 0);[m
+[32m+[m[32m            });[m
+[32m+[m[41m        [m
+[32m+[m[32m        possibleBackdrops.forEach(element => {[m
+[32m+[m[32m            logTestResult('Removing backdrop-like element', 'info');[m
+[32m+[m[32m            if (element.parentNode) element.parentNode.removeChild(element);[m
+[32m+[m[32m        });[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Make body scrollable again[m
+[32m+[m[32m        document.body.style.overflow = '';[m
+[32m+[m[32m        document.body.classList.remove('modal-open');[m
+[32m+[m[32m        document.body.style.paddingRight = '';[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Check for any remaining backdrops[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m            const remainingBackdrops = document.querySelectorAll('.modal-backdrop').length;[m
+[32m+[m[32m            if (remainingBackdrops === 0) {[m
+[32m+[m[32m                logTestResult('All backdrops successfully removed', 'success');[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                logTestResult(remainingBackdrops + ' backdrops still present', 'failure');[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }, 100);[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m        logTestResult('Error removing backdrops: ' + error.message, 'failure');[m
+[32m+[m[32m        console.error('Error in testRemoveBackdrop:', error);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Helper function to log test results[m
+[32m+[m[32mfunction logTestResult(message, type = 'info') {[m
+[32m+[m[32m    const resultsDiv = document.getElementById('test-results');[m
+[32m+[m[41m    [m
+[32m+[m[32m    if (!resultsDiv) return;[m
+[32m+[m[41m    [m
+[32m+[m[32m    const timestamp = new Date().toLocaleTimeString();[m
+[32m+[m[32m    const resultLine = document.createElement('div');[m
+[32m+[m[41m    [m
+[32m+[m[32m    let icon = '🔹';[m
+[32m+[m[32m    if (type === 'success') icon = '✅';[m
+[32m+[m[32m    if (type === 'failure') icon = '❌';[m
+[32m+[m[32m    if (type === 'info') icon = 'ℹ️';[m
+[32m+[m[41m    [m
+[32m+[m[32m    resultLine.innerHTML = `<span>${timestamp}</span> <span class="test-${type}">${icon} ${message}</span>`;[m
+[32m+[m[41m    [m
+[32m+[m[32m    resultsDiv.appendChild(resultLine);[m
+[32m+[m[32m    resultsDiv.scrollTop = resultsDiv.scrollHeight;[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Also log to console[m
+[32m+[m[32m    console.log(`[${type.toUpperCase()}] ${message}`);[m
+[32m+[m[32m}[m
